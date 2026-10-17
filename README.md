@@ -15,10 +15,10 @@ The directory contains:
 
 | Path | Content |
 |---|---|
-| `src/oratio-0.7.5/` | ORATIO numerical libraries (random numbers, QMC, statistics, linear algebra). Unchanged, except `config.guess` (see below). |
+| `src/oratio-0.7.5/` | ORATIO numerical libraries (random numbers, QMC, statistics, linear algebra). The Fortran integer type in `f2c.h` is fixed, and `config.guess` replaced (see below). |
 | `src/ophelia-0.7.4/` | OPHELIA nonlinear optimisation library (trust-region solvers). One missing prototype added, and `config.guess` (see below). |
 | `src/amlet-0.13.1/` | AMLET, with the fixes listed below. |
-| `patches/` | All code changes to the original `amlet-0.13.1.tar.gz` and `ophelia-0.7.4.tar.gz` (the license change is not included). |
+| `patches/` | All code changes to the original `amlet-0.13.1.tar.gz`, `ophelia-0.7.4.tar.gz` and `oratio-0.7.5.tar.gz` (the license change is not included). |
 | `build.sh` | Builds the three packages into a local prefix. Needs no root access. |
 | `run_examples.sh` | Runs the examples and checks the results against reference values. |
 | `examples/` | Redistributable examples (see below). |
@@ -67,6 +67,9 @@ manual.
 | `swissmetro/driver_mnl` | Swissmetro SP data, downloaded from Biogeme by `run_examples.sh` (not shipped) | LL = −5331.252. Coefficients and robust standard errors are identical to Biogeme's example `01logit`. |
 | `swissmetro/driver_mmnl` | same | Normal mixture on the time coefficient, 1000 draws: LL = −5217.886 |
 
+`run_examples.sh` compares the log-likelihood and the standard error of the
+first parameter with `examples/reference_values.tsv`.
+
 Simulated results depend on the pseudo-random draws. They are reproducible
 for a given `seed1` on a given build. A different BLAS or compiler may change
 the last digits, which is why the mixed-logit tolerances in
@@ -103,10 +106,24 @@ below, compilation needs no special flags.
 7. **Out-of-bounds accesses**, found with AddressSanitizer: two file-name buffers in `amlet/io.c` were one byte too short, and at the last draw `sll_derivate_utilities()` (`amlet/likelihood.c`) read one element past the array of draws for a constant coefficient. The value read was not used, so the results do not change.
 8. **Cosmetics**: a leftover debug message ("Coucou 1") is removed, and `--help` no longer lists the options `-s`, `-l` and `-f`, which 0.13 no longer accepts.
 
+**Standard errors (ORATIO `f2c.h`).** The C code declared Fortran integers
+as `long` (8 bytes), while gfortran's `INTEGER` has 4. In
+`op_matrix_sy_inverse()` (OPHELIA), the Cholesky factorisation `dpotrf_`
+then set only half of `info`; the other half was whatever was on the stack.
+When it was not zero, a successful factorisation was treated as a failure,
+and the fallback code, which expects both halves of the Hessian to be filled,
+inverted only its diagonal. The standard errors were then wrong, by a factor
+of up to 5 in the mixed logit examples, while the estimates and the
+log-likelihood were right. With GCC 13 and its default options the stack
+happened to be clean, so the results above are not affected; with GCC 15 on
+Ubuntu 26.04, or with `-march=x86-64-v3`, the four mixed logit examples were.
+`integer` and `logical` are now `int`. Older 64-bit builds may also have been
+affected, depending on the compiler and its options.
+
 In OPHELIA 0.7.4, `ophelia/btr.h` now declares `nlp_set_derivatives_type()`,
 which `rtr.c` calls; without it, GCC ≥ 14 stops with an error. The code
-changes are in `patches/amlet-0.13.1-2026.patch` and
-`patches/ophelia-0.7.4-2026.patch`.
+changes are in `patches/amlet-0.13.1-2026.patch`,
+`patches/ophelia-0.7.4-2026.patch` and `patches/oratio-0.7.5-2026.patch`.
 
 ORATIO 0.7.5 and OPHELIA 0.7.4 shipped a `config.guess` from about 2000. Its
 test program calls `printf()` without `<stdio.h>`, so with GCC ≥ 14
@@ -122,7 +139,7 @@ from uutils coreutils, `make install` runs `install-sh`.
 - Driver files written for AMLET ≤ 0.10 may use `nests = 1;`. In 0.13.1 the keyword is `nnests`, and the old form crashes the parser. Rename it.
 - The log-likelihood "at constants" is not computed in 0.13.1 (printed as 0).
 - `seed2` is not implemented (see `src/amlet-0.13.1/TODO`).
-- In ORATIO, `nt_modular_vecvec()` (`ntools/modular.c`) adds the running sum again at each step (`y += ...` instead of `y = ...`). The MRG32k3a states computed with it (for each new stream or substream) are therefore not reduced modulo m. The streams differ from L'Ecuyer's reference generator, and some products exceed 2^53, so the draws depend on floating-point rounding: with fused multiply-add instructions (FMA, used by default on Ubuntu 26.04 or with `-march=x86-64-v3`) the draws change completely. `build.sh` therefore always compiles with `-ffp-contract=off`, which gives the same draws everywhere. Fixing the function would change every simulated result, so it is left as is.
+- In ORATIO, `nt_modular_vecvec()` (`ntools/modular.c`) adds the running sum again at each step (`y += ...` instead of `y = ...`). The MRG32k3a states computed with it (for each new stream or substream) are therefore not reduced modulo m. The streams differ from L'Ecuyer's reference generator, and some products exceed 2^53, so the draws depend on floating-point rounding: with fused multiply-add instructions (FMA, as on Ubuntu 26.04 or with `-march=x86-64-v3`) the draws change completely. `build.sh` therefore always compiles with `-ffp-contract=off`, which gives the same draws everywhere. Fixing the function would change every simulated result, so it is left as is.
 - In `set_beta()` (`amlet/likelihood.c`), the antithetic transformation is also applied to the (unused) draw of constant coefficients. The code is misleadingly indented, but the result is harmless. `sll_derivate_utilities_mvn()` is never called and uses an uninitialised variable.
 - Only the `amlet` and `src` subdirectories of AMLET are built. The original `test/` program and the LaTeX manual sources are kept but not built.
 

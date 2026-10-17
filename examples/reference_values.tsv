@@ -1,7 +1,7 @@
-# example	driver	output	expected_total_loglik	rel_tol	source of the expected value
-australia	driver_mnl	results_mnl	-199.1283687	1e-8	Greene, Econometric Analysis (conditional logit, TravelMode data): -199.128
-australia	driver_mmnl	results_mmnl	-178.491005	1e-4	AMLET 0.13.1 rebuilt in 2026 (1000 pseudo-random draws, seed1 = 100)
-simulated	driver_errc	results_errc	-4789.682641	1e-4	AMLET 0.13.1 rebuilt in 2026 (synthetic data, true coefficients = 1)
-simulated	driver_panel	results_panel	-5917.989455	1e-4	AMLET 0.13.1 rebuilt in 2026 (synthetic panel, true N(0.5, 1) coefficients)
-swissmetro	driver_mnl	results_mnl	-5331.252007	1e-8	Biogeme example 01logit: -5331.252
-swissmetro	driver_mmnl	results_mmnl	-5217.886066	1e-4	AMLET 0.13.1 rebuilt in 2026 (1000 pseudo-random draws, seed1 = 12345)
+# example	driver	output	expected_total_loglik	rel_tol	expected_se	se_rel_tol	source of the expected values (expected_se: standard error of the first parameter)
+australia	driver_mnl	results_mnl	-199.1283687	1e-8	0.978816	1e-5	Greene, Econometric Analysis (conditional logit, TravelMode data): -199.128
+australia	driver_mmnl	results_mmnl	-178.491005	1e-4	1.6062496	1e-3	AMLET 0.13.1 rebuilt in 2026 (1000 pseudo-random draws, seed1 = 100)
+simulated	driver_errc	results_errc	-4789.682641	1e-4	0.042104117	1e-3	AMLET 0.13.1 rebuilt in 2026 (synthetic data, true coefficients = 1)
+simulated	driver_panel	results_panel	-5917.989455	1e-4	0.02581316	1e-3	AMLET 0.13.1 rebuilt in 2026 (synthetic panel, true N(0.5, 1) coefficients)
+swissmetro	driver_mnl	results_mnl	-5331.252007	1e-8	0.082562108	1e-5	Biogeme example 01logit: -5331.252; robust standard error of ASC_TRAIN 0.0826
+swissmetro	driver_mmnl	results_mmnl	-5217.886066	1e-4	0.054208962	1e-3	AMLET 0.13.1 rebuilt in 2026 (1000 pseudo-random draws, seed1 = 12345)

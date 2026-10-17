@@ -15,15 +15,18 @@
 #ifndef F2C_INCLUDE
 #define F2C_INCLUDE
 
-typedef long int integer;
-typedef unsigned long int uinteger;
+/* gfortran's default INTEGER and LOGICAL have 4 bytes, also on 64-bit
+   systems, where "long" has 8: with long, the Fortran routines only set
+   half of the variables they return (such as INFO). */
+typedef int integer;
+typedef unsigned int uinteger;
 typedef char *address;
 typedef short int shortint;
 typedef float real;
 typedef double doublereal;
 typedef struct { real r, i; } complex;
 typedef struct { doublereal r, i; } doublecomplex;
-typedef long int logical;
+typedef int logical;
 typedef short int shortlogical;
 typedef char logical1;
 typedef char integer1;
