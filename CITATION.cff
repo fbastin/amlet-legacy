@@ -8,7 +8,7 @@ authors:
   - family-names: Bastin
     given-names: Fabian
     email: fabian.bastin@gmail.com
-version: 0.13.1
+version: 0.13.1-1
 date-released: 2026-10-17
 license: MIT
 repository-code: "https://github.com/fbastin/amlet-legacy"
@@ -17,7 +17,8 @@ abstract: >-
   likelihood. It includes the adaptive Monte Carlo trust-region algorithms
   (BTR / BTRDA) developed by F. Bastin, C. Cirillo and Ph. L. Toint. This
   repository makes the last release, 0.13.1, build and run on current Linux
-  systems.
+  systems, and fixes the bugs found on the way, including in the random
+  number generator.
 keywords:
   - mixed logit
   - discrete choice
