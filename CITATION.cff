@@ -1,0 +1,107 @@
+cff-version: 1.2.0
+message: >-
+  If you use AMLET, please cite the article below and, if relevant, this
+  software.
+title: "AMLET: Another Mixed Logit Estimation Tool"
+type: software
+authors:
+  - family-names: Bastin
+    given-names: Fabian
+    email: fabian.bastin@gmail.com
+version: 0.13.1
+date-released: 2026-10-17
+license: MIT
+repository-code: "https://github.com/fbastin/amlet-legacy"
+abstract: >-
+  AMLET estimates multinomial and mixed logit models by maximum simulated
+  likelihood. It includes the adaptive Monte Carlo trust-region algorithms
+  (BTR / BTRDA) developed by F. Bastin, C. Cirillo and Ph. L. Toint. This
+  repository makes the last release, 0.13.1, build and run on current Linux
+  systems.
+keywords:
+  - mixed logit
+  - discrete choice
+  - maximum simulated likelihood
+  - trust region
+  - Monte Carlo
+preferred-citation:
+  type: article
+  authors:
+    - family-names: Bastin
+      given-names: Fabian
+    - family-names: Cirillo
+      given-names: Cinzia
+    - family-names: Toint
+      given-names: Philippe L.
+  title: "Application of an adaptive Monte Carlo algorithm to mixed logit estimation"
+  journal: "Transportation Research Part B: Methodological"
+  volume: 40
+  issue: 7
+  start: 577
+  end: 593
+  year: 2006
+  doi: 10.1016/j.trb.2005.09.002
+references:
+  - type: article
+    authors:
+      - family-names: Bastin
+        given-names: Fabian
+      - family-names: Cirillo
+        given-names: Cinzia
+      - family-names: Toint
+        given-names: Philippe L.
+    title: "An adaptive Monte Carlo algorithm for computing mixed logit estimators"
+    journal: "Computational Management Science"
+    volume: 3
+    issue: 1
+    start: 55
+    end: 79
+    year: 2006
+    doi: 10.1007/s10287-005-0044-y
+  - type: article
+    authors:
+      - family-names: Bastin
+        given-names: Fabian
+      - family-names: Cirillo
+        given-names: Cinzia
+      - family-names: Toint
+        given-names: Philippe L.
+    title: "Convergence theory for nonconvex stochastic programming with an application to mixed logit"
+    journal: "Mathematical Programming"
+    volume: 108
+    issue: 2-3
+    start: 207
+    end: 234
+    year: 2006
+    doi: 10.1007/s10107-006-0708-6
+  - type: article
+    authors:
+      - family-names: Bastin
+        given-names: Fabian
+      - family-names: Cirillo
+        given-names: Cinzia
+      - family-names: Hess
+        given-names: Stephane
+    title: "Evaluation of optimization methods for estimating mixed logit models"
+    journal: "Transportation Research Record"
+    volume: 1921
+    start: 35
+    end: 43
+    year: 2005
+    doi: 10.1177/0361198105192100105
+  - type: article
+    authors:
+      - family-names: Bastin
+        given-names: Fabian
+      - family-names: Cirillo
+        given-names: Cinzia
+      - family-names: Toint
+        given-names: Philippe L.
+    title: "Estimating nonparametric random utility models with an application to the value of time in heterogeneous populations"
+    journal: "Transportation Science"
+    volume: 44
+    issue: 4
+    start: 537
+    end: 549
+    year: 2010
+    doi: 10.1287/trsc.1100.0321

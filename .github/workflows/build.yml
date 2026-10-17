@@ -1,0 +1,46 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 1 * *"   # monthly: catch breakage from new compilers or libraries
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        blas: [reference, openblas]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install prerequisites
+        run: |
+          case "${{ matrix.blas }}" in
+            openblas) blas="libopenblas-dev" ;;
+            *)        blas="libblas-dev liblapack-dev" ;;
+          esac
+          sudo apt-get update
+          sudo apt-get install -y build-essential $blas python3 curl
+
+      - name: Build
+        run: |
+          gcc --version | head -1
+          bash build.sh
+
+      - name: Run examples
+        run: bash run_examples.sh
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.blas }}
+          path: |
+            build/*/configure.log
+            build/*/*/make.log
+            run/
+          if-no-files-found: ignore

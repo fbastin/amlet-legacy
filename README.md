@@ -1,5 +1,7 @@
 # AMLET — 2026 rebuild
 
+[![build](https://github.com/fbastin/amlet-legacy/actions/workflows/build.yml/badge.svg)](https://github.com/fbastin/amlet-legacy/actions/workflows/build.yml)
+
 AMLET (*Another Mixed Logit Estimation Tool*) estimates multinomial and
 mixed logit models by maximum simulated likelihood. It includes the adaptive
 Monte Carlo trust-region algorithms (BTR / BTRDA) developed by
@@ -19,7 +21,7 @@ The directory contains:
 | `build.sh` | Builds the three packages into a local prefix. Needs no root access. |
 | `run_examples.sh` | Runs the examples and checks the results against reference values. |
 | `examples/` | Redistributable examples (see below). |
-| `doc/` | Original user manuals (AMLET, OPHELIA, ORATIO). |
+| `doc/` | User manuals (AMLET, OPHELIA, ORATIO), rebuilt in 2026 from the LaTeX sources in `src/*/doc`. The previous PDFs dated from 2011 and described AMLET 0.10.6. |
 
 ## Quick start
 
@@ -136,13 +138,12 @@ their own terms, as stated in their headers:
   the MINPACK-2 test problems in `src/ophelia-0.7.4/collection/minpack2/`, the
   Bison-generated parser and the autotools build scripts.
 
-The PDF manuals in `doc/` are the original ones and still state the OSL; their
-LaTeX sources are updated.
-
 ## References
 
-- F. Bastin, C. Cirillo, Ph. L. Toint. An adaptive Monte Carlo algorithm for computing mixed logit estimators. *Computational Management Science*, 2006.
-- F. Bastin, C. Cirillo, Ph. L. Toint. Application of an adaptive Monte Carlo algorithm to mixed logit estimation. *Transportation Research Part B*, 2006.
-- F. Bastin, C. Cirillo, Ph. L. Toint. Convergence theory for nonconvex stochastic programming with an application to mixed logit. *Mathematical Programming B*, 2006.
-- F. Bastin, C. Cirillo, S. Hess. Evaluation of advanced optimisation methods for estimating mixed logit models. *Transportation Research Record*, 2005.
-- F. Bastin, C. Cirillo, Ph. L. Toint. Estimating nonparametric random utility models with an application to the value of time in heterogeneous populations. *Transportation Science*, 2010.
+To cite AMLET, see `CITATION.cff` (or "Cite this repository" on GitHub).
+
+- F. Bastin, C. Cirillo, Ph. L. Toint. An adaptive Monte Carlo algorithm for computing mixed logit estimators. *Computational Management Science* 3(1):55–79, 2006. [doi:10.1007/s10287-005-0044-y](https://doi.org/10.1007/s10287-005-0044-y)
+- F. Bastin, C. Cirillo, Ph. L. Toint. Application of an adaptive Monte Carlo algorithm to mixed logit estimation. *Transportation Research Part B* 40(7):577–593, 2006. [doi:10.1016/j.trb.2005.09.002](https://doi.org/10.1016/j.trb.2005.09.002)
+- F. Bastin, C. Cirillo, Ph. L. Toint. Convergence theory for nonconvex stochastic programming with an application to mixed logit. *Mathematical Programming* 108(2–3):207–234, 2006. [doi:10.1007/s10107-006-0708-6](https://doi.org/10.1007/s10107-006-0708-6)
+- F. Bastin, C. Cirillo, S. Hess. Evaluation of optimization methods for estimating mixed logit models. *Transportation Research Record* 1921:35–43, 2005. [doi:10.1177/0361198105192100105](https://doi.org/10.1177/0361198105192100105)
+- F. Bastin, C. Cirillo, Ph. L. Toint. Estimating nonparametric random utility models with an application to the value of time in heterogeneous populations. *Transportation Science* 44(4):537–549, 2010. [doi:10.1287/trsc.1100.0321](https://doi.org/10.1287/trsc.1100.0321)
