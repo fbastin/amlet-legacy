@@ -15,8 +15,8 @@ The directory contains:
 
 | Path | Content |
 |---|---|
-| `src/oratio-0.7.5/` | ORATIO numerical libraries (random numbers, QMC, statistics, linear algebra). Unchanged. |
-| `src/ophelia-0.7.4/` | OPHELIA nonlinear optimisation library (trust-region solvers). One missing prototype added (see below). |
+| `src/oratio-0.7.5/` | ORATIO numerical libraries (random numbers, QMC, statistics, linear algebra). Unchanged, except `config.guess` (see below). |
+| `src/ophelia-0.7.4/` | OPHELIA nonlinear optimisation library (trust-region solvers). One missing prototype added, and `config.guess` (see below). |
 | `src/amlet-0.13.1/` | AMLET, with the fixes listed below. |
 | `patches/` | All code changes to the original `amlet-0.13.1.tar.gz` and `ophelia-0.7.4.tar.gz` (the license change is not included). |
 | `build.sh` | Builds the three packages into a local prefix. Needs no root access. |
@@ -103,10 +103,16 @@ below, compilation needs no special flags.
 7. **Out-of-bounds accesses**, found with AddressSanitizer: two file-name buffers in `amlet/io.c` were one byte too short, and at the last draw `sll_derivate_utilities()` (`amlet/likelihood.c`) read one element past the array of draws for a constant coefficient. The value read was not used, so the results do not change.
 8. **Cosmetics**: a leftover debug message ("Coucou 1") is removed, and `--help` no longer lists the options `-s`, `-l` and `-f`, which 0.13 no longer accepts.
 
-OPHELIA 0.7.4 has a single change: `ophelia/btr.h` now declares
-`nlp_set_derivatives_type()`, which `rtr.c` calls; without it, GCC ≥ 14 stops
-with an error. ORATIO 0.7.5 is unchanged. The changes are in
-`patches/amlet-0.13.1-2026.patch` and `patches/ophelia-0.7.4-2026.patch`.
+In OPHELIA 0.7.4, `ophelia/btr.h` now declares `nlp_set_derivatives_type()`,
+which `rtr.c` calls; without it, GCC ≥ 14 stops with an error. The code
+changes are in `patches/amlet-0.13.1-2026.patch` and
+`patches/ophelia-0.7.4-2026.patch`.
+
+ORATIO 0.7.5 and OPHELIA 0.7.4 shipped a `config.guess` from about 2000. Its
+test program calls `printf()` without `<stdio.h>`, so with GCC ≥ 14
+`configure` stops with "cannot guess build type". It is replaced by the
+`config.guess` of AMLET 0.13.1 (2009-11-20), which matches their
+`config.sub` (2009-06-11). The patches do not include this file.
 
 ## Known limitations (not changed)
 
