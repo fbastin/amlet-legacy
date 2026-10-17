@@ -73,7 +73,10 @@ first parameter with `examples/reference_values.tsv`.
 Simulated results depend on the pseudo-random draws. They are reproducible
 for a given `seed1` on a given build. A different BLAS or compiler may change
 the last digits, which is why the mixed-logit tolerances in
-`examples/reference_values.tsv` are looser.
+`examples/reference_values.tsv` are looser. The standard errors of
+`australia/driver_mmnl` come from the BFGS approximation of the Hessian
+(`hessian_approx = true`), which depends on the optimisation path: they vary
+by about 3% between builds, and are checked to within 10%.
 
 The rebuilt executable was also checked against output files written by
 historical AMLET versions on the original (non-redistributable) research
