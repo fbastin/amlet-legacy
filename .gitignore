@@ -1,0 +1,24 @@
+# Default output directories of build.sh and run_examples.sh
+/local/
+/build/
+/run/
+
+# Swissmetro data are not redistributed (downloaded by run_examples.sh)
+examples/swissmetro/swissmetro.dat
+examples/swissmetro/swissmetro_train96
+
+# Files written by amlet in the working directory
+amlet.log
+
+# Build artifacts, in case a source tree is built in place
+*.o
+*.lo
+*.la
+*.a
+*.so
+.libs/
+.deps/
+config.log
+config.status
+libtool
+stamp-h1

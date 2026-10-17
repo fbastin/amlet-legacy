@@ -1,0 +1,90 @@
+\section{Data files}
+\label{sec:data}
+
+Every model needs data in order to proceed to its calibration, so the
+possibilty to enter data in a convenient format is important.
+\amlet{} unfortunately currently supports basic formats only, even if
+development is planned on this issue.
+The supported formats reflect the original purpose of the package,
+which was only testing a new optimisation method.
+
+\subsection{\gauss{}-like formats}
+
+Preliminary \amlet{} design mimics Train's \gauss{} codes for mixed
+logit estimation (cross-sectional and panel versions).
+These routines are available at the address
+\url{http://elsa.berkeley.edu/~train/software.html}.
+We also refer the reader to Revelt and Train~\cite{ReveTrai98}, and
+Train~\cite{Trai99}, for more details.
+\amlet{} has currently no capabilities to construct new data from a
+preexisting dataset, for instance  dummy
+observations for alternatives specific constants, so please be sure
+that your data are completely specified before using \amlet{}.
+
+The format of the data file is specified by assign to the variable
+\verb|format| of the driver file the value \verb|Train96| of
+\verb|Train99|, the number being a reference to Train's code release
+year.
+For instance, the following line
+\begin{verbatim}
+format = Train96;
+\end{verbatim}
+indicated that data are stored in \verb|Train96| format, which is also
+taken as default if no format is specified in the driver file.
+
+\subsubsection{Train96 format}
+
+This format is primarily designed for cross-sectional data, as
+illustrated in Figure~\ref{fig:Train96}.
+In this figure, each indiviual is facing four alternatives,
+corresponding four columns.
+The six first rows of each record (containing seven rows) corresponds
+to the independent variables.
+Since each individual is assumed to deliver one observation, this
+format cannot be used for panel data.
+An additional row is devoted to the dependent (decision) variable,
+with one on the column corresponding  to the chosen alternatives, and
+0 elsewhere.
+The line position in each record must be indicated with the variable
+\verb|iddep| in the driver file.
+For Figure~\ref{fig:Train96}, we would have
+\begin{verbatim}
+iddep = 7;
+\end{verbatim}
+\begin{figure}
+\begin{verbatim}
+     0    1    0    0
+     0    0    1    0
+     0    0    0    1
+   1.6 -2.0  3.2  4.1
+     0  2.5  1.0  0.8
+  -1.2 -1.5 -0.4 -1.6
+     0    1    0    0
+     0    1    0    0
+     0    0    1    0
+     0    0    0    1
+   2.4 -3.0  2.3  3.0
+     0  1.7  1.2  1.5
+  -1.6 -2.0 -1.2 -2.4
+     0    0    0    1
+\end{verbatim}
+\label{fig:Train96}
+\caption{Train96 Format}
+\end{figure}
+%\textit{Cas où toutes les alternatives ne sont pas disponibles}
+
+By default, all alternatives are available to each individual.
+If you want to specify alternative availabilities, you have to set the
+censor variable to 1 in the driver file:
+\begin{verbatim}
+censor = 1;
+\end{verbatim}
+The variable \verb|idcensor| then represents the line describing
+alternative availabilities.
+The corresponding line in the driver file is simply a 0-1 line, with
+one on available alternatives, and 0 elsewhere.
+
+\subsubsection{Train99 format}
+
+This format is used for panel data.
+It adds to the base name the suffixes \verb|_x|, \verb|_y| and \verb|_times|.

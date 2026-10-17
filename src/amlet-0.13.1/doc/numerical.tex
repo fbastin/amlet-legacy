@@ -1,0 +1,31 @@
+\chapter{Numerical issues}
+\label{chap:num}
+
+\section{Choice probability computation}
+
+We start from the logit expression
+\begin{equation}
+P_{ij} = \frac{e^{U_{\ell}}}{\sum_{k \in \mathcal{A}_i} e^{U_k}}.
+\label{eq:probab}
+\end{equation}
+If some of the utilities are too large, the computation of
+\eqref{eq:probab} can face some overflow.
+A simple way to avoid this problem is to substract some quantity
+$\alpha$ since
+\[
+\frac{e^{U_{\ell}-\alpha}}{\sum_{k \in \mathcal{A}_i} e^{U_k-\alpha}}
+= \frac{e^{U_{\ell}}}{\sum_{k \in \mathcal{A}_i} e^{U_k}}.
+\] 
+Moreover, is all utilities are too small, they could be evaluated to
+0, leading to the ratio $0/0$ in \eqref{eq:probab}.
+A simple way to circumvent this issue is to normalize with respect to
+the highest utility, i.e. take
+\[
+\alpha = \max \lbrace U_k,\ k \in \mathcal{A}_i \rbrace - \beta.
+\]
+We want to keep each term $e^{U_k}$, $k \in \mathcal{A}_i$, in the
+same range, so $\beta$ has to be kept low.
+Since $d e^x/dx = e^x$, the precise value of $\beta$ does not
+significantly affect small utilities, so a simple, while practical,
+choice is to set $\beta$ to 0.
+As a consequence, $e^{U_k - \alpha} \in (0,1]$ for all $k \in \mathcal{A}_i$.

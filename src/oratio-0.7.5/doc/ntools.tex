@@ -1,0 +1,468 @@
+\chapter{Numerical utilities}
+
+\name{} library includes various numerical code snippets, gathered
+into the sublibrary \texttt{ntools}.
+The routines concerns various aspects of numerical programming, that
+can be useful in various situations.
+By convention, the routines names always start with the prefix \verb|ntools_|.
+We also try to benefit form preexisting conventions in packages as
+\blas{} and \verb|LAPACK|\index{LAPACK@LAPACK} in order to make naming
+schemes as consistent as possible.
+The presented conventions will also be used in the subsequent chapters.
+
+\section{Constants and special values}
+
+Mathematical constants are represented in the file \verb|constants.h|,
+and are summarized in Table~\ref{tab:constants}.
+\begin{table}[htb]
+\begin{small}
+\begin{tabularx}{\textwidth}{lll}
+Symbol & Value & Numerical approximation \\
+\hline
+\verb|M_E| & $e$ & 2.71828182845904523536028747135 \\
+\verb|M_EULER| & $\Gamma'(1)$ (Euler constant\index{Euler constant})&
+0.5772156649015328606065 \\
+\verb|M_LN2| & $\ln(2)$ & 0.69314718055994530941723212146 \\
+\verb|M_LNPI| & $\ln(\pi)$ & 1.14472988584940017414342735135 \\
+\verb|M_LN10| & $\ln(10)$ & 2.30258509299404568401799145468 \\
+\verb|M_LOG2E| & $\log_2(e)$ & 1.44269504088896340735992468100 \\
+\verb|M_LOG10E| & $\log_{10} (e)$ & 0.43429448190325182765112891892 \\
+\verb|M_PI| & $\pi$ & 3.14159265358979323846264338328 \\
+\verb|M_PI_2| & $\pi/2$ & 1.57079632679489661923132169164 \\
+\verb|M_PI_4| & $\pi/4$ & 0.78539816339744830961566084582 \\
+\verb|M_1_PI| & $1/\pi$ & 0.31830988618379067153776752675 \\
+\verb|M_2_PI| & $2/\pi$ & 0.63661977236758134307553505349 \\
+\verb|M_SQRT1_2| & $\sqrt{1/2}$ & 0.70710678118654752440084436210 \\
+\verb|M_SQRT2| & $\sqrt{2}$ & 1.4142135623730950488 \\
+\verb|M_SQRT3| & $\sqrt{3}$ & 1.73205080756887729352744634151 \\
+\verb|M_SQRTPI| & $\sqrt{\pi}$ & 1.77245385090551602729816748334 \\
+\verb|M_TWO_SQRTPI| & $2/\sqrt{\pi}$ & 1.12837916709551257389615890312 \\
+\verb|M_TWO17| & $2^{17}$ & 131072.0 \\
+\verb|M_TWO53| & $2^{53}$ & 9007199254740992.0 \\
+\hline
+\end{tabularx}
+\label{tab:constants}
+\caption{Mathematical constants}
+\end{small}
+\end{table}
+
+\begin{verbatim}
+double nt_infinity()
+double nt_nan()
+\end{verbatim}
+
+\section{Geometric routines}
+
+\subsection{Cartesian and polar coordinates}
+
+Given a two-dimensional vector $a$, the two classical coordinates system are the cartesian and polar ones.
+In the Cartesian system, $a$ is expressed as a linear combination of the canonical vectors $e_1 = (1,0)$ and $e_2=(0,2)$ (defining the $x$- and $y$-axis):
+\[
+a = x e_1 + y e_2.
+\]
+Therefore, we can write $a$ as the couplet $(x, y)$.
+In the polar system, $(r, \theta)$, where $r$ is the radial distance from the origin, and $\theta$ is the counterclockwise angle from the $x$-axis.
+Storing the Cartesian coordinates in a vector, we have the two following functions, that perform conversion from Cartesian to polar coordinates and from polar to Cartesian coordinates, respectively:
+\begin{verbatim}
+  void nt_cartesian2polar(double *x, double r, double theta);
+  void nt_polar2cartesian(double r, double theta, double *x);
+\end{verbatim}
+
+\section{Derivatives}
+\index{derivatives}
+
+\subsection{Finite approximations}
+
+A common way to compute approximate first and second derivatives is to use finite-difference
+approximations.\index{finite difference}
+
+\subsubsection{Finite-difference gradients}
+
+\section{Linear algebra}
+
+\subsection{Conventions}
+\label{sub:laconventions}
+
+Each real vector $\boldsymbol{x}$ is represented as a double array
+whose consecutive elements are separated using a fixed increment, as
+illustrated in Figure~\ref{fig:vector}.
+\begin{figure}
+\[
+\boldsymbol{x}: \underbrace{x_0 \sqcup \sqcup \ldots
+  \sqcup}_{\mbox{\texttt{incx}}}x_1 \ldots
+\]
+\label{fig:vector}
+\caption{Vector representation}
+\end{figure}
+
+When manipulating matrices,
+we follow the \lapack{} convention (see for instance
+Hogben~\cite{Hogb06}, Chapter~75), and denote the number of rows by $m$
+and the number of columns by $n$.
+We also define the leading dimension\index{dimension!leading} as the
+first dimension of a two-dimensional array (as opposed to the
+dimension of the matrix stored in that array).
+Since arrays are stored by rows in C, the leading dimension is often the
+number of columns, but it can greater than this number, allowing
+convenient abstraction to access submatrices.
+The basic memory allocation and deallocation are
+\begin{verbatim}
+double **nt_matrix_new(int m, int n)
+double **nt_matrix_realloc(double **A, int m, int n)
+void nt_matrix_free(double **A)
+\end{verbatim}
+
+Various additional functions offer basic operations on matrices.
+The function
+\begin{verbatim}
+void nt_matrix_zeros(int m, int n, double *A, int ldA)
+\end{verbatim}
+set all elements of the $m \times n$ leading principal submatrix of A to 0.0.
+\verb|ldA| is the leading dimension of $A$.
+This submatrix can also be set to the $m \times n$ identity matrix
+\index{identity!matrix} with the function
+\begin{verbatim}
+void nt_matrix_identity(int m, int n, double *A, int ldA)
+\end{verbatim}
+These functions implicitely assume that the matrix is row-oriented, as
+said before, but this is not the case with every
+language. In particular, Fortran stores matrices by columns.
+Since many numerical routines are available in Fortran, and can be
+easily linked to C code, it can be useful to specify how matrices are
+stored.
+This can can be done using specialized functions, whose names start by
+\verb|nt_ma| instead of \verb|nt_matrix|, and whose first argument is
+the matrix orientation identifier.
+It has the specific type \verb|enum CBLAS_ORDER|, and can take one of
+the following constant values:
+\begin{enumerate}
+\item
+\verb|NT_MATRIX_ROW| or \verb|CblasRowMajor| for a row-oriented matrix;
+\item
+\verb|NT_MATRIX_COLUMN| or \verb|CblasColMajor| for a column-oriented matrix.
+\end{enumerate}
+The constants
+\verb|CblasRowMajor|\index{CblasRowMajor@\texttt{CblasRowMajor}} and
+\verb|CblasColMajor|\index{CblasColMajor@\texttt{CblasColMajor}} are
+proposed in order to be consistent with \blas{} (see
+Section~\ref{sec:requirements}) conventions.
+The corresponding functions list is
+\begin{verbatim}
+double **nt_ma_new(const enum CBLAS_ORDER Order, int m, int n)
+void nt_ma_diag(const enum CBLAS_ORDER Order,
+		const int m, const int n, double *A, const int ldA,
+		double alpha)
+void nt_ma_identity(const enum CBLAS_ORDER Order,
+		    const int m, const int n, double *A, const int ldA)
+void nt_ma_scale(const enum CBLAS_ORDER Order, const int m, const int n,
+		 double alpha, double *A, int ldA)
+void nt_ma_zeros(const enum CBLAS_ORDER Order,
+		 const int m, const int n, double *A, const int ldA)
+\end{verbatim}
+
+\subsection{I/O routines}
+
+These routines allow simple input/output management for some
+mathematical constructions.
+\begin{verbatim}
+void nt_vect_print(FILE *out, char *name,
+                   double *v, int n)
+\end{verbatim}
+\begin{verbatim}
+void nt_matrix_print(FILE *out, char *name,
+		     double **A, int m, int n)
+\end{verbatim}
+
+\subsection{Modular arithmetic}
+\index{arithmetic!modular}
+
+Let $m>0$ be a natural number, and consider the set ${\zit}_m
+\overset{def}{=}\{ 0,1,\ldots,m-1\}$.
+For $a,b\in {\mathbb{Z}}_n$ define $a+b$ and $ab$ by performing these
+operations in $\mathbb{Z}$, and the subtracting multiples of $m$ until
+the result is in ${\mathbb{Z}}_m$.
+In other words, form the sum and product of $a$ and $b$ as integers, divide
+them by $m$ and take the remainders.
+These operations are called the addition and multiplication modulo
+$m$.
+Under these relations, we have that two integers $a$ and $b$ are said
+to be congruent modulo $m$\index{congruence} if their difference is a
+multiple of $m$ (in other terms the remainder of the integer division
+$(a-b)/m$ is equal to 0).
+We will write $a = b \mod m$.
+
+\subsubsection{Multiplication: $ax \mod m$}
+
+Mupltiplication modulo $m$ is an important tool in various
+application, for instance random numbers generations.
+The main difficulty is that with large $m$, a crude implementation of
+$ax \mod m$ could lead to overflows.
+We examine two ways to circumvent this problem.
+
+\paragraph{Approximate factorization}
+\index{factorization!approximate}
+
+This method is also know as \Index{Schrage}'s method, and is valid if
+$a^2 < m$ or $a = \lfloor m/i \rfloor$, where $i^2 < m$.
+We work with integer only, and precompute ${q} = \lfloor m/a \rfloor$
+and ${r} = m\mod a$.
+We then 
+\[
+  y \leftarrow \lfloor x / q \rfloor; \quad
+  x \leftarrow a (x - yq) - yr; \quad
+  \mbox{If } x < 0 \mbox{ then } x \leftarrow x + m.
+\]%
+We indeed have that
+\begin{eqnarray*}
+  a x \mod m &=&  (ax - \lfloor x/q\rfloor m) \mod m \\
+      &=&  (ax - \lfloor x/q\rfloor (a q + r)) \mod m \\
+      &=&  (a (x - \lfloor x/q\rfloor q) - \lfloor x/q\rfloor r) \mod m \\
+      &=&  (a (x \mod q) - \lfloor x/q\rfloor r) \mod m.
+\end{eqnarray*}
+Under our assumptions, it is easy to show that all intermediate
+quantities stay between $-m$ amd $m$.
+
+The following function computes $ax mod m$ and returns the result of
+the operation
+\begin{verbatim}
+long nt_modular_schrage(long a, long x, long m)
+\end{verbatim}
+While we propose a generic function, it is usally more efficient to
+directly implement this technique inline, by precomputing $q$ and $r$,
+as explined.
+
+\paragraph{Floating-points computation}
+
+If we assume that we work with double precision numbers coded on 64
+bits, with a mantissa represented by 53 bits, the presented technique
+is valid if $a.m < 2^{53}$, since the we can represent all integers
+betweem 0 and $2^{53}-1$ with no rounding errors.
+The following algorithm produces the desired result.
+\begin {eqnarray*}
+   && \mbox{double } m, a, x, v; \quad  \mbox{int } k; \\
+   && v = a.x; \quad
+    k = \lfloor v / m \rfloor; \quad
+    x = v - k.m;
+\end {eqnarray*}
+The following function computes $ax + y mod m$:
+\begin{verbatim}
+double nt_modular_daxpy(double a, double x, double c, double m)
+\end{verbatim}
+The name \verb|daxpy| is used as reference to the \blas{} operation $ax+y$.
+
+\subsubsection{Power}
+
+The multiplication operation is much simpler when $x$ is equal or more
+generally to a power of $a$.
+The following routine performs the operation $a^e \mod{} m$.
+\begin{verbatim}
+long nt_modular_power(long a, long e, long m);
+\end{verbatim}
+\section{Primes numbers\index{prime}}
+
+More advanced and efficient algorithm exist, but their implementation
+goes far over the purpose of this library.
+We only propose simple routines, that you should be sufficient for
+numerous applications, when only a few prime numbers are required.
+If you require a general but fast prime numbers search, we recommand
+the use of Atkin's sieve~\cite{AtkiBern04}.
+
+\subsection{Successive divisions}
+
+The simple methods consists to enumerate naturals and check if their
+primes by testing if they can be divided by a previously computed
+prime.
+The method is less memory consuming that the Eratosthene sieve
+presented below, but is requires more CPU time.
+You can compute the first $n$ prime number, with the following function:
+\begin{verbatim}
+void nt_primes_simple(unsigned int n, unsigned int *primes)
+\end{verbatim}
+The array \verb|primes| has to be memory allocated.
+On output, \verb|primes[i]| will containes the $(i-1)^{\mbox{th}}$
+prime.
+As an illustration, the 10 first prime numbers are 2, 3, 5, 7, 11, 13,
+17, 19, 23, 29.
+
+\subsection{Eratosthene sieve\index{Eratosthene!sieve}}
+
+\begin{verbatim}
+void nt_primes_eratosthene(unsigned int n, unsigned int *primes)
+\end{verbatim}
+
+\section{Special functions}
+
+Various functions are directly supported in \texttt{ORATIO} as we can
+frequently encounter them, and either implementaion is not trivial,
+either we can try to optimize their efficiency.
+
+\subsection{B-Splines\index{spline}}
+
+Various utility functions are defined to deal with B-splines.
+A B-spline function of degree $p$ is a polynomial function of degree
+$p$, defined on the interval $[a, b]$, that can be expressed as a linear
+combination of $n+1$ basis functions $N_{i,p}(u)$, as follows:
+\begin{equation}
+C(u) = \sum_{i=0}^n P_i N_{i,p}(u) .
+\label{eq:spline_expression}
+\end{equation}
+The coefficients $P_0, P_1, \ldots, P_n$ are called the control
+points, and $u$ is the knot vector $(u_0 = a, u_1, \ldots, u_m
+=b)$.
+The basis functions can be constructed by recurrence on the degree $p$:
+\[
+N_{i, 0} =
+\begin{cases}
+1 & \mbox{if } u \in [u_i, u_{i+1}), \\
+0 & \mbox{otherwise.}
+\end{cases}
+\]
+and
+\[
+N_{i,p} = \frac{u-u_i}{u_{i+p}-u_i} N_{i, p-1}(u) +
+\frac{u_{i+p+1}-u}{u_{i+p+1}-u_{i+1}} N_{i+1, p-1}(u),
+\]
+so that $n$ is equal to $m-p-1$.
+
+There are several types of knot vectors, but one especially convenient
+is the nonperiodic (or clamped or open) knot vector, which has the form 
+\[
+U = \lbrace \underbrace{a,\ldots,a}_{p+1}, u_{p+1}, \ldots, u_{m-p-1},
+\underbrace{b,\ldots,b}_{p+1} \rbrace,
+\]
+that is the first and last knots have multiplicity $p+1$.
+It is possible to show that the function $C(u)$ is $p-1$ continuously
+differentiable.
+
+The implementation proposed in the library is based on Piegl and
+Tiller~\cite{PiegTill96}.
+A space of B-splines is represented with the type \verb|NT_BSpline|, defining the set
+of a basis function and the knot vector.
+A new B-spline space can be created using the function
+\begin{verbatim}
+NT_BSpline *nt_bsplines_new(int p, int nk, double *knots, int inck)
+\end{verbatim}
+where, as before, \verb|p| is the degree of the spline, \verb|nk| is
+the dimension of the knots vector pointed by \verb|knots|, with the
+increment \verb|inck|, which should be set to 1 is the elements or
+consecutive.
+The allocated memory can further be free using
+\begin{verbatim}
+void nt_bsplines_free(NT_BSpline *bspline)
+\end{verbatim}
+This function internally creates the knots vector $U$ (with multiplicity $p$+1 for the extreme points)
+using the following function, that returns the number of components in U, i.e. \verb|nk| plus 2$p$.
+\begin{verbatim}
+int nt_bsplines_knots_create(int p, int nk, double *knots,
+                             int *nU, double **U)
+\end{verbatim}
+The $U$ dimension can also be recovered with the function
+\begin{verbatim}
+int nt_bsplines_knots_dimension(int p, int nk)
+\end{verbatim}
+and a vector of appropriate size can be created with the function
+\begin{verbatim}
+double *nt_bsplines_knots_allocate(int p, int nk)
+\end{verbatim}
+A knot vector with all multiplicities equal to 1, and $n$ components, can be adjusted as an open knot vector with the function below.
+\begin{verbatim}
+int nt_bsplines_knots_initialize(int p, int *n, double **U,
+                                 int realloc)
+\end{verbatim}
+The variable \verb|realloc| has to be set to 1 if a memory reallocation has to be performed, and 0 otherwise. On output, $U$ is the open knot vector, and $n$ is the number of its components, also returned by the function.
+
+The dimension $n$ in \eqref{eq:spline_expression}, 
+given the degree $p$ of the spline basis functions, and the dimension $m+1$ of the knot vector
+with multiplicities set to 1, can be retrieved with the function
+\begin{verbatim}
+int nt_bsplines_space_dimension(int p, int m)
+\end{verbatim}
+
+In order to define a particular B-Spline in such a space, the user has to specify the vector of control
+points $P$.
+The B-Spline can then be evaluated at a point $u$ with the function
+\begin{verbatim}
+double nt_bsplines_evaluate(NT_BSpline *b, double *P,
+                            double u)
+\end{verbatim}
+This function is the short form of the routine below, where \verb|n| is the dimension of the open knot vector \verb|U|, \verb|p| is the spline degree, and \verb|N| is a vector of size at least equal to \verb|p|+1, that will be used to recursively evaluate the basis functions:
+\begin{verbatim}
+double nt_bsplines_curve_point(int n, int p, double u, double *U,
+                               double *P, double *N)
+\end{verbatim}
+
+%\begin{verbatim}
+%int nt_bsplines_find_span(int n, int p, double u, double *U)
+%\end{verbatim}
+
+%\begin{verbatim}
+%void nt_bsplines_basis_func(int i, double u, int p,
+%                            double *U, double *N)
+%\end{verbatim}
+
+%\begin{verbatim}
+%double nt_bsplines_one_basis_func(int p, int m, double *U,
+%                                  int i, double u)
+%\end{verbatim}
+
+\subsection{Power}
+
+\subsubsection{Integer power}
+
+The standard function \verb|pow|, in the mathematical library, only consider $x^y$, where $x$ and $y$ are real (with the restriction that $y$ must be an integer if $x$ is negative.
+When $y$ is some integer, it is possible to simplify the computation
+by only performing multiplications, whose number can be limited.
+The function is similar to \verb|pow| as it takes two arguments, $x$ and $y$, wehere $y$ is restricted to be an integer, and return the value $x^y$:
+\begin{verbatim}
+double nt_ipow(double x, int y)
+\end{verbatim}
+On a Macbook Pro 2.0Ghz, and compiler, gcc-4, our routine appeared
+significantly faster (by a factor of 2 to 3) than the standard
+function for simple tests.
+
+\subsection{Factorial}
+\index{factorial}
+
+The value of $n!$, where $n$ is a nonnegative integer, can be obtained with the function
+\begin{verbatim}
+double nt_factorial(int n)
+\end{verbatim}
+
+\subsubsection{Powers of 2}
+\index{power}
+
+It is possible to precalculate an array containing powers of 2 using
+to function
+\begin{verbatim}
+void nt_two_powers_array(int n, unsigned int *p)
+\end{verbatim}
+Then \verb|p[i]| will be equal to $2^i$, as long a $i$ is not too
+large compared to the integer machine precision.
+
+It is also possible to compute the power of 2 closest but inferior to
+some integer $x$, i.e $i$, such that $2^i <= x$, and for all $j > i$, $2^j > x$.
+\begin{verbatim}
+int nt_two_power_floor(int x)
+\end{verbatim}
+Similarly, the function
+\begin{verbatim}
+int nt_two_power_ceil(int x)
+\end{verbatim}
+returns $i$, where $2^i >= x$, and for all $j < i$, $2^j < x$.
+
+\subsection{Radical inverse}
+\index{radical inverse}
+
+Let $i \in \nit$, and $b \in \nit_0$.
+The $b$-ary expansion of $i$ is
+\[
+i = a_0 + a_1b + \ldots + a_{k-1}b^{k-1},
+\]
+and its radical inverse in base $b$ is
+\[
+\psi_b(i) = a_0b^{-1} + a_1b^{-2} + \ldots + a_{k-1}b^{-k}.
+\]
+The value of $\psi_b(i)$ can be computed using the function
+\begin{verbatim}
+double nt_radical_inverse(int b, int i);
+\end{verbatim}

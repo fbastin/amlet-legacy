@@ -1,0 +1,87 @@
+
+This directory contains the MINPACK-2 test problem collection.
+This version released 11/12/93.
+
+Subroutines are named by the following convention: The first letter in each
+subroutine name dictates arithmetic precision, s for single, d for double.
+The second thru fifth letters describe the application, eg. fic denotes
+the flow in a channel problem. The sixth and seventh letters denote the 
+subroutine action.  
+
+	letters 6 and 7                 action
+        ---------------                 ------
+              fj          function, Jacobian, initial approximation
+              js          Jacobian times vector
+              fg          function, gradient, initial approximation
+              hs          Hessian times vector
+              sp          Jacobian sparsity structure
+              bc          Boundary data
+
+Further information on the MINPACK-2 test problem collection is
+contained in the report
+
+B. M. Averick, R. G. Carter, J. J. More', and G. L. Xue,
+The MINPACK-2 test problem collection,
+Argonne National Laboratory,
+Mathematics and Computer Science Division,
+Preprint MCS-P153-0692, June 1992.
+
+A compressed postscript version of this report is contained in the
+file P153.ps.Z
+
+The main difference between the 1993 version and the 1992 version 
+in tprobs.92 is in execution speed. Character comparisons were replaced
+by integer comparisons; this change often leads to improvements
+by a factor of 2 or more.
+
+Users of the MINPACK-2 test problem collection are requested to send 
+reprints of any paper that uses this software.
+
+Please report any comments and errors to:
+
+        Jorge J. More'
+        Mathematics and Computer Science Division
+        Argonne National Laboratory
+        9700 South Cass Avenue
+        Argonne, IL  60439
+        email: more@mcs.anl.gov
+
+
+============================================================
+
+
+MINPACK-2 test problem collection.
+
+
+dficfj.f dficjs.f dficsp.f --- flow in a channel
+dsfdfj.f dsfdjs.f dsfdsp.f --- swirling flow between disks
+dierfj.f dierjs.f diersp.f --- incompressible elastic rods
+dsfifj.f dsfijs.f dsfisp.f --- solid fule ignition
+dfdcfj.f dfdcjs.f dfdcsp.f --- flow in a driven cavity
+dhhdfj.f                   --- human heart dipole
+dcpffj.f                   --- combustion of propane: full formulation
+dcprfj.f                   --- combustion of propane: reduced formulation
+
+diacfj.f                   --- Isomerization of alpha-pinene: collocation
+diadfj.f                   --- Isomerization of alpha-pinene: direct
+diaofj.f                   --- Isomerization of alpha-pinene: constraints
+diarfj.f                   --- Isomerization of alpha-pinene: residuals
+dctsfj.f                   --- Coating thickness standardization
+dedffj.f                   --- Exponential data fitting
+dgdffj.f                   --- Gaussian data fitting
+datrfj.f                   --- Analysis of thermistor resistance
+daerfj.f                   --- Analysis on an enzyme reaction
+dchqfj.f                   --- Chebychev quadrature
+
+deptfg.f depths.f deptsp.f --- elastic-plastic torsion
+dpjbfg.f dpjbhs.f dpjbsp.f --- pressure distribution in a journal bearing
+         dpjbds.f
+dmsafg.f dmsahs.f dmsasp.f --- minimal surfaces
+dmsabc.f
+dodcfg.f dodchs.f dodcsp.f --- optimal design with composites
+dodcps.f
+dljcfg.f                   --- Lennard-Jones clusters
+dgl1fg.f dgl1hs.f dgl1sp.f --- 1-d Ginzburg-Landau
+dsscfg.f dsschs.f dsscsp.f --- steady-state combustion
+dgl2fg.f dgl2hs.f dgl2sp.f --- 2-d Ginzburg-Landau
+         dgl2co.f

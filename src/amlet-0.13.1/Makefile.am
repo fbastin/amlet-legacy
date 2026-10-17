@@ -1,0 +1,3 @@
+SUBDIRS = amlet src doc test
+
+EXTRA_DIST = AUTHORS COPYING NEWS README TODO KNOWN_BUGS bootstrap

@@ -1,0 +1,31 @@
+# Swissmetro: multinomial logit, specification of Biogeme example 01logit.
+# Data: run swissmetro_to_amlet.py first (see README.md in this directory).
+# Reference (Biogeme): final log-likelihood -5331.252 on 6768 observations.
+
+PROBLEM = "Swissmetro MNL";
+output "results_mnl";
+
+nobs = 6768;
+np = 6768;
+nalt = 3;
+
+# rows per observation: ASC_TRAIN, ASC_CAR, TIME, COST, availability, choice
+nvar = 6;
+iddep = 6;
+censor = 1;
+idcensor = 5;
+
+niter = 200;
+eps = 1e-6;
+
+# ASC_TRAIN, ASC_CAR, B_TIME, B_COST
+btype = { CONSTANT, CONSTANT, CONSTANT, CONSTANT };
+b = { 0.0, 0.0, 0.0, 0.0 };
+
+format = Train96;
+load "swissmetro_train96";
+
+method = MCBTR;
+hessian_approx = false;
+robust = true;
+validation = false;

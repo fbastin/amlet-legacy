@@ -1,0 +1,76 @@
+2008-04-28  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* dssarray.c (ds_sarray_insert): but correction.
+
+	* dsconvert.c (ds_slist_to_queue): minor bug correction.
+
+2006-08-18  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* global: minor version incremented.
+
+	* doc/dstruct.tex (section{Permuations}): start of documentation.
+
+	* dstruct/dssort.c (ds_perm_inv): new function, computing the
+	inverse permutation.
+
+	* dstruct/dssarray.c (ds_sarray_new): comments update.
+
+2006-08-17  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* dstruct/dssort.c (ds_sort_heapsort_with_perm): slight
+	documentation improvment, the implementation now follows the
+	Wikipedia proposition.
+
+2006-06-07  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* dstruct/dslist.h: partial update of the comments.
+
+2006-02-07  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* global: minor version incremented.
+	
+	* testing/test_dstruct.c (main): first packaged testing code (only
+	the beginning...).
+
+	* dstruct/dssort.c (ds_perm_inp): in-place permutation, new function.
+
+2005-08-16  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* dstruct/dslist.c (ds_list_remove): improved list gestion when
+	the suppressed element corresponds the the first element of the
+	list.
+	
+	* dstruct/dslist.c (ds_list_remove_node): improved list gestion
+	when the suppressed element corresponds the the first element of
+	the list.
+
+
+2005-04-12  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* dstruct/dsqueue.c (queue_insert_sorted): bug fix.
+
+	* dstruct/dssort.h: new header file.
+
+	* dstruct/dstree.c (ds_tree_search): bug fix.
+
+	* dstruct/dssarray.c (ds_sarray_new): bug fix.
+
+2003-06-18  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* bootstrap: new bootstrap to help reconfiguration.
+
+2002-12-30  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* dstruct/dslist.c (ds_list_pop): bug fix.
+
+2002-07-19  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* dstruct/dstree.c: first routines for the gestion of a tree with
+	any number of children: ds_tree_new, ds_tree_new_with_root,
+	ds_tree_free, ds_tree_set_root, ds_tree_insert, ds_tree_foreach.
+
+2002-03-06  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* Functions addition:
+	- the main header file is now splitted into several header files;
+	- sorted array routines added.

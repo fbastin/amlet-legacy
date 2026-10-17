@@ -1,0 +1,18 @@
+\section{Installation}
+\label{sec:installation}
+
+\amlet{} is currently distributed in source code only, so that the
+installation process primarily involves the compilation of the various
+source files.
+\amlet{} first requires the installation of the libraries \oratio{} and \ophelia{}. We refer to their respective documentations for details about the corresponding installation procedures.
+
+As for the libraries, you can compile \amlet{} with the commands
+\begin{verbatim}
+./configure
+make
+sudo make install
+\end{verbatim}
+Optimization compilation options can be specified as arguments of \verb|configure|, for instance:
+\begin{verbatim}
+./configure CFLAGS=''-O2'' FFLAGS="-O2"
+\end{verbatim}

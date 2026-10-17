@@ -1,0 +1,302 @@
+\documentclass[11pt]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+
+\usepackage{url}
+
+\usepackage{amsmath, amstext}
+\usepackage{array}
+
+\usepackage{enumerate}
+
+\usepackage{pstricks, pst-node, pst-tree}
+
+\usepackage{graphicx}
+
+\usepackage{auto-pst-pdf}
+
+%\usepackage{draftcopy}
+
+%%%%%%%%%%%%%
+% Softwares %
+%%%%%%%%%%%%%
+\def\amlet{\textsf{AMLET}}
+\def\ophelia{\textsf{OPHELIA}}
+\def\oratio{\textsf{ORATIO}}
+\def\atlas{\textsf{ATLAS}}
+\def\blas{\textsf{BLAS}}
+\def\cblas{\textsf{CBLAS}}
+
+\def\cygwin{\textsf{Cygwin}}
+\def\gauss{\textsf{GAUSS}}
+\def\gcc{\textsf{gcc}}
+\def\gfortran{\textsf{gfortran}}
+\def\gsl{\textsf{GSL}}
+\def\limdep{\textsf{LIMDEP}}
+\def\mingw{\textsf{MinGW}}
+\def\software#1{\textsf{#1}}
+
+\def\amletarch{amlet-0.10.0.tar.gz}
+\def\atlasarch{atlas3.6.0.tar.bz2}
+\def\ctoolsarch{ctools-0.5.4.tar.gz}
+\def\dclarch{dcl-0.1.0.tar.gz}
+\def\dstructarch{dstruct-0.5.3.tar.gz}
+\def\expatarch{expat-2.0.0.tar.gz}
+\def\mocaarch{moca-0.1.1.tar.gz}
+\def\nlparch{nlp-0.5.0.tar.gz}
+\def\ntoolsarch{ntools-0.6.0.tar.gz}
+\def\statarch{stat-0.5.0.tar.gz}
+
+\def\mail{\url{bastin@iro.umontreal.ca}}
+
+%%%%%%%%%
+% Title %
+%%%%%%%%%
+\author{Fabian Bastin\\\mail}
+\title{\amlet{} User's Guide}
+\date{\today}
+
+\def\version{0.13.1}
+
+\usepackage{doc}
+\usepackage{makeidx}
+\newcommand{\Index}[1]{#1\index{#1}}
+\makeindex
+
+\begin{document}
+
+\begin{titlepage}
+{\Huge {\bf AMLET}} 
+
+{\huge Reference manual}
+
+\vspace*{\stretch{1}}
+
+\includegraphics{pst.pdf}
+
+\vspace*{\stretch{1}}
+
+Fabian Bastin\hspace*{\stretch{1}}{\large  \today}
+
+\date{}
+
+\end{titlepage}
+
+\begin{abstract}
+This document explains how to install and use the software
+\amlet{} v\version, designed to estimate multinomial and mixed
+logit models.
+The current documentation is unfortunately far from be completed,
+and is full omissions and possibly errors.
+Any suggestion concerning this document
+and/or the software should be send to \mail.
+
+The latest version of this document, as well as the software itself,
+can be retrieved at the internet address \url{http://amlet.slashbin.net}.
+\end{abstract}
+
+\tableofcontents
+
+\input{intro.tex}
+
+\input{basics}
+
+\input{models}
+
+\include{library}
+
+\chapter{Data files}
+
+\input{data.tex}
+\chapter{Output files}
+
+The estimation process would be useless if no exploitable results were
+delivered to the user.
+The software therefore delivers various files at the of the
+optimisation process.
+Their content if meaning is described below
+
+\section{Results file}
+
+\subsection{Definition}
+
+The result of the estimation process is written in the file defined by
+the command \verb|output| inside the driver file (see
+Section~\ref{sec:driver}).
+If no name is precised, the default name is the name of the driver
+file followed by \verb|.output|.
+
+The main characteristics of the problem are first summarized. It is
+always a good idea to name the problem under consideration, by setting
+the variable \verb|problem| in the driver file, for instance
+\begin{verbatim}
+Problem = ``test'';
+\end{verbatim}
+
+%\section{Format}
+%\label{sec:output_format}
+
+%The results can be written in raw text (default) or in html
+%format. This can be specified with the command line option \verb|-f|,
+%or \verb|--format|. In order to get ouput in html, write
+%\begin{verbatim}
+%amlet -f html ...
+%\end{verbatim}
+%while for text format, type
+%\begin{verbatim}
+%amlet -f raw ...
+%\end{verbatim}
+
+\subsection{Content}
+
+\subsubsection{$t$-statistics}
+
+The $t$-statistics can be computed in various ways, depending on the
+options present in the driver file.
+Each method involves the computation of the information matrix.
+However, due to the sampling errors, robust t-statistics are not
+necessarily better than those obtained with the outer approximation.
+The sampling errors are indeed amplified when computing second-order
+derivatives.
+
+\section{Log file}
+\label{se:logfile}
+
+\amlet{} generates a log file during its execution.
+It will contain detailed information on the process, from
+initialisation tasks to a complete recording of the optimisation
+iterates.
+The default name of the log file is \verb|amlet.log|, but this name
+can be change with the \verb|-o| and \verb|--option| options at the
+start of the software (see Chapter~\ref{ch:launch}).
+
+\appendix\chapter{Example of driver file}
+\label{app:driver}
+
+We illustrate the behaviour of \amlet{} on a 1987 dataset made of 210
+non-business trips between Sydney, Canberra and Melbourne. In this
+dataset, each traveller chooses a mode from four available
+alternatives (plane, car, bus and train). This dataset is described in
+more details in Greene~\cite{Gree03} (Example 19.18), and is available
+at the address\\
+\url{http://www.ats.ucla/stat/limdep/how_to_run_statistical_analysis_.htm}.\\
+A formatted version for \amlet{} is present inside the directory
+\verb|testing| of the \amlet{} source code, as the file
+\verb|model_australia|.
+
+\section{Multinomial logit}
+
+\subsection{Driver file}
+
+\begin{footnotesize}
+\begin{verbatim}
+# Problem name;
+PROBLEM = ``Australia problem'';
+
+# name of the output file
+output "results_mnl";
+
+# number of observations
+nobs = 210;
+np = 210;
+
+# number of aternatives
+nalt = 4;
+
+# number of variables
+nvar = 7;
+
+# number of variable that is the dependant variable (choice)
+iddep = 7;
+
+# 1 if all people do not face nalt alternatives, else 0
+censor = 0;
+
+# maximum number of iterations in the maximization
+niter = 150;
+
+# tolerance for convergence
+eps = 1e-6;
+
+# type of parameters
+btype = { CONSTANT, CONSTANT, CONSTANT,
+          CONSTANT, CONSTANT, CONSTANT };
+# starting point
+b = { 0, 0, 0, 0, 0, 0 };
+
+# data file
+load "model_australia";
+
+method = MCBTR;
+hessian_update = BFGS;
+
+iapprox = false;
+robust = false;
+\end{verbatim}
+\end{footnotesize}
+
+\section{Mixed logit}
+
+\subsection{Driver file}
+
+\begin{verbatim}
+# Problem name;
+PROBLEM = "Australia problem";
+
+# name of the output file
+output "results_mmnl";
+
+# number of observations
+nobs = 210;
+np = 210;
+
+# number of aternatives
+nalt = 4;
+
+# number of variables
+nvar = 7;
+
+# number of variable that is the dependant variable (choice)
+iddep = 7;
+
+# 1 if all people do not face nalt alternatives, else 0
+censor = 0;
+
+# maximum number of iterations in the maximization
+niter = 150;
+
+# tolerance for convergence
+eps = 1e-6;
+
+# type of parameters
+btype = { CONSTANT, CONSTANT, CONSTANT,
+          CONSTANT, NORMAL, CONSTANT };
+# starting point
+b = { 0, 0, 0, 0, 0, 0, 0 };
+
+# data file
+load "model_australia";
+
+method = MCBTRDA;
+hessian_update = BFGS;
+
+iapprox = false;
+robust = true;
+\end{verbatim}
+
+\input{numerical.tex}
+
+\section{Data file problems}
+
+\input{license}
+
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\addcontentsline{toc}{chapter}{Index}
+\begin{small}
+\printindex
+\end{small}
+
+\end{document}

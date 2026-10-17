@@ -1,0 +1,87 @@
+\chapter{Unconstrained optimization}
+
+We consider the general problem
+\begin{equation}
+\min_{x \in \mathcal{R}^n} f(x).
+\label{eq:prob}
+\end{equation}
+
+\section{Linesearch methods}
+
+\subsubsection{BFGS Linesearch}
+
+\section{Trust-region methods}
+
+\subsection{Unconstrained optimization}
+
+\section{Hessian approximations}
+
+While the gradient $\nabla f(x)$ usually must be known accurately in
+minimization algorithms, we often can rely on approximations of the
+Hessian $\nabla^2 f(x)$.
+This is especially appealing since finite or central differences
+require $O(n^2)$ function evaluations, which is prohibitive in many
+applications.
+In this section, we will focus on traditional secant updates, by
+focusing on their definitions, but not on the underlying convergence
+theory.
+We refer the reader interested in such issues to Chapter 8 of Dennis
+and Schnabel~\cite{DennSchn83}.
+
+Reefering to the original problem~\ref{eq:prob}, suppose that we have
+just taken a step from $x_c$ to $x_+$.
+Following Dennis and Schnabel, we consider the Hessian as the
+derivative matrix of the nonlinear equations system $\nabla f(x) =
+0$.
+The \Index{secant} equation for the unconstrained minimization problem
+is
+\begin{equation}
+H_+s_c = y_c,
+\label{eq:secant}
+\end{equation}
+where
+\begin{align*}
+s_c &= x_+-x_c,\\
+y_c &= \nabla f(x_+) - \nabla f(x_c).
+\end{align*}
+Since the Hessian of some function is symmetric, we seek an $H_+$ that
+satisfies $H_+ = H_+^T$ as well as \eqref{eq:secant}.
+The first secant update successfully used in the litterature is the
+symmetric secand update\index{secant}
+
+\subsubsection{BFGS}
+
+A popular approximation is the BFGS (Broyden, Fletcher,
+Goldfarb and Shanno):
+\[
+B_{k+1} = B_k + \frac{y_k y_k^T}{y_k^td_k} + \frac{B_kd_k
+  (B_kd_k)^T}{d_k^TB_kd_k},
+\]
+where $y_k = \nabla_x f(x_{k+1}) - \nabla_x f(x_k)$.
+
+\subsubsection{SR1}
+
+
+\subsection{Trust-region radius update}
+
+\subsubsection{Initial trust-region radius}
+
+Various options again exist to choose the initial trust-region as well
+as to update it.
+
+The initialization strategy can be defined by setting the
+\verb|radius_init| element of the \verb|BTR| structure to the
+desired user's function, or to NULL, if no initialization has to be
+performed.
+In this case, the initial trust-region radius is affected to
+\verb|BTR_INITIAL_DELTA|, defined in the file \verb|defaults.h|.
+
+The default behaviour of the algorithm sets the initial trust-region
+to $\|\nabla f(x_0)\|$, as described by Lin and More~\cite{LinMore99},
+while more advanced strategies exist. On the first iteration, the
+predicted step is used to compute a more reasonable trust-region
+radius, using the formula:
+\[
+\Delta := \min \lbrace \Delta, \| s_0 \| \rbrace.
+\]
+

@@ -1,0 +1,43 @@
+AMLET
+-----
+
+AMLET (Another Mixed Logit Estimation Tool) is a mixed logit
+estimation package, allowing use of real or simulated data.
+
+The behaviour of the software is controlled by means of a driver file,
+that indicates the model form and the data to be used.
+
+Installation procedure
+----------------------
+
+To compile under Linux:
+
+chmod +x bootstrap
+./bootstrap
+./configure
+
+AMLET has been tested on Debian 2.4, SuSE 7.3 and SuSE 8.0. It
+requires a validated version of C compiler. We currently suggest gcc
+2.95, or gcc 3.3.1 or superior.
+
+Optimization of the code
+------------------------
+
+The code resulting from the compilation is very sensitive to the used
+optimization flags. If you know about your machine and
+autoconf/automake principles, please check the configure.in file to
+put adequate optimization flags for your architecture.
+
+Copyright
+---------
+
+Authors: see AUTHORS file.
+Licence: see COPYING file.
+
+Acknoledgements
+---------------
+
+Our thanks goes mainly to Cinzia Cirillo for its helpful contribution
+due to its expertise in mixed logit models. Thanks are also due to the
+Belgian National Fund for Scientific Research for the grant that made
+this work possible.

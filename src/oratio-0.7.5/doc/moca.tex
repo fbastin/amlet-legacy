@@ -1,0 +1,281 @@
+\chapter{Quasi-Monte Carlo techniques}
+
+A quasi-Monte Carlo\index{quasi-Monte Carlo}
+(QMC)\index{QMC|see{quasi-Monte Carlo}} method is an approximation of
+the intregal of $f$ over the $d$-dimensional hypercube defined as
+\begin{equation}
+\int_{[0,1)^d} f(x) dx \approx \frac{1}{n} \sum_{i=1}^{n} f(x_i),
+\label{eq:int_moca}
+\end{equation}
+for carefully chosen points $x_1,\ldots,x_n$ in the unit hypercube
+$[0,1)^d$.
+In a stochastic framework, we can rewrite \eqref{eq:int_moca} as
+\[
+E[f(U_1,\ldots,U_d)] \approx \frac{1}{n} \sum_{i=1}^{n} f(x_i).
+\]
+In contrast with MC method, classical QMC approaches are based on
+carefully designed deterministic point sets.
+In particular, these point sets can be the first $n$ points of an
+infinite sequence, where the points are enumerated in a specific
+order.
+The construction of the points $x_i$ also depends explicitely on the
+problem dimension; in particular, the vectors $x_i$ in $[0,1)^s$
+cannot be constructed by taking sets of $d$ consecutive elements from
+a scalar sequence.
+Moreover, without an upper bound on $s$, QMC methods are inapplicable.
+
+We will enumerate in this chapter the points of a point set $P_n \in
+[0,1)^s$ from 0 to $n-1$, for consistency with the usual notation in
+the QMC litterature.
+Numerous references exist about QMC techniques.
+This chapter is partly inspired from Glasserman~\cite{Glas04},
+Chapter~8, while we strongly limit the discussion as it would
+otherwise leads us outside the scope of this documentation.
+
+\section{Low discrepancy sequences}
+
+As stated before, we want to generate a set of points $x_1$,
+$x_2$,\ldots, $x_N$ covering the unit cube $U^s = [0,1)^S$ as
+uniformly as possible.
+This first requires to formalize the notion of uniformity.
+Given a collection of (Lebesgue) measurable subsets of $[0,1)^d$, the
+\Index{discrepancy} of the point set $\lbrace x_1, \ldots, x_n \rbrace$
+relative to $\mathcal{A}$ is
+\[
+D(x_1, x_2,\ldots, x_n; \mathcal{A}) = \sup_{A \in \mathcal{A}} \left|
+  \frac{\# \lbrace x_i \in A \rbrace}{n} - \mbox{vol}(A) \right|,
+\]
+where $\# \lbrace x_i \in A \rbrace$ denotes the numbers of $x_i$
+contained in $A$ and $\mbox{vol}(A)$ represents the volume (measure)
+of $A$.
+
+Taking $\mathcal{A}$ to be the collection of all rectangles in
+$[0,1)^d$ of the form
+\[
+\prod_{j = 1}^d [u_j, v_h),\quad 0 \leq u_j < v_j \leq 1,
+\]
+we obtain the ordinary (or extreme)discrepancy
+\index{discrepancy!ordinary}\index{discrepancy!extreme|see{ordinary discrepancy}} 
+$D(x_1,\ldots,x_n)$.
+Restricting $\mathcal{A}$ to rectangles of the form
+\[
+\prod_{j = 1}^d [0,u_j),
+\]
+defines the star discrepancy\index{discrepancy!star}
+$D^*(x_1,\ldots,x_n)$.
+From Niederreiter~\cite{Nied92}, Proposition 2.4, we have
+\[
+D^*(x_1,\ldots,x_n) \leq D(x_1,\ldots,x_n) \leq 2^d D^*(x_1,\ldots,x_n),
+\]
+so for fixed $d$, the two quantities have the same order of magnitude.
+
+In dimension $d = 1$, Niederreiter also shows that
+\[
+D^*(x_1,\ldots,x_n) \geq \frac{1}{2n},\quad D(x_1,\ldots,x_n) \geq \frac{1}{n},
+\]
+and that, in both cases, the minimum is attained by
+\[
+x_i = \frac{2i-1}{2n},\ i = 1,\ldots,n.
+\]
+This corresponds to the midpoint rule integration on the unit
+interval.
+
+If we now consider a sequence $x_1$, $x_2$,\ldots of points in
+$[0,1)$, it can be shown (Niederreiter~\cite{Nied92}, p.~24) that
+\[
+D(x_1,\ldots,x_n) \geq D^*(x_1,\ldots,x_n) \geq \frac{c \log n}{n},
+\]
+for infinitely many $n$, with $c$ being a constant.
+
+In dimensions $d \geq 2$, it is widely believed
+(Niederreiter~\cite{Nied92}, p.~32) that any point set $x_1$,
+$x_2$,\ldots, $x_n$ satisfies
+\[
+D^*(x_1,\ldots,x_n) \geq \frac{c_d (\log n)^{d-1}}{n},
+\]
+and the first $n$ elements of any sequence $x_1$, $x_2$,\ldots,
+satisfy
+\[
+D^*(x_1,\ldots,x_n) \geq \frac{c_d' (\log n)^{d}}{n},
+\]
+for constants $c_d$, $c_d'$ depending only on dimension $d$. It is
+therefore customary to use the term ``low-discrepancy'' for methods
+that achieve a start discrepancy of $O((\log n)^d/n)$.
+The logarithmic term can be absorbed into any power of $n$, allowing
+the looser bound $O(1/n^{1-\epsilon})$, for all $\epsilon > 0$.
+
+\subsection{Van der Corput sequences}
+
+While the library does not offer any implementation of Van der Corput
+sequences, it is interesting to review them in order to illustrate
+some general principles.
+
+Denote a base an integer $b \geq 2$. Every positive integer $k$ has a
+unique representation (called its base-$b$ or $b$-ary expandion) as a
+linear combination of nonnegative powers of $b$ with coefficients in
+$\lbrace 0, 1,\ldots, b-1 \rbrace$.
+We can write this as
+\[
+k = \sum_{j = 0}^\infty a_j(k) b^j,
+\]
+with all but finitely many of the coefficient $a_j(k)$ equal to zero.
+The radical inverse function $\psi_b$ maps each $k$ to a point in
+$[0,1)$ by flipping the coefficients of $k$ about the base-$b$
+``decimal'' point to get the base-$b$ fraction $.a_0a_1a_2\ldots$.
+More precisely,
+\[
+\psi_b(k) = \sum_{j = 0}^\infty \frac{a_j(k)}{b^{j+1}}.
+\]
+The base-$b$ Van der Corput sequence is the sequence $0 = \psi_b(0)$,
+$\psi_b(1)$, $\psi_b(2)$,\ldots
+Theorem~3.6 of Niederreiter~\cite{Nied92} shows that all Van der
+Corput sequences are low-discrepancy sequences.
+
+\section{Digital nets}
+
+\begin{align*}
+i & = \sum_{\ell = 0}^{k-1} a_{i,\ell} b^{\ell},\\
+\begin{pmatrix}
+u_{i,j,1} \\ u_{i,j,2} \\ \vdots
+\end{pmatrix} & = C_j
+\begin{pmatrix}
+a_{i,0} \\ a_{i,1} \\ \vdots \\ a_{i,k-1}
+\end{pmatrix} \mod b, \\
+u_{i,j} & = \sum_{\ell = 1}^{\infty} u_{i,j,\ell}b^{-\ell}, \\
+\bu & = (u_{i,1},\ldots,u_{i,t}).
+\end{align*}
+
+\begin{verbatim}
+void moca_XXX_next(XXX, double *x);
+\end{verbatim},
+where \verb|XXX| is \verb|faure|, \verb|halton| or \verb|sobol|.
+
+\subsection{\Index{Halton} sequences}
+
+The Halton sequence is a $d$-dimensional generalization of the Van Der
+Corput sequence.
+Let $(p_1,\ldots,p_d)$ be the $d$ first \index{prime} numbers, then $x_i$ is
+defined by:
+\[
+x_i = (\phi_{p_1}(i),...,\phi_{p_1}(I)),
+\]
+where $\phi_{p_j}(i)$ is the Van der Corput sequence in base $p_j$.
+The Halton sequence satisfies:
+\[
+D_i^*(x) \leq \frac{1}{i} \prod_{j=1}^d \frac{p_j \log(p_j i)}{\log
+  p_j} = O\left( \frac{\log^d(i)}{i} \right),
+\]
+with a constant $C_d = \prod_{k=1}^{d} \frac{p_k-1}{2 \log p_k}$.
+This constant grows to infinity super-exponentially with dimension.
+
+\subsection{Scrambled Halton\index{Halton!scrambled} sequences}
+
+Even though standard Halton sequences perform very well in low
+dimensions, correlation problems have been noted between sequences
+generated from higher primes. For example if we started with the
+primes 17 and 19, the first 17 pairs of points would have perfect
+linear correlation. To avoid this, it is common to drop the first 20
+entries, or some other predetermined number depending on the primes
+chosen. In order to deal with this problem, various other methods have
+been proposed; one of the most prominent solutions is the scrambled
+Halton sequence, which uses permutations of the coefficients used in
+the construction of the standard sequence.
+
+\subsection{\Index{Sobol} sequences}
+
+The Sobol sequence is a $d$-dimensional sequence in base 2 and it is a
+$(t,d)$-sequence. It is one of the most used sequences for Quasi-Monte
+Carlo simulation. It was first developped by Sobol and it has been
+proved to have some additional uniformity property under some
+initialization conditions. Its construction is based on
+primitive polynomials over $\mathcal{F}_2$ and XOR operations.
+ 
+The generator matrices $C_j$ are upper triangular binary matrices with
+1's on the diagonal:
+\[
+C_j = \begin{pmatrix}
+1 & v_{j,1,2} & \ldots & v_{j,1,c} & \ldots \\
+0 & 1 & \ldots & v_{j,2,c} & \ldots \\
+\vdots & 0 & \ddot & \vdots & \ddots \\
+\vdots & \vdots & \ldots & 1 & \ldots
+\end{pmatrix}.
+\]
+
+To determine the integers $m_{j,c}$, for each $j$, we first select a
+primitive polynomial\index{polynomial!primitive} over $\mathcal{F}_2$, say
+\[
+f_j(z) = z^{d_j} + a_{j,1}z^{d_j-1} + \ldots + a_{j,d_j},
+\]
+of degree $d_j$, and choose the first $d_j$ integers
+$m_{j,1},\ldots,m_{j,d_j}$.
+
+\subsection{Faure sequences}
+
+\section{Other techniques}
+
+\subsection{Modified Latin Hypercube}
+
+\section{Randomized quasi-Monte Carlo}
+
+The construction of a Randomized quasi-Monte Carlo (RQMC)
+\index{RQMC|see{quasi-Monte Carlo}}
+\index{quasi-Monte Carlo!randomized}
+point set starts with a QMC point set $P_n = \lbrace u_0,\ldots, u_{n-1}
+\rbrace$, that cover the unit hypercube $[0, 1)^s$ in a very uniform
+way, and randomizes $P_n$ so that after the randomization:
+\begin{enumerate}[(R.1)]
+\item
+it retains its high uniformity when taken as a set and
+\item
+each individual point has the uniform distribution over $[0, 1)^s$.
+\end{enumerate}
+Let $\tilde{P}_n = \lbrace U_0,\ldots,U_{n-1} \rbrace$ denote the randomized
+points.
+The estimator of $\mu = E[f(U)]$ based on one copy of the randomization
+is
+\[
+X_{\mbox{rqmc}} = Q_n = \frac{1}{n} \sum_{i = 0}^{n-1} f(U_i).
+\]
+This randomization is repeated $m$ times, independently, for some positive
+integer $m$, with the same $P_n$.
+Assume that any points taken from different randomizations are
+pairwise independent, in the sense that if $U_i^{(j)}$ is the $i^{\mbox{th}}$
+point from the $j^{\mbox{th}}$ randomization, then
+\begin{enumerate}[(R.3)]
+\item
+for every $i_1$, $i_2$ and $j_1 \ne j_2$, $U^{(j_1)}_{i_1}$ and
+$U^{(j_2)}_{i_2}$ are independent.
+\end{enumerate}
+
+\subsection{Random shifts}
+
+A simple randomization that satisfies Conditions
+(R1) to (R3)with a small amount of change in the point set,
+for an arbitrary point set Pn, are the random shift modulo 1 and the random
+digital shift. They are defined as follows.
+For the random shift modulo 1, we simply generate a single point U uniformly
+over [0, 1)t and add it to each point of Pn, coordinate-wise, modulo 1. In
+the case of a lattice rule, the lattice structure of the points is preserved by the
+
+\section{Transformation to other distributions}
+
+\begin{table}[htbp]
+\begin{tabular}{|c|c|c|}
+\hline
+Description & Symbol & \#parameters \\
+\hline
+\verb|constant| & \verb|CONSTANT| & 1 \\
+\verb|fixed| & \verb|FIXED| & 1 \\
+\verb|bernouilli| & \verb|BERNOUILLI| & 1 \\
+\verb|uniform| & \verb|UNIFORM| & 2 \\
+\verb|normal| & \verb|NORMAL| & 2 \\
+\verb|lognormal| & \verb|LOGNORMAL| & 2 \\
+\verb|triangular| & \verb|TRIANGULAR| & 2 \\
+\verb|truncated_normal| & \verb|TRUNCATED_NORMAL| & 4 \\
+\verb|truncated_normal_b| & \verb|TRUNCATED_NORMAL_B| & 2 \\
+errc & ERRC \\
+\hline
+\end{tabular}
+\label{tab:moca_distribution}
+\caption{Supported distributions}
+\end{table}

@@ -1,0 +1,9 @@
+Error tests
+-----------
+
+The test on alternatives definitions is still uncomplete.
+
+Memory management
+-----------------
+
+Memory management when the program stops for some error should be improved.

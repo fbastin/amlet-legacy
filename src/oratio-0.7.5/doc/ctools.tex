@@ -1,0 +1,111 @@
+\chapter{C Tools}
+
+While standard C libraries are quite comprehensive, it remains useful
+to define some additional utilities in order to alleviate the
+programming work, and sometimes improve the code portability.
+The following set of routines and constants aims to achieve this goal.
+
+\section{Constants}
+
+Various constants are proposed, in order to improve code readibility.
+First, two constants are defined to express boolean conditions:
+\begin{itemize}
+\item
+{\sf TRUE}, defined as 1;
+\item
+{\sf FALSE}, defined as 0.
+\end{itemize}
+Note that the constants names are written in uppercase.
+The number of bits associated to the various basic C types can also be
+designed with the following constants:
+\begin{verbatim}
+CHARBITS
+SHORTBITS
+INTBITS
+LONGBITS
+PTRBITS
+DOUBLEBITS
+FLOATBITS
+\end{verbatim}
+The number of bits used for any other type can be computed with the
+macro
+\begin{verbatim}
+CTOOLS_BITS(type)
+\end{verbatim}
+
+\begin{verbatim}
+typedef void (*C_GENERIC)(void);
+\end{verbatim}
+
+\section{File gestion}
+
+While C standard libraries have functions to read text and binary files, they
+not always easy to use.
+We encapsulate some functions to simplify some basic operations on text files.
+
+\subsection{Reading}
+
+It it possible to read all the content of a text file in one shot, with the
+function
+\begin{verbatim}
+char *c_file_get_text(char *name, long *length)
+\end{verbatim}
+The content is copy, verbatim, into a newly memory allocated characters array,
+and the special character EOF (for end-of-file) is added.
+The variable pointed by length, if length is not NULL, contains the size of this
+character array (include the EOF character).
+
+The current line of the file can be obtained with the function
+\begin{verbatim}
+char *c_file_get_line(FILE *input);
+\end{verbatim}
+The returned string is newly allocated, so it has to be freed by the user.
+
+\subsection{\Index{CSV} format}
+
+A specific file format is the comma-separated
+values\index{comma-separated values|see{CSV}} format, which is useful
+to represent simple data.
+
+If separator is set to \verb|\0|, the constant
+\verb|C_CSV_DEFAULT_SEPARATOR| is used.
+\begin{verbatim}
+C_CSV *c_csv_new(char *separator)
+\end{verbatim}
+\begin{verbatim}
+void c_csv_free(C_CSV *csv)
+\end{verbatim}
+
+\section{Memory management}
+
+\begin{verbatim}
+#define _malloc(type) ((type *)c_malloc(sizeof(type)))
+#define _mallocs(nb, type) ((type *)c_malloc((nb)*sizeof(type)))
+#define _realloc(ptr, type) ((type *)c_realloc(ptr, sizeof(type)))
+#define _reallocs(ptr, nb, type) ((type *)c_realloc(ptr, (nb)*sizeof(type)))
+#define _free(var) (if (var) free(var));
+\end{verbatim}
+
+\section{Timer}
+
+The following functions aim to mesure the elapsed time when executing the program. The timer mesure the CPU time on Unix systems, but due to API differences, the record will be less reliable on Windows systems.
+%  /**
+%   * Initialize the internal timer.
+%   */
+\begin{verbatim}
+void ctools_timer_init()
+\end{verbatim}
+
+%  /**
+%   * Return the time used (in seconds) since the timer initialization.
+%   *
+%   * @param output is a pointer to the file where the time has to recorded,
+%   *    or NULL if it does not to be recorded.
+%   * @param sec contains on output the number of seconds.
+%   * @param ms  contains on output the number of millseconds.
+%   *
+%   * @return the elapsed time in seconds.
+%   */
+\begin{verbatim}
+long ctools_timer(FILE *output, long *sec, long *ms)
+\end{verbatim}

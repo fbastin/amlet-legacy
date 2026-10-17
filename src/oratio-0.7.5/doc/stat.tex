@@ -1,0 +1,1345 @@
+\chapter{Statistical library}
+
+The statistical module provides some basic descriptive statistical utilities, along with functions to computes usual quantities from various distributions. We mainly consider univariate distributions, and currently limit the support of multavariate distributions to the multinormal case.
+There exist various standard textbooks about statistical distributions and tests.
+The implemented distributions mainly follow Evans et al.~\cite{EvanHastPeac93} book.
+The following conventions will be used throughout the chapter.
+Consider a random variate $X$. Each function definition starts with \verb|st_|, as a reference to the library.
+For analytical distributions, it is then followed by the distribution
+name, an underscore, and the function purpose.
+As for generic utilities, only purpose follows.
+The main utilities are:
+\begin{description}
+\item[pdf]: probability distribution fuction\index{probability!distribution} (continuous random distribution);
+\item[pmf]: probability (mass) function (discrete random distribution)\index{probability!mass function};
+\item[cdf]: (cumulative) distribution function\index{distribution function}.
+\[
+ {F_X(x)} = P[X\le x] = \begin{cases}
+  \int_{-\infty}^x f(y)dy & \text{(continuous case)}.
+ \end{cases}
+\]
+We will frequently use $F(x)$ instead of $F_X(x)$, when no confusion
+is present.
+\item[mean]: distribution mean if it exists, or in other terms $E[X]$;
+\item[median]: the quantile that is exceeded with probability 0.5;
+\item[variance]: distribution variance;
+\item[skewness]: distribution skewness $\nu = E[(X-\mu)^3]/\sigma^3$, measuring the asymmetry of the distribution.
+\end{description}
+When we give the density or probability mass function for a range of
+values, it is implicitely assumed to be null outside this range.
+
+\section{Measure and probability theory}
+
+We briefly review some theoretical background.
+Users familiar with statistics and probabilities could skip this section, as it does not deliver any use guidance for the library.
+
+\subsection{Measure space}
+
+A probability measure is a measure define on a measurable space\index{space!measurable} $(\Omega, \mathcal{F})$,
+where $\Omega$ is any collection of objects, and $\mathcal{F}$ is a $\sigma$-algebra of subsets of $\Omega$.
+Formally, a subset $\mathcal{F}$ of $2^{\Omega}$, the power set\index{set!power}
+of a set ${\Omega}$, the set of all subsets of ${\Omega}$, is a
+\Index{$\sigma$-algebra} (also called $\sigma$-field) if it has the
+following properties:
+\begin{enumerate}
+\item
+$\mathcal{F}$ is not empty;
+\item
+$\mathcal{F}$ is closed under complements: if E is in $\mathcal{F}$ then its
+the complement $E^C \overset{def}{=} {\Omega} \backslash E$ is also is $\mathcal{F}$;
+\item
+$\mathcal{F}$ is closed under countable unions.
+\end{enumerate}
+We now equip the measure space with a measure, using the following definition.
+\begin{defn}{measure}
+Given a class $\mathcal{F}$ of subsets of a set $\Omega$, a \Index{measure}
+\[
+ \mu: \mathcal{F} \rightarrow \overline{\rit}
+\]
+is a function having the following properties:
+\begin{enumerate}[(a)]
+ \item $\mu(\emptyset) = 0$.
+ \item for a countable collection $\lbrace A_j \in \mathcal{F},\ j \in \nit \rbrace$ with $A_j \cap A_k = \emptyset$
+  for $j \ne k$, and $\cup_j A_j \in \mathcal{F}$,
+\[
+ \mu \left( \cup_j A_j \right) = \sum_j \mu(A_j). 
+\]
+\end{enumerate}
+\end{defn}
+When $(\Omega, \mathcal{F})$ is a measurable space, the triple $(\Omega, \mathcal{F}, \mu)$ is called a measure space.
+\index{space!measure}
+
+A probability space\index{probability!space} is a triple $(\Omega,
+\mathcal{F}, P)$ consisting of a set $\Omega$ (called the sample space), a $\sigma$-algebra
+$\mathcal{F}$ of subsets of $\Omega$ (these subsets are called
+events), and a measure $P$ on $(\Omega, \mathcal{F})$ such that
+$P(A) \geq 0$ for all $A \in \mathcal{F}$, and
+$P(\Omega)=1$ (called the probability measure).
+
+%\subsection{Measurable function}
+\index{function!measurable}
+If $\Sigma$ is a $\sigma$-algebra over a set $X$ and $\mathcal{T}$ is a $\sigma$-algebra over $Y$, then a function $f: X \rightarrow Y$ is measurable $\Sigma/\mathcal{T}$ if the preimage of every set in $\mathcal{T}$ is in $\Sigma$.
+
+\section{Random variables}
+
+\subsection{Basic properties}
+
+A random variable $X$ is said to be \Index{discrete} if it can take on
+at most a countable number of values $x_1$, $x_2$,\ldots.
+The probability that the discrete random variable $X$ takes on the
+value $x_i$ is given by
+\[
+p(x_o) = P[X=x_i] \mbox{ for } i = 1,2,\ldots
+\]
+and we must have
+\[
+\sum_{i = 1}^{\infty} p(x_i) = 1.
+\]
+$p(x)$ is called the \Index{probability!mass function} for the
+discrete random variable $X$.
+If $I = [a,b]$, where $a$ and $b$ are real numbers such that $a \leq
+b$, then
+\[
+P[X \in I] = \sum_{a \leq x_i \leq b} p(x_i).
+\]
+
+A random variable $X$ is said to be \Index{continuous} it there exists
+a nonnegative function $f(x)$ such that for any set of real numbers
+$B$,
+\[
+P[X \in B] = \int_B f(x)dx \quad \mbox{quad} \quad
+\int_{-\infty}^{\infty} f(x)dx = 1.
+\]
+
+Two probability measures $\tilde{P}$ and $P$ on $(\Omega,
+\mathcal{F})$ are said to be equivalent if, for any event $A \in
+\mathcal{F}$, $P[A] = 0$ if and only if $\tilde{P}[A] = 0$.
+In other terms, $\tilde{P}$ and $P$ are equivalent on $(\Omega,
+\mathcal{F})$ if they have the same set of null events in the
+$\sigma$-field $\mathcal{F}$.
+
+\subsection{Distribution function}
+\index{distribution function}
+\index{cumulative distribution function|see {distribution function}}
+
+The distribution function, or cumulative distribution function, $F_X(x)$ of a random variable $X$ is the function defined as
+\[
+F_X(x) = P[X \leq x]
+\]
+Form its definition, it is easy to that $F_X(x)$ has the following properties
+\begin{enumerate}
+	\item
+	$0 \leq F_X(x) \leq 1 \mbox{ for all } x$.
+	\item
+	$F_X(x)$ is nondecreasing.
+	\item
+	$\lim_{x\rightarrow\infty} F_X(x) = 1$ and $\lim_{x \rightarrow -\infty}
+	= 0$.
+\end{enumerate}
+
+If $X$ is a discrete random variable, the distribution function can be rewritten as
+\[
+F_X(x) = P[X \leq x] = \sum_{x_i \leq x} p(x_i), \mbox{ for all } -\infty < x < \infty.
+\]
+If $X$ is continuous, its distribution is
+\[
+F_X(x) = P[X \leq x] = \int_{-\infty}^x f(x) dx.
+\]
+Moreover, $F_X(X) \sim U[0,1]$.
+Indeed, if $X$ is continuous, $F_{X}(\cdot)$ is continuous and invertible on the support of $X$, and, for any $u \in [0,1]$,
+\[
+P[F_X(X) \leq u] = P\left[X \leq F^{-1}_X(u)\right] = F_X\left(F^{-1}_X(u)\right) = u.
+\]
+The inverse of the distribution function is also called the quantile function.
+In order to deal with discrete random variables, we can introduce the generalized inverse distribution function
+\[
+F_{\bxi}^{-1}(p) = \inf\{x \in \rit \,|\, F_{\bxi(x)} \geq p\}.
+\]
+
+%\subsection{Radon-Nykod\'ym density}
+%\index{density!Radon-Nykod\'ym}
+
+%\begin{defn}[Radon-Nykod\'ym density]
+%The Radon-Nykod\'ym density of $\tilde{P}$ with respect to $P$ is
+%defined as the unique $\mathcal{F}$-measurable random variable $\eta$
+%such that, for any event $A \in \mathcal{F}$,
+%\[
+%\tilde{P}[A] = \int_A \eta dP.
+%\]
+%\end{defn}
+
+
+\subsection{Conditional probability}
+\index{probability!conditional}
+
+The conditional probability of an event A given an event B is defined as
+\[
+P[A|B]=\frac{P[A\cap B]}{P[B]}.
+\]
+The difficulty with this definition arises when the event $B$ is too
+small to have a non-zero probability.
+In order to circumvent this difficulty, we can defined the regular
+conditional probability as follows.
+Let $(\Omega, \mathcal{F}, P)$ be a probability space, and let
+$T:\Omega\rightarrow E$ be a random variable, defined as a
+Borel-measurable function from $\Omega$ to its state space $(E,
+\mathcal E)$.
+Then a regular conditional probability is defined as a function
+$\nu:E \times\mathcal{F} \rightarrow [0,1]$, called a "transition
+probability", where $\nu(x,A)$ is a valid probability measure (in its
+second argument) on $\mathcal{F}$ for all $x\in E$ and a measurable
+function in $E$ (in its first argument) for all $A\in\mathcal F$, such
+that for all $A\in\mathcal F$ and all $B\in\mathcal E$
+\[
+P[A\cap T^{-1}(B)] = \int_B \nu(x,A) \,dP[T^{-1}(x)].
+\]
+The measurable space $(\Omega, \mathcal F)$ is said to have the regular
+conditional probability property if for all probability measures
+$P$ on $(\Omega, \mathcal F)$, all random variables on $(\Omega,
+\mathcal F, P)$ admit a regular conditional probability.
+
+
+\section{Descriptive statistics}
+\index{statistics!descriptive}
+
+Descriptive statistics are used to describe the main features of a
+collection of data in quantitative terms.
+The functions below allow the computation of basic ones: mean, median,
+variance, standard deviation and quantiles.
+All these functions assume that the data are summarized in an
+observations array, and sometimes that this array is sorted in the
+range of interest.
+
+\subsection{Mean, median, variance, standard deviation}
+
+Assume that we have a collection of $n$ observations $x_1,\ldots,x_n$,
+that we denote by $\mathcal{X}$:
+\[
+\mathcal{X} \overset{def}{=} \lbrace x_1,\ldots,x_n \rbrace.
+\]
+The empirical arithmetic \Index{mean} of $\mathcal{X}$ is defined as
+\[
+\overline{x} = \frac{1}{n} \sum_{i = 1}^n x_i.
+\]
+Assume that the observations are stored in the array \verb|obs|,
+using the increment \verb|inc|, and that we consider observations from
+lower index \verb|low| (included) to upper index \verb|up| (excluded).
+These index have to be multiplied by \verb|inc| in order to obtain the
+array position (see Section~\ref{sub:laconventions}).
+The empirical mean $\overline{x}$ can be obtained using the function
+\begin{verbatim}
+double st_mean(double *obs, int inc, int low, int up);
+\end{verbatim}
+It is also possible to update a mean previously computed over \verb|n| observations, given a new observation \verb|obs|, with the function
+\begin{verbatim}
+double st_mean_update(int n, double mean, double obs);
+\end{verbatim}
+The value \verb|mean| is left unchanged by the function, that returns the value of the mean over the \verb|n|+1 observations.
+Similarly, it is possible to remove an observation \verb|obs| from the mean withthe function 
+\begin{verbatim}
+double st_mean_remove(int n, double mean, double obs);
+\end{verbatim}
+
+In probability theory and statistics, a median is described as the
+number separating the higher half of a sample, a population, or a
+probability distribution, from the lower half. The median of a finite
+list of numbers can be found by arranging all the observations from
+lowest value to highest value and picking the middle one. If there is
+an even number of observations, this middle is not well defined.
+The median is then usally computed as
+\[
+\overline{x}_{\mbox{median}} = \frac{x_{n/2}+x_{n/2+1}}{2}.
+\]
+Using the same representation than before, we can compute
+$\overline{x}_{\mbox{median}}$ with the function
+\begin{verbatim}
+double st_median(double *obs, int inc, int low, int up);
+\end{verbatim}
+If you want to restrict the median to an observation present in the
+array, use the following function, that returns the first observation
+in the half upper part of the array.
+\begin{verbatim}
+double st_median_observation(double *obs, int inc, int low, int up);
+\end{verbatim}
+
+The empirical variance
+\[
+\hat{\sigma}^2 = \frac{1}{n-1}\sum_{i=1}^n(x_i - \overline{x})^2,
+\]
+the usual estimator of the variance
+\[
+\Var(X) = E[(X - E[X])^2],
+\]
+can be computed using the function
+\begin{verbatim}
+double st_variance(double mean, double *obs, int inc, int low, int up);
+\end{verbatim}
+Finally, the following function computes both empirical mean and variance.
+\begin{verbatim}
+void st_mean_variance(double *obs, int inc, int low, int up,
+                      double *mean, double *variance);
+\end{verbatim}
+Consider now a second set of observation $\mathcal{Y} \overset{def}{=}
+\lbrace y_1,\ldots,y_n \rbrace$.
+The empirical covariance between the sets $\mathcal{X}$ and
+$\mathcal{Y}$ is given by
+\[
+s_{xy} = \frac{1}{n-1} \sum_{i = 1}^n (x_i-\overline{x})(y_i-\overline{y}),
+\]
+and can be computed with the function
+\begin{verbatim}
+double st_covariance(int n, double *x, int incx, double meanx,
+		     double *y, int incy, double meany,
+		     int l, int u);
+\end{verbatim}
+The parameters $l$ and $u$ correspond to the index of the lowest
+observation to take into consideration, and the of the first
+observation to discard, respectively.
+
+\subsection{Quantiles}
+
+The $k^{th}$ "q"-quantile of the population parameter X can be defined as the value "x" such that:
+\[
+P[X \leq x] \geq p \mbox{ and } P[X \geq x] \geq 1-p,
+\]
+where
+\[
+p = \frac{k}{q},
+\]
+or equivalently,
+\[
+P[X < x] \leq p \mbox{ and } P[X > x] \leq 1-p.
+\]
+
+\section{Estimator properties}
+
+\subsection{Bias}
+
+An estimator $X$ of a fixed but unknown quantity, $\theta$,
+is a random variable of vector who associates to the data value that
+is supposed to approximate the true value $\theta$.
+The \Index{bias} is defined as the difference between the expectation
+of the estimator and the true parameter:
+\[
+B = E[X]-\theta.
+\]
+An estimator is said to be unbiased if $B = 0$.
+This difference can be approximated with the function
+\begin{verbatim}
+double st_bias(double estimator, double value);
+\end{verbatim}
+where \verb|estimator| is $E[X]$ and \verb|value| is
+$\theta$.
+The relative bias is defined by dividing the bias by the value of
+$\theta$, if $\theta \neq 0$:
+\[
+B_{\mbox{rel}} = \frac{E[X]-\theta}{\theta}.
+\]
+It can be approximated with the function
+\begin{verbatim}
+double st_relative_bias(double estimator, double value);
+\end{verbatim}
+If $\theta$ is null, the standard bias is returned.
+
+\subsection{Error}
+
+The mean square error\index{error!mean square} of an estimator is a
+measure that combines the bias and the variance, since both of them usually
+plays a significant rule in the desired accuracy.
+We will denote it by MSE, and formally define it as
+\[
+\MSE[X] = E[(X-\mu)^2] = \beta^2 + \sigma^2.
+\]
+The MSE can be approximated with the function
+\begin{verbatim}
+double st_mse(double bias, double variance)
+\end{verbatim}
+The square root of $\mbox{MSE}[X]$ is called the absolute
+error\index{error!absolute}, and can be obtained with the function
+\begin{verbatim}
+double st_absolute_error(double bias, double variance)
+\end{verbatim}
+The relative error\index{error!relative} of $X$ is
+\begin{eqnarray*}
+ \mbox{RE}[X] = \sqrt{\mbox{MSE}[X]}/|\theta|, \ \mbox{ for } \theta
+ \not= 0,
+\end{eqnarray*}
+and can be approximated with
+\begin{verbatim}
+double st_relative_error(double bias, double variance,
+                         double value)
+\end{verbatim}
+This function returns the absolute error if $\theta = 0$.
+
+$\sqrt{\MSE[X]}$ is a measure of the statistical accuracy of the
+estimator $X$, and $\RE[X]$ is a measure or this prediction relatively
+to the order of $\theta$.
+
+\section{Statistical collectors}
+
+\subsection{Tally}
+\label{sec:tally}
+
+\subsection{TallyStore}
+
+A \verb|TallyStore| is similar to a \verb|Tally| object, described in Section~\ref{sec:tally} except that it stores the ralization values in addition to the usual statistics. Its type is \verb|ST_TallyStore| and an instance can be created with the function
+\begin{verbatim}
+ST_TallyStore *st_tallystore_new()
+\end{verbatim}
+and destroyed using the function
+\begin{verbatim}
+void st_tallystore_free(ST_TallyStore *ts)
+\end{verbatim}
+An observation $x$ can be added with the function
+\begin{verbatim}
+void st_tallystore_add(ST_TallyStore *ts, double x)
+\end{verbatim}
+
+\section{Univariate distributions}
+
+We present below some usual distributions.
+These ones are often linked together, and we invite the reader to consult the webpage \url{http://www.math.wm.edu/~leemis/chart/UDR/UDR.html} for an illustration of these links.
+
+\subsection{Bernouilli distribution}
+\index{distribution!Bernouilli}
+
+\begin{table}[htb]
+\begin{tabularx}{\textwidth}{lX}
+Bernouilli distribution & \verb|bernouilli(p)| \\
+\hline
+Range & $x \in \lbrace 0, 1 \rbrace$. \\
+Probability function & $p(x) = \begin{cases}
+1 - p & \mbox{if } x = 0, \\
+p & \mbox{if } x = 1, \\
+\end{cases}$ \\
+\hline
+\end{tabularx}
+\caption{Bernouilli distribution}
+\end{table}
+
+\subsection{\Index{Cauchy} distribution}
+\index{distribution!Cauchy}
+
+\begin{table}[htb]
+\begin{tabularx}{\textwidth}{ll}
+Cauchy distribution & \verb|cauchy(a,b)| \\
+\hline
+Range & $-\infty < x < \infty$.\\
+Parameters & $a$: location parameter, the median; \\
+& $b$: scale parameter. \\
+Distribution &
+$\frac{1}{2}+\frac{1}{\pi}\mbox{arctan}\left(\frac{x-a}{b}\right)$ \\
+Density &
+$\frac{1}{\pi b \left( 1+ \left( \frac{x-a}{b} \right)^2 \right)}$ \\
+Moments & do not exist.\\
+Median & $a$ \\
+Mode & $a$ \\
+\hline
+\end{tabularx}
+\caption{Cauchy distribution}
+\end{table}
+
+The Cauchy distribution is unimodal and symmetric, with much heavier
+tails than the normal. It has no moments.
+The probability density function is symmetric about $a$, with upper
+and lower quartiles, $a \pm b$.
+The related routines are
+\begin{verbatim}
+double st_cauchy_cdf(double x, double a, double b)
+\end{verbatim}
+\begin{verbatim}
+double st_cauchy_icdf(double u, double a, double b)
+\end{verbatim}
+\begin{verbatim}
+double st_cauchy_median(double a, double b)
+\end{verbatim}
+\begin{verbatim}
+double st_cauchy_mode(double a, double b)
+\end{verbatim}
+
+\subsection{Chi square\index{chi square} distribution}
+\label{sec:chi2}
+
+\begin{tabularx}{\textwidth}{ll}
+$\chi^2$ distribution & \verb|chi2(k)| \\
+\hline
+Parameter & $k$: number of degrees of freedom \\
+Distribution \\
+Density \\
+\end{tabularx}
+
+\begin{verbatim}
+double st_chi2_cdf(double x, double k);
+double st_chi2_pdf(double x, double k);
+double st_chi2_mean(double k)
+double st_chi2_variance(double k)
+\end{verbatim}
+
+\begin{verbatim}
+double st_chi2_skewness(double k);
+\end{verbatim}
+
+\subsection{Erlang distribution}
+\index{distribution!Erlang}
+\label{sec:stat_Erlang}
+
+\begin{table}[htb]
+\begin{tabularx}{\textwidth}{ll}
+Erlang distribution & \verb|erlang(alpha, lambda)| \\
+\hline
+Range & $0 \leq x < \infty$.\\
+Parameters & $\alpha \in \nit_0$: shape parameter; \\
+& $\lambda > 0$: scale parameter. \\
+Distribution & 
+$1 - e^{-\lambda x} \left( \sum_{i = 0}^{\alpha-1} \frac{(\lambda x)^i}{i!} \right)$
+\\
+Density & $\frac{\lambda (\lambda x)^{\alpha-1} e^{-\lambda x}}{(\alpha-1)!}$ \\
+Mean & $\frac{\alpha}{\lambda}$ \\
+Variance & $\frac{\alpha}{\lambda^2}$ \\
+\hline
+\end{tabularx}
+\caption{Erlang distribution}
+\end{table}
+
+The Erlang variate is a gamma variate (see
+Section~\ref{sec:stat_gamma}) with shape parameter $\alpha$ an
+integer; it also corresponds to the sum of $\alpha$ i.i.d. exponential
+variables, with parameter $\lambda$.
+
+\begin{verbatim}
+double st_erlang_pdf(double x, double alpha, double lambda);
+double st_erlang_mean(double alpha, double lambda);
+double st_erlang_stdv(double alpha, double lambda);
+double st_erlang_variance(double alpha, double lambda);
+\end{verbatim}
+
+\subsection{Exponential distribution}
+\index{distribution!exponential}
+\label{sec:stat_exponential}
+
+The exponential distribution is often used to characterize the time between
+two consecutive arrivals in a queue, its parameter giving the arrival
+frequence, and its inverse, the mean time between two arrivals.
+Its main properties are given in Table~\ref{tab:exponential} and is depicted in Figure~\ref{fig:exponential}.
+
+\begin{table}[htb]
+\begin{tabularx}{\textwidth}{ll}
+Exponential distribution & \verb|exponential(lambda)| \\
+\hline
+Range & $0 \leq x < \infty$.\\
+Parameter & $\lambda > 0$: scale parameter. \\
+Distribution &  $1 - e^{-\lambda x}$ \\
+Density & $\lambda e^{-\lambda x}$ \\
+Mean & $\frac{1}{\lambda}$ \\
+Variance & $\frac{1}{\lambda^2}$ \\
+Standard Deviation & $\frac{1}{\lambda}$ \\
+Median & $\frac{\ln(2)}{\lambda}$ \\
+\hline
+\end{tabularx}
+\label{tab:exponential}
+\caption{Exponential distribution}
+\end{table}
+
+\begin{figure}
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <1in,1.4in>
+\setplotarea x from 0 to 3.5, y from 0 to 1.2
+\axis left 
+  ticks withvalues 0 $\lambda/2$ $\lambda$ / at 0 0.5 1 / /
+\axis bottom
+  label {\hbox to 3.8in {\hfill $x$}}
+  ticks withvalues $0$ $1/\lambda$ $2/\lambda$ $3/\lambda$ / 
+    at 0 1 2 3 / /
+\linethickness = .25pt
+\putrule from 1.5 0 to 1.5 .22313
+% \setbox0=\hbox{$\searrow$}%
+\put {$\swarrow$ \raise\ht0\hbox{$f(x)$}} [bl] at 1.5 .22313
+\setquadratic
+\plot
+  0.0  1.0
+  0.15   0.86170  0.30   0.74081 
+  0.50   0.60653  0.75   0.47237 
+  1.0    0.36788  1.25   0.28650 
+  1.5    0.22313  1.75   0.17377
+  2.0    0.13533  2.5    0.08208
+  2.8    0.06081  3.0    0.04979 /
+\endpicture
+\end{center}
+\caption{Exponential distribution}
+\label{fig:exponential}
+\end{figure}
+
+It's the only continuous distribution which is memoryless, that is
+\[
+ P[X > t + x \mid X > t]
+    = {P[X > t+x]\over P[X > t]} 
+    = {e^{-\lambda(t+x)}\over e^{-\lambda t}} 
+    = e^{-\lambda x} = P[X > x].
+\]
+
+\begin{verbatim}
+double st_exponential_pdf(double x, double lambda);
+double st_exponential_cdf(double x, double lambda);
+double st_exponential_icdf(double u, double lambda);
+\end{verbatim}
+
+Its mean, standard deviance, and variance can be computed with the functions
+\begin{verbatim}
+double st_exponential_mean(double lambda);
+double st_exponential_stdv(double lambda);
+double st_exponential_variance(double lambda);
+\end{verbatim}
+
+Its median can be obtained with
+\begin{verbatim}
+double st_exponential_median(double lambda);
+\end{verbatim}
+
+\subsection{Fisher distribution}
+\index{distribution!Fisher}
+
+\begin{verbatim}
+double st_fisher_pdf(double x, double a, double b)
+\end{verbatim}
+
+\begin{verbatim}
+double st_fisher_mean(double x, double a, double b)
+\end{verbatim}
+
+\begin{verbatim}
+double st_fisher_variance(double x, double a, double b)
+\end{verbatim}
+
+\[
+F(x, \lambda) = \begin{cases}
+1-e^{-\lambda x}, & \mbox{for } x \geq 0,\\
+0 & \mbox{otherwise.}
+\end{cases}
+\]
+
+\begin{verbatim}
+double st_exponential_cdf(double x, double lambda);
+\end{verbatim}
+
+\subsection{Gamma distribution}
+\index{distribution!gamma}
+\label{sec:stat_gamma}
+
+\begin{table}[htb]
+\begin{tabularx}{\textwidth}{ll}
+Gamma distribution & \verb|gamma(alpha,lambda)| \\
+\hline
+Range & $0 < x < \infty$.\\
+Parameters & $\alpha > 0$: shape parameter; \\
+& $\lambda > 0$: scale parameter. \\
+Density &
+$\frac{\lambda^\alpha x^{\alpha - 1}e^{-\lambda x}}{\Gamma(\alpha)}$
+\\
+Mean & $\frac{\alpha}{\lambda}$ \\
+Variance & $\frac{alpha}{\lambda^2}$ \\
+\hline
+\end{tabularx}
+\caption{Gamma distribution}
+\end{table}
+
+$\Gamma$ is the \index{gamma!function}, defined by
+\[
+\Gamma (\alpha) = \int_0^\infty x^{\alpha-1} e^{-x} dx.
+\]
+In particular, $\Gamma(n) = (n-1)!$ when $n$ is a positive integer.
+
+The probability distribution function of a variate $X \sim
+\mbox{Gamma}(\alpha, \lambda)$ is given by the function
+\begin{verbatim}
+double st_gamma_pdf(double x, double alpha, double lambda);
+\end{verbatim}
+The cumulative distribution cannot be expressed in closed form but can
+be expressed in terms of the gamma function parameterized in terms of
+the shape parameter $\alpha$ and scale parameter $\lambda$:
+\[
+F(x;\alpha,\theta) = \int_0^x f(u;\alpha,\lambda)\,du =\frac{\gamma(\alpha,
+  \lambda x)}{\Gamma(\alpha)}. 
+\]
+where $\gamma(\alpha, \lambda x)$ is the incomplete gamma
+function\index{gamma!incomplete function}.
+
+The mean, variance, and standard deviation can be obtained with the
+functions
+\begin{verbatim}
+double st_gamma_mean(double alpha, double lambda);
+double st_gamma_variance(double alpha, double lambda);
+double st_gamma_stdv(double alpha, double lambda);
+\end{verbatim}
+Similarly, the mode can be computed with
+\begin{verbatim}
+double st_gamma_mode(double alpha, double lambda);
+\end{verbatim}
+There is no formal expression for the median.
+
+As special cases, $X \sim
+\mbox{Exponential}(\lambda)$\index{exponential distribution} when $\alpha =
+1$ and $X$ follws the chi-square distribution with $2\alpha$ degrees
+of freedom when $2\alpha$ is an integer and $\lambda = 1/2$.
+If $X \sim \mbox{Gamma}(\alpha, \lambda)$, then $1/X \sim
+\mbox{Pearson}-5(\alpha, \lambda)$ and reciprocaly.
+If $X_1 \sim \mbox{Gamma}(\alpha_1, \lambda)$ and $X_2 \sim
+\mbox{Gamma}(\alpha_2, \lambda)$ are independent, then $X_1/(X_1 +
+X_2) \sim \mbox{Beta}(\alpha_1, \alpha_2)$.
+If $X_1,\ldots,X_k$ are independent random variables and $X_i \sim
+\mbox{Gamma}(\alpha_i, \lambda)$ for each $i$, then $X = X_1 + \ldots + X_k
+\sim \mbox{Gamma}(\alpha, \lambda)$ where $\alpha = \alpha_1 + \ldots +
+\alpha_k$.
+In particular, if $X_1,\ldots,X_k$ are independent exponentials with
+the same parameter $\lambda$, then $X = X_1 + \ldots + X_k$ is a
+$\mbox{Gamma}(k, \lambda)$ random variable.
+In this case, the $\mbox{Gamma}(k, \lambda)$ distribution is also called the
+Erlang$(k, \lambda)$ distribution.
+
+The gamma distribution function does not have a closed-form expression
+in general, but if $X \sim \mbox{Erlang}(k, \lambda)$, then $P[X \leq x] =
+P[Y \geq k]$ where $Y \sim \mbox{Poisson}(\lambda x)$\index{Poisson distribution}.
+Therefore, in that case,
+\begin{equation}
+\label{eq:gamma_poisson}
+F(x) = P[X \leq x] = 1 - \sum_{j = 0}^{k-1} \frac{e^{-\lambda x}
+  (\lambda x)^j}{j!},
+\end{equation}
+for $x > 0$.
+This can be used to compute $F(x)$ when $k$ is small.
+Conversely, a good numerical approximation of the gamma distribution
+function can be used to approximate the Poisson distribution function
+via \eqref{eq:gamma_poisson}.
+A good algorithm for generating $\mbox{Gamma}(\alpha, 1)$ random
+variates suffices for generating gammas with arbitrary parameters,
+because $\lambda$ only changes the scale.
+
+\subsection{Geometric distribution}
+\index{distribution!geometric}
+
+\begin{table}[htb]
+\begin{tabularx}{\textwidth}{lX}
+Geometric & \verb|geometric(p)|\\
+\hline
+Range & $x \in \nit$.\\
+Parameter & $p$: Bernouilli probability parameter, $0 < p < 1$. \\
+Distribution function & $1-(1-p)^{x+1}$ \\
+Probability function & $p(1-p)^x$ \\
+Mean & $\frac{1-p}{p}$ \\
+Variance & $\frac{1-p}{p^2}$ \\
+Mode & $0$ \\
+\hline
+\end{tabularx}
+\end{table}
+
+\mbox{}
+
+A geometric random variable corresponds to a sequence of independent Bernouilli trials, where the probability of success at each trial is $p$, stopped when the first success is obtained.
+An important property is the memoryless character: $P[X=y+x | X
+\ge y] = P[X=x]$.
+The probability mass distribution at point $k$ can be evaluated with the function
+\begin{verbatim}
+double st_geometric_pmf(int k, double p)
+\end{verbatim}
+
+An alternative form of the geometric distribution involves the number of trials up to and including the first success.
+The distribution function is then $p(1-p)^{x-1}$, for $x > 0$.
+The geometric distribution is sometimes called the Pascal distribution.\index{distribution!Pascal}.
+
+\subsection{Gumbel distribution}
+\index{distribution!Gumbel}
+
+The Gumbel distribution is also known as the Extreme Value
+distribution (type I), whose main characteristics are given below.
+
+\mbox{}
+
+\noindent
+\begin{tabularx}{\textwidth}{lX}
+Gumbel & \verb|gumbel(a,b)|\\
+\hline
+Range & $-\infty < x < \infty$.\\
+Parameters & $a$: location parameter; \\
+& $b > 0$: scale parameter. \\
+Density & $f(x) = e^{-e^{-\frac{x-a}{b}}}$ \\
+Mean & $a-b\Gamma' (1)$ \\
+Variance & $\frac{b^2\pi^2}{6}$ \\
+Mode & $a$ \\
+Median & $a - b \ln \ln 2$ \\
+\hline
+\end{tabularx}
+
+\mbox{}
+
+$\Gamma'(1)$ is the first derivate of the gamma function $\Gamma(n)$
+with respect to $n$ at $n = 1$, and its value is approximately
+-0.5772156. Its opposite is also known as the
+\Index{Euler constant}, available in the \verb|ntools| module under the
+constant name \verb|M_EULER|.
+
+Gumbel routines rely on the mode $a$ and the scale parameter $b$.
+The cumulative distribution can be evaluated at $x$ with the function
+\begin{verbatim}
+double st_gumbel_cdf(double x, double a, double b)
+\end{verbatim}
+and its inverse can be computed with the function
+\begin{verbatim}
+double st_gumbel_icdf(double u, double a, double b)
+\end{verbatim}
+where $u$ is the value of the cumulative distribution function.
+The probability distribution function can be computed at $x$ with the
+following function.
+\begin{verbatim}
+double st_gumbel_pdf(double x, double a, double b)
+\end{verbatim}
+The mean, variance, median, and mode can be obtained with the functions below.
+\begin{verbatim}
+double st_gumbel_mean(double a, double b)
+double st_gumbel_variance(double a, double b)
+double st_gumbel_mode(double a, double b)
+double st_gumbel_median(double a, double b)
+\end{verbatim}
+
+\subsection{Lognormal distribution\index{lognormal}}
+
+Variate $\boldsymbol{L}: \mu, \sigma$.\\
+Two parametrisations exist for a lognormal variate $\boldsymbol{L}$.
+The lognormal variate with mediam $m$ and with $\sigma$ denoting the
+standard deviation of $\log \boldsymbol{L}$ is expressed by
+$\boldsymbol{L}: m, \sigma$.
+We choose here the alternative parametrisation $\boldsymbol{L}: \mu,
+\sigma$, where $\mu$ is the mean of $\log \boldsymbol{L}$.\\
+Range $0 \leq x < \infty$.
+
+\mbox{}
+
+\noindent
+\begin{tabularx}{\textwidth}{lX}
+Lognormal & \verb|lognormal(mu,sigma)|\\
+\hline
+Distribution &
+$F(x) = \frac{1}{2}+\frac{1}{2}\text{erf}\left( \frac{\log x -
+    \mu}{\sqrt{2\pi}}\right)$
+\\
+Density &
+$f(x) = \frac{1}{x\sigma\sqrt{2\pi}}e^{-\frac{1}{2}\left(\frac{\log x -
+      \mu}{\sigma}\right)^2}$ \\
+\hline
+\end{tabularx}
+
+In the previous relations, \verb|erf| is the error
+function\index{error function} of $x$, defined as
+\[
+\text{erf}(x) = \frac{2}{\sqrt{\pi}} \int_{0}^{x} e^{-t^2} dt.
+\]
+
+\begin{verbatim}
+double st_lognormal_pdf(double x, double mu, double sigma)
+\end{verbatim}
+While we use the above form, we could also rely on the Gaussian
+cumulative function, since it can easily be shown that:
+\[
+F(x) = P[L \leq x] = P\left[ X \sim N(0,1) \leq \frac{log(x)-\mu}{\sigma} \right].
+\]
+
+\begin{verbatim}
+double st_lognormal_cdf(double x, double mu, double sigma);
+\end{verbatim}
+
+\begin{verbatim}
+double st_lognormal_icdf(double q, double mu, double sigma)
+\end{verbatim}
+
+\begin{verbatim}
+double st_lognormal_mean(double mu, double sigma)
+\end{verbatim}
+
+\begin{verbatim}
+double st_lognormal_stdv(double mu, double sigma)
+\end{verbatim}
+
+\begin{verbatim}
+double st_lognormal_variance(double mu, double sigma)
+\end{verbatim}
+
+\begin{center}
+\begin{tabular}{l>{$}l<{$}}
+Mean & e^{\mu+\frac{\sigma^2}{2}} \\
+Variance & e^{2\mu+\sigma^2} \left( e^{\sigma^2}-1 \right) \\
+Mode & e^{\mu-\sigma^2} \\
+Median & e^{\mu}
+\end{tabular}
+\end{center}
+
+\subsection{Normal distribution}
+
+\begin{verbatim}
+double st_gauss_pdf(double x)
+\end{verbatim}
+
+\begin{verbatim}
+double st_normal_pdf(double x, double mu, double sigma)
+\end{verbatim}
+
+\begin{verbatim}
+double st_gaussian_cdf(double x, double *result, double*ccum)
+\end{verbatim}
+If $x$ is large (say greater than 5) and that you want to compute
+\[
+1-\Phi(x) = \int_x^{\infty} f(x) dx,
+\]
+it is highly recommanded that you compute $\Phi(-x)$ as a signigicant
+loss of occuracy can otherwise occur.
+You can also use the following function, computing the complementary
+cumulative distribution function:
+\begin{verbatim}
+double st_gaussian_ccdf(double x, double *result, double*ccum)
+\end{verbatim}
+Marsaglia~\cite{Mars04}
+
+The routine \verb|st_gaussian_icdf| is a C impementation of the method
+proposed by Wichura~\cite{Wich88}.
+This method is accurate to about 16 digits, for $10^{-316} < \min \lbrace p,
+1-p \rbrace$, where $p$ is the point where we want to compute the
+inverse cumultative function.
+If $p$ is very close to unity, a serious loss of significance may be
+incurred in forming $c = 1-p$.
+In this circumstance, the user should, if possible, evaluate $c$
+directly, and evaluate $z_p$ as $-z_c$.
+The function definition is
+\begin{verbatim}
+double st_gaussian_icdf(const double p);
+\end{verbatim}
+The extension to a normal $N(\mu,\sigma)$ is is immediate:
+\begin{verbatim}
+double st_normal_icdf(const double p, double mu, double sigma);
+\end{verbatim}
+
+\begin{verbatim}
+double st_normal_cdf(double x, double mu, double sigma)
+\end{verbatim}
+
+\subsection{Poisson distribution}
+
+\noindent
+Variate $X$: $\lambda$.\\
+Range $0 \leq x < \infty$, $x \in \mathcal{N}$.\\
+Parameter the mean, $\lambda > 0$.
+
+\subsubsection{Probability function}
+\[
+f(x) = P[X=x] = \lambda^x \frac{e^{-\lambda}}{x!}.
+\]
+\begin{verbatim}
+double st_poisson_pmf(int x, double lambda)
+\end{verbatim}
+
+\subsubsection{Cumulative distribution function}
+
+\[
+F(x) = P[X \leq x] = \sum_{i = 0}^x \lambda^i \frac{e^{-\lambda}}{i!}
+\]
+
+\begin{verbatim}
+double st_poisson_cdf(int x, double lambda)
+\end{verbatim}
+
+\subsection{Student distribution}
+
+\noindent
+Variate $X$: $\nu$.
+
+\subsubsection{Cumulative distribution function}
+
+\[
+F(x) = \frac{1}{2} + \frac{x \Gamma((\nu+1)/2 \,_2F_1(1/2,(\nu+1)/2;3/2;-x^2/\nu))}{\sqrt{\pi\nu}\Gamma(\nu/2)},
+\]
+where $_2F_1$ is the hypergeometric function.
+
+\begin{verbatim}
+double st_student_cdf(double x, double nu)
+\end{verbatim}
+
+\subsection{Triangular distribution}\index{triangular!distribution}
+
+The triangular distribution is unimodal, with a continuous probability
+density function that is piecewise linear.
+The pdf is increasing on $[a,c]$ and decreasing on $[c,b]$, and 0 elsewhere.
+
+\begin{figure}[htbp]
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <1in,1in>
+\setplotarea x from 0 to 4, y from 0 to 1
+\axis left
+  label {$f(x)$ \ } /
+\axis bottom
+  label {\hbox to 3.9in {\hfill $x$}} 
+  ticks withvalues $a$ $c$ $b$ / at 0.5 1.5 3.5 / /
+\setlinear
+\plot  0.5    0.0    1.5    0.9     3.5   0 /
+
+\endpicture
+\end{center}
+\label{fig:trigdist}
+\caption{Triangular distribution}
+\end{figure}
+
+\mbox{}
+
+\noindent
+\begin{tabularx}{\textwidth}{lX}
+Triangular & \verb|triangular(a, b, c)|\\
+\hline
+Range & $a \leq x \leq b$.\\
+Parameters & $a$: lower limit. \\
+& $b > a$: upper limit. \\
+& $c$, $a \leq c \leq b$: mode. \\
+Density & $f(x) = 
+\begin{cases}
+\frac{2}{b-a} \frac{x-a}{c-a} & \mbox{ if } a \leq x \leq c, \\
+\frac{2}{b-a} \frac{b-x}{b-c} & \mbox{ if } c \leq x \leq b, \\
+0 & \mbox{ otherwise.}
+\end{cases}$
+\\
+Distribution function & $F(x) =
+\begin{cases}
+\frac{(x-a)^2}{(b-a)(c-a)} & \mbox{ if } a \leq x \leq c, \\
+1-\frac{(b-x)^2}{(b-a)(b-c)} & \mbox{ if } c \leq x \leq b, \\
+0 & \mbox{otherwise.}
+\end{cases}$ \\
+Mean & $\frac{a +b +c}{3}$ \\
+Variance & $\frac{a^2+b^2+c^2-ab-ac-bc}{18}$ \\
+Mode & $c$ \\
+Median & $\begin{cases}
+a+\sqrt{\frac{(b-a)(c-a)}{2}} & \mbox{ if } c \geq \frac{b-a}{2} \\
+b-\sqrt{\frac{(b-a)(b-c)}{2}} & \mbox{ if } c \leq \frac{b-a}{2}
+\end{cases}$
+\\
+\hline
+\end{tabularx}
+
+\mbox{}
+
+The related routines are
+\begin{verbatim}
+double st_triangular_pdf(double x, double a, double b, double c);
+\end{verbatim}
+
+The cumulative distribution can be be evaluated with the function
+\begin{verbatim}
+double st_triangular_cdf(double x, double a, double b, double c);
+\end{verbatim}
+while the $p$-quantile can be obtained with
+\begin{verbatim}
+double st_triangular_icdf(double p, double a, double b, double c);
+\end{verbatim}
+
+\begin{verbatim}
+double st_triangular_mean(double a, double b, double c);
+\end{verbatim}
+\begin{verbatim}
+double st_triangular_variance(double a, double b, double c);
+\end{verbatim}
+\begin{verbatim}
+double st_triangular_stdv(double a, double b, double c);
+\end{verbatim}
+\begin{verbatim}
+double st_triangular_mode(double a, double b, double c);
+\end{verbatim}
+
+\subsection{Uniform distribution}
+
+\noindent
+\begin{tabularx}{\textwidth}{lX}
+Uniform distribution & \verb|uniform(a,b)| \\
+\hline
+Range & $x \in\ ]a, b[$. \\
+Parameters & $a$: lower limit. \\
+& $b > a$: upper limit. \\
+Density function &
+$f(x) =
+\begin{cases}
+\frac{1}{b-a} & \mbox{ if } x \in\ ]a,b[,\\
+0 & \mbox{ otherwise.}
+\end{cases}$\\
+Distribution function &
+$F(x) =
+\begin{cases}
+0 & \mbox{ if } x \leq a,\\
+\frac{x-a}{b-a} & \mbox{ if } x \in\ ]a,b[,\\
+1 & \mbox{ if } x \geq b.
+\end{cases}$\\
+Mean & $\frac{b-a}{2}$ \\
+Variance & $\frac{(b-a)^2}{12}$ \\
+Median & $\frac{b-a}{2}$ \\
+\hline
+\end{tabularx}
+
+\subsubsection{Probability function}
+
+\[
+  f(x) = \frac{1}{b-a} \ \forall\ a < x < b.
+\]
+
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <1in,1in>
+%%  72.27pt = 1in
+\setplotarea x from 0 to 4, y from 0 to 1
+\axis left
+  label {$f(x)$ \ } /
+%  ticks withvalues 0 $2/(b-a)$ / at 0.0 0.9 / /
+\axis bottom
+  label {\hbox to 3.9in {\hfill $x$}} 
+  ticks withvalues $a$  $b$ / at 0.5  3.5 / /
+\setlinear
+\plot  0.5    0.9   3.5   0.9 /
+\endpicture
+\end{center}
+
+\begin{verbatim}
+double st_uniform_pdf(double x, double a, double b)
+\end{verbatim}
+
+\begin{verbatim}
+double st_uniform_mean(double a, double b)
+\end{verbatim}
+
+\begin{verbatim}
+double st_uniform_variance(double a, double b)
+\end{verbatim}
+
+\section{Multivariate distributions}
+
+\subsection{Mutlivariate normal}
+\index{distribution!normal!multivariate}
+\label{sec:st_mvn}
+
+\begin{table}[htb]
+\begin{tabularx}{\textwidth}{lX}
+Multivariate normal distribution & \verb|mvn(mu,Sigma)| \\
+\hline
+Range & $\rit^s$ \\
+Density &
+$f_X(x_1, \dots, x_s)=\frac {1} {(2\pi)^{s/2} \left|\Sigma\right|^{1/2}}
+e^{\left( -\frac{1}{2}( x - \mu)^\top \Sigma^{-1} (x - \mu)\right)}$ \\
+\hline
+\end{tabularx}
+\end{table}
+
+The standard mutlivariate distribution is obtained by fixing the mean
+vector to 0 and the variance-covariance matrix $\Sigma$ to the
+identity matrix $I$.
+Therefore, if $X$ follows a standard multivariate normal distribution,
+we will write $X \sim N(0,I)$.
+The density of $X$ at a point $x$ can be computed with the function
+\begin{verbatim}
+double st_mvn_standard_pdf(int s, double *x, int incx);
+\end{verbatim}
+
+\section{Additional functions}
+
+\subsection{Truncated distributions}
+
+We do not provide explicit truncated distributions, since they can
+easily be obtained from underlying untruncated distributions.
+While it is possible to consider various truncation forms, from the
+definition that a truncated distribution is {\em ``a probability
+  distribution obtained from a given distribution by transfer of
+  probability mass outside a given interval to within this interval''}
+(Ushakov~\cite{Usha01}), we will consider here only the case where the
+mass concentrated outside $[a, b]$ is distributed over the whole of
+[a, b].
+In the case, the cumulative distribution function becomes
+\[
+F_{a,b}(x) = \begin{cases}
+0 & x \leq a, \\
+\frac{F(x)-F(a)}{F(b)-F(a)} & a < x \leq b,\\
+1 & x > b.
+\end{cases}
+\]
+The probabibility function can then be easily deduced to be
+\[
+f_{a,b}(x) =
+\begin{cases}
+\frac{f(x)}{F(b)-F(a)} & x \in [a,b],\\
+0 & \mbox{otherwise.}
+\end{cases}
+\]
+These two functional transformations are implemented by the funcions
+\begin{verbatim}
+double st_truncated_pdf(double fx, double Fmin, double Fmax)
+\end{verbatim}
+and
+\begin{verbatim}
+double st_truncated_cdf(double Fx, double Fmin, double Fmax)
+\end{verbatim}
+where \verb|Fmax| is $F(b)$, \verb|Fmin| is $F(a)$, \verb|fx| is
+$f(x)$ and \verb|Fx| is $F(x)$.
+The returned values are repsectively the cdf and pdf values of the
+truncated distribution.
+
+\subsection{Percentiles}
+
+\subsection{Histogram}
+
+\subsection{Special functions}
+
+\subsubsection{Error function}
+% see http://en.wikipedia.org/wiki/Error_function
+
+The \Index{error function}, also called the Gauss error function, is a function of sigmoid shape, defined as
+\[
+\mbox{erf}(x) = \frac{2}{\sqrt{\pi}} \int_0^x e^{-t^2} dt.
+\]
+
+\subsection{Variable transformation}
+
+\subsubsection{Box-Cox transformation}
+
+The Box-Cox transformation~\cite{BoxCox64} aims to capture non-linear effects of an explanatory variable.
+Given the variable $x$ and the parameter $\lambda$, the transformation is defined as
+\[
+bct(x,\lambda) =
+\begin{cases}
+\frac{x^{\lambda}-1}{\lambda} & \mbox{ if } \lambda \ne 0.\\
+\log x & \mbox{ if } \lambda = 0.
+\end{cases}
+\]
+The transformation can be performed with the function
+\begin{verbatim}
+double st_bct(double x, double lambda)
+\end{verbatim}
+
+\section{Random vectors}
+
+A vector $\bX = (X_1,\dots,X_d)^T$ follows a multivariate law of
+cumulative \Index{distribution function} $F$ if for all
+$\bx = (x_1,\dots,x_d)^T \in \rit^d$, we have
+\[
+  {F}(\bx) = P[\bX\le \bx] = P[X_1\le x_1,\dots, X_d\le x_d].
+\]
+We will also define \Index{marginal} laws by considering the
+cumulative function associated to each component of the random vector:
+\[
+{F_j}(x) = P[X_j\le x],\ j = 1,\ldots d.
+\]
+
+\section{Empirical distribution}
+
+Given the observations ${x_1,\dots,x_n}$, that we sort in ascending
+order to obtain ${x_{(1)},\dots,x_{(n)}}$, the empirical function
+\index{function!empirical} is defined as follows:
+\[
+ {\hat F_n(x)} = {1\over n} \sum_{i=1}^n I[x_i \le x].
+\]
+Figure~\ref{fig:empirical} illustrates it.
+\begin{figure}[htb]
+%%  Empirical distribution function.
+\begin{center}
+\beginpicture
+\setcoordinatesystem units <7pt,10pt>
+\hskip 20pt
+%%  72.27pt = 1in
+\setplotarea x from 0 to 32, y from 0 to 8
+\axis left
+  label {\lines {$\hat F_n(x)$\cr\vbox to 75pt{\hbox to 1pt{\null }} \cr}
+         \hskip 6pt } 
+  ticks length <4pt> withvalues  0  0.5  1 / at  0.0  3.5  7.0 / /
+\axis bottom
+  label {\hbox to 3.6 in {\hfill $x$}}
+  ticks length <2pt> withvalues  
+     0  $x_1$ $x_2$ $x_3$ $x_4$ $x_5$ $x_6$ $x_7$  /
+  at 0.0 6.0   10.5  12.5  17.8  19.6  22.0  25.1  / /
+%\put {$\rightarrow$} at 32.0 0.0 
+%\put {$\uparrow$}    at 0.0 10.0 
+
+\multiput {{\bf .}} at
+%\multiput {$\bullet$} at
+  0.0 0.0
+  6.0 1.0
+ 10.5 2.0
+ 12.5 3.0
+ 18.0 4.0
+ 19.2 5.0
+ 22.0 6.0
+ 25.1 7.0 /
+% 30.9 8.0 /
+\putrule from  0.0 0.0 to  6.0 0.0
+\putrule from  6.0 1.0 to 10.5 1.0
+\putrule from 10.5 2.0 to 12.5 2.0
+\putrule from 12.5 3.0 to 18.0 3.0
+\putrule from 18.0 4.0 to 19.2 4.0
+\putrule from 19.2 5.0 to 22.0 5.0
+\putrule from 22.0 6.0 to 25.1 6.0 
+\putrule from 25.1 7.0 to 32.0 7.0 
+%\putrule from 30.9 8.0 to 34.0 8.0 
+\endpicture
+\end{center}
+\caption{Fonction de répartition empirique}
+\label{fig:empirical}
+\end{figure}
+
+\begin{verbatim}
+void st_export_empirical_cdf(FILE *f, int n, double *v, int sorted)
+\end{verbatim}
+
+\section{Bootstrap}
+
+\section{Goodness-of-fit tests}
+
+\subsection{Test for fit of a distribution}
+
+A classical statistical test is the comparison of numbers of
+observations in some categories to expected number of observations in
+these categories under the assumption that these observations follow a
+given distribution.
+More precisely, let $\{x_1 \ldots x_n\}$ be a sample of $n$
+independent realisations of the random variable $X$.
+Let $L(x)$ be the unknown distribution of $X$.
+The hypothesis $H_0$ is that the data are drawn from a distribution
+$L^*(x)$, i.e.:
+\begin{align*}
+H_0: L(x) &= L^*(x),
+H_1: L(x) &\neq L^*(x).
+\end{align*}
+The reduction in the degrees of freedom is calculated as $p=s+1$,
+where $s$ is the number of parameters used in fitting the
+distribution.
+Therefore, there will be $(n - p)$ degrees of freedom, where $n$ is
+the number of categories. The value of the test-statistic is
+\begin{equation}
+  X^2 = \sum_{i=1}^{n} {(O_i - E_i)^2 \over E_i},
+\label{eq:chi_stat}
+\end{equation}
+where
+\begin{itemize}
+\item
+$O_i$ = an observed frequency;
+\item
+$E_i$ = an expected (theoretical) frequency, asserted by the null
+hypothesis;
+\item
+$n$ = the number of possible outcomes of each event (i.e. the number
+of categories).
+\end{itemize}
+Under $H_0$, we can consider that $E_i - O_i$ is normally distributed.
+$X^2$ tends to a $\chi ^2$ distribution whi $\nu = n-p$ degrees of freedom.
+We accept the null hypothesis $H_0$ at level $\alpha$ if the
+probability that a $\chi^2$ random variable falls in the interval
+$(0,\chi^2_{\nu,1-\alpha})$ is at least eqault to $1 - \alpha$.
+We reject $H_0$ if the value of $X^2$ is greater than
+$\chi^2_{\nu,1-\alpha}$.
+
+\begin{verbatim}
+int st_pearson_chi_test(int n, double *obs, int ldo, double *exp, int lde,
+                        double alpha, double *x2, int df);
+\end{verbatim}
+where $n$ is the number of categories, \verb|obs| and \verb|exp| are
+the numbers of observations and expected numbers for each category;
+\verb|obs| and \verb|exp| are tabulare with \verb|ldo| and \verb|lde|
+increments respectively. $\alpha$ is the lest level, and \verb|df| the
+number of degrees of freedom. On output, $x2$ contains the value of
+the statistic \ref{eq:chi_stat}.
+The function returns 0 if we reject $H_0$, 1 otherwise.

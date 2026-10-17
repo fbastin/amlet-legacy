@@ -1,0 +1,126 @@
+\chapter{Introduction}
+
+\section{What is \amlet?}
+
+\amlet{} is an acronym for \underline{A}nother \underline{M}ixed
+\underline{L}ogit \underline{E}stimation \underline{T}ool.
+As its name suggests, it is a software mainly designed to estimate various
+kind of mixed logit models.
+It can be used either as a standalone program, either as a C library.
+\amlet{} is an open source project (see Appendix~\ref{sec:license};
+the last version can be downloaded at the address
+\url{http://amlet.slashbin.net}.
+
+\section{Supported systems}
+
+\amlet{} development is primarily Unix-oriented, while the software
+ can also be used on Windows systems, with some technical
+ limitations\footnote{In particular, the timings will be less
+ accurate.}.
+Most of the development and tests have been performed on Linux systems.
+The software should also runs without major trouble on BSD systems, or Mac OS X.
+Windows users should be able to compile AMLET using MinGW, available at \url{http://www.mingw.org}, at the expense of some loss of performance.
+For Windows users, it is recommended to install Linux in a virtual machine, using for instance VirtualBox, available for free at \url{http://www.virtualbox.org}. See Section~\ref{sec:Windows} for more details.
+
+Unless otherwise stated, we will assume in this document that you
+work on a Unix-like system; the explications are still valid for the
+other environment. We also assume that you use \verb|bash| as your
+shell, since it is the default choice for major Linux distributions,
+as well as \verb|mingw|; some users could have to slighty adapt the
+explanation if they use csh shells, and its variants.
+If you do not know what is your current shell, you probably already
+use \verb|bash|.
+It can also be determined by reading the file \verb|/etc/password|.
+
+\section{Requirements}
+
+\subsection{Hardware requirements}
+
+There is no formal minimum requirements for \amlet{}, since they
+crucially depend on the size of dataset size and the number of random
+variables that are present in the model.
+We however recommand a minimum of 1Go RAM, knowing that the available memory constrains the achievable accuracy.
+\amlet{} should work smoothly on any modern computer.
+
+\subsection{Software requirements}
+
+Various software elements are required in order to correctly install
+\amlet{}, as well as some optional elements, if you want to
+install additional tools along with the main package.
+
+\begin{description}
+\item[C compiler]
+We recommand to use the compiler delivered with your
+computer; on Linux-machine and mingw, this is typically the GNU C
+Compiler (\gcc).
+\item[Compilers]
+The code is mainly written in C and C++, but contains portions written in Fortran, mainly imported from LAPACK.
+Consequently, both a C and a Fortran compilers are requires; the code has been successfully tested with \verb|gcc| and \verb|gfortran|, available in any Linux distribution.
+\item[Unix shell]
+In order to easily perform the installation, autotools
+(\textsf{autoconf}, \textsf{automake}, \textsf{libtoolize}) are highly
+recommanded.
+The detailed installation process can however often be pursued
+without them.
+If you are using Mac OS X, you can experience problems with
+\verb|libtoolize|. Using the development environment proposed in the
+third-party software collections fink
+(\url{http://www.finkproject.org/}) can resolve this issue.
+\item[Lex, Yacc]
+Driver parsing with \amlet{} requires standard lexical analyser and parser.
+\amlet{} requires \textsf{flex}, and \textsf{yacc} or \textsf{bison}.
+\item[Perl]
+Some optional analysis tools provided with \amlet{} rely on Perl scripting
+language.
+\item[Oratio, Ophelia]
+These are two companion libraries, that have to be installed first and can be downloaded on \url{http://amlet.slashbin.net}.
+\end{description}
+
+\subsection{Windows users}
+\label{sec:Windows}
+
+The most convenient solution is to install Linux on a Virtual Machine, using for instance VirtualBox (\url{http://www.virtualbox.org}).
+A virtual machine allows to emulate a PC, allowing the installation of a complete operating system.
+There are of course some overheads in executation time, as it means that one operating system is running inside another one, but a Virtual Machine can be easily uninstalled if no more needed, without affecting the host Operating System.
+It is therefore the easiest solution.
+
+A more complex solution is to install \mingw{}, standing for Minimal Gnu system for Windows.
+\mingw{} can be download at the address \url{http://www.mingw.org}.
+Pay attention to install all the development packages during the installation, in order to have to required tools to compile the code.
+It is also a good idea to install a correct text editor. Various
+editors are available under Windows: \textsf{Vim}, \textsf{Emacs},
+\textsf{Xemacs}.
+
+\section{Acknowledgements}
+
+Like for many projects, the development of \amlet{} has only been
+possible with the help of many people.
+First of all, I would like to express my gratitude so Cinzia Cirillo,
+for the hard work that we have achieved together. This software could
+not has been written without her advices, based on her huge experience
+of the practical aspects of the problem. I would also like to thank
+Philippe L. Toint, who was my Ph.D. advisor during four years, and
+teached me the most important aspects of nonlinear
+programming. Finally, my thanks go to Belgian National Fund for
+Scientific Research, who gave me the grant that made the initial work
+on this project possible.
+The development of \amlet{} has been
+initiated at the University of Namur (Belgium), continued in the
+Imperial College London (United Kingdom) and Cerfacs (Toulouse, France).
+I pursue it during my (very limited) free time at the University of Montreal (Canada).
+
+The documentation of a software is always a difficult exercise. I
+would therefore like to thank anyone that helped us to improve the
+present document. In particular, I would like to express my
+gratitude to Roberta ``Speedy'' Pellican\`o for her suggestions,
+during my study stay in the University Frederico II of Naples, Italy
+(June 2004), and Jasper Knockaert.
+The software has also benefit from many suggestions during its
+development. The following list is certainly far from be complete; my
+apologies go to each one I have forgotten. I will cite here (by
+alphabetical order) Michel Bierlaire and St\'e{}phane Hess.
+
+Finally, the painting reproduced the front cover is due to Pieter van
+Steenwyck, under the name {\sl Ars longa, vitta brevis}.
+
+\input{install.tex}

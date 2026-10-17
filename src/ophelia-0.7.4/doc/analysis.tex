@@ -1,0 +1,75 @@
+\chapter{Basic analysis}
+
+\section{Banach spaces}
+
+A metric space\index{space!metric} is an ordered pair $(M,d)$ where
+$M$ is a set and $d$ is a metric on $M$, that is, a function
+\[
+    d : M \times M \rightarrow \R
+\]
+such that, for any $x$, $y$ and $z$ in $M$,
+\begin{enumerate}
+\item
+$d(x, y) \geq 0$;
+\item
+$d(x, y) = 0$   if and only if   $x = y$;
+\item
+$d(x, y) = d(y, x)$;
+\item
+$d(x, z) \leq d(x, y) + d(y, z)$.
+\end{enumerate}
+The first condition follows from the other three, since:
+\[
+    2d(x, y) = d(x, y) + d(y, x) \geq d(x,x) = 0.
+\]
+
+A more compact but equivalent definition replaces the above four
+axioms by the following two:
+\begin{enumerate}
+\item
+$d(x, y) = 0$  if and only if $x = y$;
+\item
+$d(x, z) \leq d(x, y) + d(z, y)$.
+\end{enumerate}
+The function $d$ is also called \Index{distance} function or simply
+distance.
+Often $d$ is omitted and one just writes $M$ for a metric space if it
+is clear from the context what metric is used.
+
+A metric space $M$ is said to be complete\index{space!complete} (or
+Cauchy) if every Cauchy sequence of points in $M$ has a limit that is
+also in $M$ or alternatively if every Cauchy sequence in $M$ converges in
+$M$.
+
+A seminormed vector space\index{space!seminormed} is a pair $(V,p)$
+where $V$ is a vector space and $p$ a seminorm on $V$.
+A normed vector space\index{space!normed} is a pair $(V,\|\cdot\|)$ where
+$V$ is a vector space and $\|\cdot\|$ a norm on $V$.
+We often omit $p$ or $\|\cdot\|$ and just write $V$ for a space if it is
+clear from the context what (semi)norm we are using.
+
+A Banach space\index{space!Banach} is complete normed vector space.
+The familiar Euclidean spaces $\R^n$ and $\C^n$, where the Euclidean
+norm of $x = (x_1,\ldots, x_n)$ is given by
+\[
+\|x\| = \sqrt{\sum_{i=1}^n x_i^2},
+\]
+are Banach spaces.
+
+\section{Topological spaces}
+
+A topological space\index{space!topological} is a set $X$ together with
+$T$, a collection of subsets of $X$, satisfying the following axioms:
+\begin{enumerate}
+\item
+The empty set and $X$ are in $T$.
+\item
+The union of any collection of sets in $T$ is also in $T$.
+\item
+The intersection of any finite collection of sets in $T$ is also in $T$.
+\end{enumerate}
+A topological space is called separable\index{space!separable} if it
+contains a countable dense subset; that is, there exists a sequence
+$\brace x_n \rbrace_{n=1}^{\infty}$ of elements of the space such that
+every nonempty open subset of the space contains at least one element
+of the sequence.

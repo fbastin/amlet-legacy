@@ -1,0 +1,360 @@
+2010-07-26  Fabian Bastin  <bastin@Tricia>
+
+	* amlet/choice.c (amlet_error_choice): the function has been moved.
+
+2008-07-16  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* src/amlet_timer.c (amlet_get_timer): some code cleaning.
+
+	* src/amlet.c (main): some code cleaning.
+
+2007-10-28  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* amlet/amlet_stopping.c (amlet_btrda_stopping_test): revision of the stopping test.
+
+2007-08-09  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* amlet/nonparametric.c: comment update.
+
+2006-10-13  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* configure.in (PERLCC): modification of the Perl detection in order to allow AMLET compilation when the perl library is absent, while utilities in tools directory still require it.
+
+2006-10-02  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* bootstrap: test if automake is installed.
+
+2006-08-31  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/error.h: new structure.
+
+	* amlet/panel.c (amlet_read_repetitions): function revision.
+	(amlet_check_repetitions): this function replace the function
+	amlet_error_repetitions, has is now located in the file panel.c.
+
+2006-08-08  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/amlet.c (main): remove call to amlet_output_xml, and place
+	a call to amlet_output.
+
+2006-07-25  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/optimization.c (amlet_initial_point): call
+	dcl_ml_starting_point if no starting point has been defined by the
+	user.
+	(amlet_init_btr): small code simplifications (redundacies detected
+	with nlp_btr_init).
+
+2006-06-14  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/amlet_analysis.c (special_likelihood_functions): comments
+	update.
+
+2006-06-09  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/likelihood.h: comments update.
+
+2006-06-07  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/amlet_analysis.c (amlet_information_matrix): small
+	simplification for working vectors.
+
+2006-06-06  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/nonparametric.c: new file.
+
+	* amlet/nonparametric.h: new file.
+
+	* amlet/sampling.h: deletion of the prototype of an inexistant
+	function.
+
+2005-11-08  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/amlet_analysis.c (constant_md): the reference to rint has
+	been removed, since it is not necessary (this function corresponds
+	to the BSD 4.3 standard), but it should be preferred to the
+	function round since some of popular C compilers do not support
+	the C99 standard.
+
+2005-10-19  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/amlet_btr.c (model_amlet_btr_da): minor (conception) bug
+	correction: the model_decrease should not be updated since there
+	is not step recomputation. In practice, we do not have observed
+	problems, but it could happen theoretically.
+
+2005-07-07  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/help.c (help): light revision.
+
+2005-07-05  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/driver_parser.y: the affectation of an array element a
+	stack element has been revised as it was faulty with Portland C
+	compiler.
+
+2005-06-16  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/amlet_analysis.c (amlet_test_t): we now use the student
+	function instead of the normal approximation for the generation of
+	t-values.
+
+2005-03-25  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* amlet/optimization.c (amlet_initial_point): bug correction: the
+	starting point is now correctly read when integer components are
+	present
+
+2004-11-30  Fabian Bastin  <fbas@cvfbastin.cv.ic.ac.uk>
+
+	* amlet/Train99.c (import_train_1999): bug correction for return value
+
+2004-11-23  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/error.c (amlet_reject_observations): the function now
+	returns the number of rejected observations
+
+	* amlet/io.c (amlet_error): function previously defined in error.c
+
+	* amlet/Train96.c (import_train_1996): the check about
+	availability of choice has been removed, since the test is made in
+	another part of the program
+
+2004-11-20  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/Makefile.am (amlet_SOURCES): amlet_matrix.h and
+	amlet_matrix.c have been suppressed
+
+	* amlet/likelihood.c: the variance computation has been revised,
+	allowing memory saving in BTRDA, and making memory consumption
+	between BTR and BTRDA similar
+
+2004-11-03  Fabian Bastin  <fbas@cvsh2home.cv.ic.ac.uk>
+
+	* amlet/optimization.c (amlet_initial_point): new function; the
+	initial starting point has now be set to the null vector, unless
+	otherwise specified in the driver file
+
+	* amlet/error.c (amlet_error): new function (still basic)
+
+	* amlet/driver_parser.y: the affectation of a set to a variable
+	has been rewritten
+
+2004-10-29  Fabian Bastin  <fbas@cvsh2home.cv.ic.ac.uk>
+
+	* amlet/log.h: suppressed file; its contents has been moved into
+	the header file amlet.h
+
+	* amlet/driver.c (driver_array_real): suppressed function
+
+2004-10-27  Fabian Bastin  <fbas@cvsh2home.cv.ic.ac.uk>
+
+	* amlet/qmc_sobol.c: completed references; xor operation now
+	performed with the C operator
+
+2004-10-25  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/validation.c (validate_results): minor bug correction
+
+	* amlet/halton.c (halton_generate_sample): scrambled Halton
+	sequences are now available
+
+2004-10-23  Fabian Bastin  <fbas@cvsh2home.cv.ic.ac.uk>
+
+	* amlet/halton.c (halton_generate_sample): HALTON sequences are
+	now supported
+
+2004-10-21  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/random_variables.h: FIXED variables now supported
+
+2004-09-28  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/optimization.c (amlet_init_btr): bug correction for
+	tolerance initialization
+
+	* amlet/Makefile.am (amlet_SOURCES): add getopt.h getopt_long.c
+	from the OpenBSD project (and not the GNU version, for licences
+	consideration). This makes the overall code less dependent of the
+	platform.
+
+	* amlet/amlet.c (parse_args): bug correction for command-line
+	arguments parsing
+
+2004-08-20  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/driver.c (driver_init_defaults): the default random number
+	generator is now MT19937
+
+2004-08-11  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/amlet_xml.h: new file
+
+	* amlet/amlet_xml.c: new file
+
+2004-08-10  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/sobol.c: add basic support for Sobol quasi-Monte Carlo draws
+
+2004-07-23  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/sampling.c: add support for randomly shifted and shuffled
+	uniform vectors
+
+	* amlet/amlet.c (main): bug correction for distribution detection
+
+2004-07-19  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/amlet_analysis.c (likelihood_constant): this function now
+	follows the definition given in Ben-Akiva and Lerman
+
+2004-07-09  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/likelihood.c (compute_utilities): bug correction for
+	safe mode
+
+2004-07-07  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/amlet.c (main): panel data now correctly supported in
+	multinomial logit models.
+
+2004-06-29  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/amlet_data.c: previously amlet/format.c
+
+	* amlet/amlet_data.h: previously amlet/format.h
+
+2004-06-28  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/driver.c (driver_check_array_pos): new check in the parsing
+
+2004-06-25  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/amlet_btr.c (amlet_btr_stopping_test): relaxed stopping
+	criteria
+
+2004-06-19  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/random_variables.c: add support for uniform and triangular
+	distribution for parameters estimation, like in Train's routines
+
+2004-06-18  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* amlet/likelihood.c (compute_utilities): revised safeguard mode
+
+2004-06-15  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/error.c (amlet_error_choice): new checking function: verify
+	that choices made by individuals correspond to available
+	alternatives
+
+	* src/Train99.c (import_train_1999): important bug correction: now
+	correctly set choices
+
+2004-06-13  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/likelihood.c (compute_prob_mixed): panel support (basic
+	assumption: the same individual has always the same behaviour; the
+	only variation is inside the population)
+
+	* src/amlet_timer.c (ITIMER_AMLET): minor bug correction:
+	ITIMER_REAL now always used under Cygwin, in order to give more
+	correct timings under operating systems such as Microsoft Windows
+	XP (note however that if Cygwin is not used, the timings should
+	probably be still uncorrect!)
+
+	* src/amlet.c (main): minor bug correction: niter is now correctly
+	set for multinomial models
+
+	* global: version number set to 0.8.0
+
+2004-06-08  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/likelihood.c: error-component (normally distributed) support
+
+2004-05-27  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/io.c (amlet_output_results): correction of the standard
+	deviation output
+
+2004-05-26  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/amlet_analysis.c: formely file mcstats.c
+	(special_likelihood_functions): new function, which contains the
+	code used to compute ll0 and llc
+
+	* src/amlet_analysis.h: formely file mcstats.h
+
+2004-05-25  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/likelihood.c: revision of the safe mode, that is now much
+	more robust
+
+2003-10-27  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/likelihood.c: add safeguards
+
+2003-09-22  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/driver_parser.y: the parser can now deal with real values
+	entered as integers.
+
+2003-06-12  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* configure.in: MiLoLab is now called AMLET (Another Mixed Logit
+	Estimation Tool); this is the official, published name.
+
+2003-05-16  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/milolab.c: allow scaling of utility functions.
+
+2003-05-15  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/likelihood.c (sldag): safeguard mode set.
+
+	* src/milolab_timer.c (milolab_get_timer): bug correction in the
+	gestion of microseconds.
+
+2003-05-13  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/likelihood.c: new allow unavailability of some alternatives
+	for an individual i.
+
+	* src/milolab_btr.c (model_milolab_btr_da): important bug correction.
+
+2003-05-12  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/milolab_btr.c (milolab_btr_stopping_test): allow stopping
+	test even if R_max not reached, in the case that accuracy is very good.
+
+2003-05-08  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/mcstats.c (mc_information): now compute the inverse without
+	assume positive definitness.
+
+2003-04-23  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/milolab_timer.c (milolab_init_timer): light correction
+
+2003-04-22  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/milolab.c (main): bug correction in memory management when
+	memcheap mode is activated.
+
+2003-01-09  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/default.h: new header file for default values.
+
+2002-12-16  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/mcsrch.c (mcsrch): dot product is now computed by cblas; it
+	fixes also an index problem.
+
+2002-12-09  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/observations.c (generate_observations): take indications
+	from the driver file into account.
+
+2002-10-01  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* global: initial version

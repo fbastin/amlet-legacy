@@ -1,0 +1,120 @@
+# Problem name;
+
+PROBLEM = "Demo Panel";
+
+@ Driver file for mixed logit or multinomial logit model calibration.
+
+output "panel_btrda.output";
+
+# number of individuals
+np = 2500;
+# number of observations
+nobs = 5000;
+# maximum number of alternatives represented in any choice situation
+nalt = 5;
+
+# number of variables (number of variables to estimate plus dependant
+# variable - choice - plus atlernatives presences, if necessary,
+# otherwise not added).
+nvar = 6;
+
+# number of variable that is the dependant variable (choice)
+#iddep = 7;
+
+# 1 if all people do not face nalt alternatives, else 0.
+censor = 1;
+
+# if censor: the number of the variable which identifies which
+# alternatives each person faces.
+idcensor = 6;
+
+# maximum number of iterations in the maximization
+niter = 150;
+
+# tolerance for convergence
+eps = 1e-5;
+
+ bgentype = { NORMAL, NORMAL,NORMAL,NORMAL,LOGNORMAL };
+ bgen = { 0.5, 1, 0.5, 1, 0.5, 1, 0.5, 1, 0.5, 1 };
+# type of parameters
+#btype = { CONSTANT, CONSTANT, CONSTANT, CONSTANT, CONSTANT };
+btype = { NORMAL, NORMAL,NORMAL,NORMAL, LOGNORMAL };
+# starting values for the parameters
+# b = { 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1 };
+
+# Random numbers generator
+# seed for the random generator; if omitted or less or equal to 0, a
+# random seed is created
+#seed1 = 26056320;
+seed1 = 2;
+
+
+# draws set to 1 (or new) for new draws, 0 (or old) for previously
+# generated draws. Default is draws = 1
+#draws = new;
+#draws = old;
+
+#drawsname = "draws";
+
+sampling = monte_carlo;
+#sampling = halton;
+#sampling = sobol;
+#randomization = owen_faure_tezuka;
+nrep = 1000;
+
+# be careful: MCBTRDA method is incompatible with varrep set to true!
+varrep = false;
+
+# indicate the observations source
+# load allows to get observations from a file
+# generate implies the generation of observations
+
+###############################################################################
+#
+# DATA
+#
+###############################################################################
+
+format = Train99;
+
+load "essai";
+#generate "essai";
+
+#alttypes[0] = { NORMAL, NORMAL, NORMAL,NORMAL,NORMAL,
+#		NORMAL, NORMAL, NORMAL, NORMAL, NORMAL};
+#altvalues[0] = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0,
+#		 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+#alttypes[1] = { NORMAL, NORMAL,NORMAL, NORMAL,NORMAL,
+#		NORMAL, NORMAL, NORMAL, NORMAL, NORMAL};
+#altvalues[1] = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0,
+#		 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+#alttypes[2] = { NORMAL, NORMAL, NORMAL, NORMAL, NORMAL,
+#		NORMAL, NORMAL, NORMAL, NORMAL, NORMAL};
+#altvalues[2] = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0,
+#		 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+#alttypes[3] = { NORMAL, NORMAL,NORMAL,NORMAL, NORMAL,
+#		NORMAL, NORMAL, NORMAL, NORMAL, NORMAL};
+#altvalues[3] = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0,
+#		 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+#alttypes[4] = { NORMAL, NORMAL,NORMAL,NORMAL,NORMAL,
+#		NORMAL, NORMAL, NORMAL, NORMAL, NORMAL};
+#altvalues[4] = { 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0,
+#		 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0};
+
+# Specify the optimization algorithm
+
+# Available methods are MCBTR (Basic Trust Region), MCBFGS,
+# MCBTRDA (Basic Trust Region with Dynamic Accuracy)
+METHOD = MCBTRDA;
+#METHOD = MCBTR;
+HESSIAN_UPDATE = bfgs;
+
+# check the found solution
+validation = false;
+
+hessian_approx = true;
+robust = true;
+
+statistics = true;
+
+bias=1;

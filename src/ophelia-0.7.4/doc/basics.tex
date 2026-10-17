@@ -1,0 +1,20 @@
+\chapter{Basic operations}
+
+\section{Matrix operations}
+
+Given an invertible symmetric matrix $A \in \mathcal{R}^{n \times n}$. the
+following function computes $A^{-1}$:
+\begin{verbatim}
+int op_matrix_sy_inverse(const enum CBLAS_ORDER Order,
+                         const enum CBLAS_UPLO Uplo,
+                         double *I, int n);
+\end{verbatim}
+\verb|Order| indicates if the matrix is stored by rows or columns,
+and take the constants \verb|CblasRowMajor| and \verb|CblasColMajor|,
+respectively.
+Since the matrix is supposed to be symmetric, only the lower or upper
+has to be filled, as indicated by the paramter \texttt{Uplo}, taking
+the value \verb|CblasLower| or \verb|CblasUpper|, respectively.
+The matrix itself is designed by $I$, and the dimension $n$ is given as the last parameter.
+The routine overwrite the original with its inverse, storing only the upper
+or lower, following original storage.

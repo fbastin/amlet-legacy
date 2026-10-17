@@ -1,0 +1,92 @@
+\chapter{Simulation}
+
+The \name{} library contains some basic modules allowing simple discrete events simulations experiments.
+This module has not the ambition to compete with commercial or well-established open-source packages, but to provide support tools for teaching and research.
+
+\section{Introduction to discrete events simulation}
+
+We consider a system characterized by the state $\mathcal{S}(t)$, where $t$ denotes the time.
+In the discrete events setting, the system state can only change at a countable number of points in time.
+The state can be modified when (and only when) some event happens, which is assumed to be instantaneous.
+The system evolution is therefore the consequence of a sequence of
+events, $e_0, e_1, e_2, \dots$, occuring at times $0=t_0 \le t_1 \le
+t_2 \le \cdots$.
+Let ${\mathcal{S}_i}$ the system state directly after ${e_i}$, and define
+the simulation time as the current value of ${t_i}$.
+We can represente the discrete events simulation as illustrated on
+Figure~\ref{fig:discrete}.
+
+\begin{figure}[htb]
+\begin{center}
+%%  Evolution of a general discrete-event model.
+\hspace{0.5cm}
+\beginpicture
+\setcoordinatesystem units <7pt,7pt>
+%%  72.27pt = 1in
+\setplotarea x from 0 to 36, y from 0 to 10
+\axis left
+  label {\lines {\emph{state}\cr\vbox to 95pt{\hbox to 1.5pt{\null }} \cr}
+         \hskip 9pt } /
+
+\axis bottom
+  label {\hbox to 4.0in {\hfill \emph{time}}}
+  ticks length <4pt> withvalues 
+     0 $t_1$ $t_2$ $t_3$ $t_4$ $t_5$ $t_6$ /
+  at 0.0 6.0 7.5 12.5 18.0 25.2 30.0 / /
+
+\axis bottom /
+\put {$\rightarrow$} at 36.0 -0.1 
+\put {$\uparrow$}    at 0.0 10.0 
+\multiput {$\bullet$} at
+  0.0 2.0
+  6.0 1.6
+  7.5 2.7
+ 12.5 6.1
+ 18.0 5.1
+ 25.2 2.6
+ 30.0 4.0 /
+\putrule from  0.0 2.0 to  6.0 2.0
+\putrule from  6.0 1.6 to  7.5 1.6
+\putrule from  7.5 2.7 to 12.5 2.7
+\putrule from 12.5 6.1 to 18.0 6.1
+\putrule from 18.0 5.1 to 25.2 5.1
+\putrule from 25.2 2.6 to 30.0 2.6
+\putrule from 30.0 4.0 to 32.0 4.0 
+\endpicture
+\end{center}
+\caption{}
+\label{fig:discrete}
+\end{figure}
+
+The core of a discrete events simulation as proposed in \name{} is the \verb|ESim| structure,
+which will be responsible of the simulation clock and events list gestion.
+A new instance can be created with the function
+\begin{verbatim}
+ESim *esim_new()
+\end{verbatim}
+and suppressed with the function
+\begin{verbatim}
+void esim_free(Esim *sim);
+\end{verbatim}
+
+The second basic component of a discrete events simulation is an
+event, that can be created with the function
+\begin{verbatim}
+ESim_Event *esim_event_new(ESim_Action action);
+\end{verbatim}
+and can be freed with the function
+\begin{verbatim}
+void esim_event_free(void *ev);
+\end{verbatim}
+The use of the \verb|void *| type makes the function compatible with
+the utilities associated with the gestion of lists.
+
+Since an event usually modifies the system state, it has to perform
+some action.
+The type \verb|ESim_Action| is a pointer to a function of the form
+\begin{verbatim}
+int (* ESim_Action)(void *system);
+\end{verbatim}
+The choice to use C instead of an object-oriented programming approach imply some technical limitations if we want to maintain generality.
+The event function prototype considers a system as a \verb|void *| pointer, so that every implementable system can be considered.
+It is the responsability of the programmer to correctly cast the \verb|void *| pointer in the events gestion functions.

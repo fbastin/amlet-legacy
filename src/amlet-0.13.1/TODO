@@ -1,0 +1,95 @@
+INCLUDEDIR!!!
+
+CHECK lines 691 and 695
+
+KNOWN_BUGS
+-----------
+
+- seed2 is not correctly implemented in amlet.c
+
+General
+-------
+
+- Refine the variable sample size strategy
+
+Simulation possibilities
+------------------------
+
+- Allow specific parameters (not only independant specific parameters);
+
+Synthetic data
+--------------
+
+- Better implementation panel generation would be fine.
+
+Observations
+------------
+
+- Allow rescaling of variables and coefficients
+
+Optimization
+------------
+
+- Allow the user to define the signification level in the accuracy estimation.
+- Define a strategy to select the initial trust-region radius.
+- Refine the radius update strategy (take better into account the step value).
+- Allow btr parameters to be defined in the driver file
+- Write BFGSDA
+- amlet_clone_btr is memory consuming... try to alleviate this!
+- MCBTRC should be at some stage removed.
+- Check safe usage.
+
+Likelihood computation
+----------------------
+
+- Scaling factor.
+- Organize the variables to have all constant coefficients first, and
+  evaluate the deterministic part independently of the random part
+  (use of permutations inside amlet_btr).
+
+Statistics
+----------
+
+- Write a fonction for better compute the likelihood function for
+  constant parameters.
+- Allow the use of the Cholesky factorization if the Hessian is
+  positive definite.
+
+Theoretical developments
+------------------------
+
+- Estimation confidence intervals for parameters (see amongst other
+  Schoenberg?)
+
+Interface
+---------
+
+- Use ncurses and cdk to have a better interface
+
+Input/output
+------------
+
+- Train96 format not correctly supported.
+- LaTeX format implementation
+- HTML format: css file?
+- Print the relative gradient norm.
+
+Miscellaneous
+-------------
+
+- Do not use getopt library?
+
+Hessian approximation
+---------------------
+
+- Check the BHHH approximation
+
+Nest
+----
+
+- Add nests gestion with the variable data.n).
+
+Memory management
+-----------------
+
+- In the case where B has an incorrect number of parameters, the program exits with a bus exception... probably a fault in memory management.

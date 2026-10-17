@@ -1,0 +1,184 @@
+2009-02-24  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* dcl/variable.c (dcl_combine_parameters): new function.
+
+2007-08-25  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* nlp2/pcg_monotonicity.c (nlp_spcgm_st): now compitable with new
+	constraints gestion.
+
+2007-08-10  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* nlp2/constraints.h: constraints gestion has been reviewed.
+
+2007-08-01  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* nlp2/activesets.c (nlp_as_monotonicity_step): steps are now normalized.
+
+2007-07-24  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* nlp2/isotonic.c (nlp_isotonics_wrapper): new function; the
+	regression can be applied, independently, on various subsets.
+
+2007-07-22  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* nlp2/radius.c (btr_radius_init_grad): revision of the initial
+	trust-region radius choice.
+
+2007-06-25  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* minpack2/tprobs/Makefile.am (the_headers): the cminpack2 tests
+	are compiled as a static library only due to autotools problems on
+	Mac OS X when mixing C and Fortran files.
+
+2006-10-02  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* bootstrap: test if automake is installed.
+
+2006-04-16  S.Gratton  <fabian.bastin@cerfacs.fr>
+
+	* minpack2/minpack2_collection.h: list of MINPACK-2 symbols has
+	been completed (while they are not yet all interfaced).
+
+2006-03-28  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp2/bfgs_struct.c: new file.
+
+2006-03-17  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp2/model.h: the hessian is now treated as a unidimensional
+	array, instead of a two-dimensional one.
+
+2006-03-16  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp2/sr1.c (sr1_update): minor bug correction.
+
+2006-03-10  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp2/secant.c (nlp_secant_init_default): new initialization
+	strategy for Hessian secant approximation. This is still quite
+	suboptimal, but preliminary numerical results suggest that this is
+	better than nothing.
+
+2006-03-02  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp2/step.c (btr_step_steihaug_toint): the function is now less
+	memory consuming.
+
+2006-02-17  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp2/btr.c (nlp_btrx): the trust-region radius update and the
+	iterate acception are now view as separate components.
+
+2005-12-21  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp/Makefile.am: incrementation of major revision number.
+
+	* nlp/isotonic.h: new fonction: isotonic regression routine.
+
+2005-11-16  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp/common_struct.h: the BTR_Print definition has been removed.
+
+2005-11-14  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp/stopping.c (nlp_has_converged): new function.
+
+2005-11-13  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp/secant.c: new file.
+
+2005-10-27  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp/btr.c (btr): minor bug correction
+	(btr): central differences for hessian and grad evaluations have
+	been replaced by finite differences, but the user can still use
+	them to compute the derivatives (it could be nice to add an
+	additional option in the btr structure in order to automatize this).
+
+2005-05-31  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp/btr.c (btr_free): minor bug correction.
+
+2005-05-07  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp/btr.c (btr_reinit): new function.
+
+2005-04-21  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp/bfgs.c (bfgs): bug fix in function initialization.
+
+2005-04-08  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* nlp/barrier.c (nlp_update_barrier_parameter): new function.
+
+2004-12-12  Fabian Bastin  <f.bastin@imperial.ac.uk>
+
+	* nlp/stopping.c (relative_gradient): new function, computing the
+	relative gradient.
+
+2004-12-01  Fabian Bastin  <f.bastin@imperial.ac.uk>
+
+	* nlp/sa.c: basic simulated annealing implementation.
+	
+2004-06-25  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/stopping.c (btr_stopping_test): new (relaxed) stopping criteria.
+
+2004-06-19  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/btr.c (btr): major bug correction for the case when no
+	derivate function is given.
+
+2004-06-18  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/dcsrch.c (dcsrch): take into account the case where the
+	function is no more defined.
+
+2004-05-06  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/bfgs.c: remove unused variables; uses float.h constants
+	instead of values.h ones in order to improve portability under
+	Cygwin.
+
+2003-06-18  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* bootstrap: new bootstrap to help reconfiguration.
+
+2003-05-21  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/dcsrch.c (dcsrch): important bug correction.
+
+2003-05-02  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/bfgs.c (bfgs): dramatic optimizations; supports now the
+	evaluation of function and gradient at the same time.
+
+2003-04-29  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/sr1.h: addition of SR1 update.
+
+2003-03-12  Fabian Bastin  <fbas@our.domain.is.not.set>
+
+	* nlp/radius.c (nlp_radius_update_usual): minor bug correction.
+
+2003-02-03  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/nlp_struct.h: allow data to be passed in printer.
+
+2003-01-07  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/bfgs.h: BFGS method implemented
+
+	* nlp/nlp.c (nlp): suppression of argument printer since the
+	internal printer of structure nlp is used
+
+2002-12-10  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/bfgs.h: new file; perform a bfgs update
+
+2002-10-18  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* nlp/defaults.h: new file whose the aim is to propose default
+	values for parameters
+

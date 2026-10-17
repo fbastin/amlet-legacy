@@ -1,0 +1,21 @@
+Where to install DLL's in order to suppress the issues of environment variables?
+Does MinGW find standard DLL's?
+
+Installation of ctools???
+
+- Complete the documentation; refine Makefile.am.
+
+- Review gamma distribution generation in order to distinguish
+generation in (0, 1) and [0, 1) (as in GSL).
+
+- Incorportate good stastitical tests.
+
+- Better implementation of the seed: part of the object random.
+
+- Implement tail-distributions (typically left-truncated normals)? If yes, see for instance Luc Devroye, "Non-Uniform Random Variate Generation".
+
+
+NTools
+------
+
+What if we call splines with a too large number (especially to sup bound)?

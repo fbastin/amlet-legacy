@@ -1,0 +1,1162 @@
+\chapter{Random numbers library}
+\label{chap:ran}
+
+\section{Introduction}
+
+\subsection{Supported distributions}
+
+Distributions that are currently supported are summarized in
+Table~\ref{tab:distributions}.
+At each distribution is associated a numerical constant. The total number
+of distribution can be obtained by taking \verb|RAN_CONSTANT_END|-1,
+and a constant \verb|RAN_CONSTANT| is also defined.
+A multivariate distribution can be identified with the prefix
+\verb|m_| before the distribution name.
+
+The number of parameters associated to some distribution can be
+obtained by postfix \verb|_NPAR| to the numerical constant name. The
+library supports various continuous distributions, as well as some
+discrete ones.
+This is however only valid for univariate distributions since the
+number of parameters for multivariate distributions depends on the
+vector dimension.
+
+\begin{table}[htbp]
+\begin{center}
+\begin{tabular}{|ll|l|}
+\hline
+{\bf Distribution} & {\bf Identifier} & {\bf \#Parameters} \\
+\hline
+\multicolumn{3}{|l|}{\bf Univariate distributions} \\
+\multicolumn{3}{|c|}{\textit{Discrete distributions}} \\
+Bernouilli & \verb|RAN_BERNOUILLI| & 1 \\
+Dirac & \verb|RAN_DIRAC| & 1 \\
+Geometric & \verb|RAN_GEOMETRIC| & 1 \\
+Integer in $[0, \mbox{max}[$ & \verb|RAN_INTEGER| & 1 \\
+\multicolumn{3}{|c|}{\textit{Continuous distributions}} \\
+Arcsinus & \verb|RAN_ARCSINE| & 0 \\
+Cauchy & \verb|RAN_CAUCHY| & 2 \\
+%Erlang \\
+Exponential & \verb|RAN_EXPONENTIAL| & 1 \\
+Gamma & \verb|RAN_GAMMA| & 2 \\
+Gumbel & \verb|RAN_GUMBEL| & 2 \\
+Johnson & \verb|RAN_JOHNSON| & 4 \\
+Laplace & \verb|RAN_LAPLACE| & 2 \\
+Lognormal & \verb|RAN_LOGNORMAL| & 2 \\
+Normal & \verb|RAN_NORMAL| & 2 \\
+Student & \verb|RAN_STUDENT| & 1 \\
+Triangular & \verb|RAN_TRIANGULAR| & 0 \\
+Truncated normal & \verb|RAN_TRUNCATED_NORMAL| & 4 \\
+Truncated normal B & \verb|RAN_TRUNCATED_NORMAL_B| & 4 \\
+Uniform on (0,1) & \verb|RAN_UNIFORM| & 0 \\
+\hline
+\multicolumn{3}{|l|}{\bf Multivariate distributions} \\
+\multicolumn{3}{|c|}{\textit{Continuous distributions}} \\
+Multivariate normal & \verb|RAN_M_NORMAL| \\
+Unit sphere & \verb|RAN_M_UNIT_SPHERE| \\
+\hline
+\end{tabular}
+\end{center}
+\label{tab:distributions}
+\caption{Supported distributions.}
+\end{table}
+
+\subsection{Terms and symbols}
+
+We use these notational conventions:
+\begin{itemize}
+\item
+$\mathcal{N}$: natural set.
+\item
+$\mathcal{N}_0$: natural set, with the exclusion of 0.
+\end{itemize}
+
+%%%%%%%%%%%%%% UNIFORM DISTRIBUTION %%%%%%%%%%%%%%
+
+\section{Uniform random numbers generation}
+\label{sec:uniform}
+
+A good uniform random generator on the interval $[0,1]$ is the major
+component of any good random generator library. Draws from other
+distributions are usually obtained by adequately transform an
+uniformly distributed sample (see Levroye~\cite{Levr86} for a survey
+of these techniques).
+Many researches have been conducted to develop good random generators,
+and lead to different algorithms.
+The search is however far from be over and
+improved generators will probably be released (see for instance
+L'Ecuyer~\cite{LEcu97}).
+The reader is therefore invited to include such algorithms if she/he feels the need to do it.
+Algorithms can be tested with the package TestU01 (L'Ecuyer et
+Simard~\cite{LEcuSima07}).
+
+The basic principle of a uniform random numbers generator is to define
+a transition function $f: \mathcal{S} \rightarrow \mathcal{S}$, where
+$\mathcal{S}$ is the state space.
+The cardinality of $\mathcal{S}$ is assumed to be finite.
+The initial state is denoted by $s_0$, and we will write
+\[
+s_n = f(s_{n-1}).
+\]
+We will furthermore assume that $f$ is periodic for all $n$ greater of
+equal to some known $\tau$ (often equal to 0), with the period denoted
+by $\rho$.
+In other terms, we have $s_{n+\rho} = s_n$ for all $n\ge\tau$.
+We denote the output space by $\mathcal{U}$, and we assume here that
+$\mathcal{U} = (0,1)$.
+The output function $g: \mathcal{S} \rightarrow \mathcal{U}$
+transforms the state $s_n$ into an output value $u_n$.
+This behavior is graphically illustrated in Figure~\ref{fig:rng}, with
+$\tau = 0$.
+\begin{figure}[htbp]
+\[
+\begin{CD}
+ \cdots @>f>> s_{\rho-1} @>f>> s_0 @>f>> s_1  @>f>> 
+  \cdots @>f>> s_n @>f>> \cdots \\ 
+%
+  @. @V{g}VV  @V{g}VV   @V{g}VV   
+  @.  @V{g}VV  \\
+%
+ \cdots @. u_{\rho-1} @. u_0
+ @.  u_1  @.   \cdots @.  u_n @.  \cdots \\
+\end{CD}
+\]
+\label{fig:rng}
+\caption{Behavior of a uniform random numbers generator}
+\end{figure}
+
+The basic function is
+\begin{verbatim}
+Random *ran_random_new(int id, unsigned long *seed, int n);
+\end{verbatim}
+This create an object of type \verb|Random *|.
+\verb|seed| is a vector of integers that will be used to initialize
+the state of the random numbers generator, that is dependent of the
+underlying $U(0,1)$ generator (see Section~\ref{sec:uniform}).
+If the seed is set to NULL, a default seed will be used.
+The length of this vector also depends of the $U(0,1)$-generator, but
+each generator can be initialized with a seed dimension equal to 1.
+If no specific random numbers generator is specified, i.e. if
+\verb|id| is set to 0, the
+\verb|RAN_DEFAULT| generator is used.
+A specific random numbers generator can be obtained by using the
+identifier given in Table~\ref{tab:generators}.
+These generators are discussed in more details in the rest of the
+document.
+\begin{table}[htb]
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+{\bf Name} & {\bf Identifier} & {\bf Seed size} \\
+\hline
+Default generator & \verb|RAN_DEFAULT| & \verb|RAN_DEFAULT_SEED_LENGTH| \\
+\hline
+Standard minimal & \verb|RAN_STANDARDMINIMAL| & 1 \\
+\hline
+MRG32K3a & \verb|RAN_MRG32K3A| & 6 \\
+\hline
+MT19937 & \verb|RAN_MT19937| & $[1,\ldots,624]$\\
+\hline
+\end{tabular}
+\caption{uniform random numbers generators}
+\label{tab:generators}
+\end{center}
+\end{table}
+
+A simplified random numbers constructor is
+\begin{verbatim}
+Random *ran_random();
+\end{verbatim}
+which is equivalent to \verb|ran_random_new(0, NULL, 0);\verb|
+A copy of the initial seed is stored inside the generator, which can
+be retrieved with the function
+\begin{verbatim}
+unsigned long *ran_random_get_seed(const Random *random);
+\end{verbatim}
+You can also change this seed using the following function:
+\begin{verbatim}
+void ran_random_set_seed(Random *random, unsigned long *seed, int n)
+\end{verbatim}
+The rng internal seed is stored independently of the given parameter seed.
+
+The state structure is specific to each uniform random generator, so
+the generic function uses the type \verb|void *|.
+The reader should refer to the corresponding generator to learn which
+structure has to used.
+If this pointer is \verb|NULL|, an arbitrary initial state will be
+generated using the internal clock, and this value is place in the
+address pointed by \verb|state|.
+The state can also be retrieved with the function
+\begin{verbatim}
+void *ran_random_get_state(Random *random);
+\end{verbatim}
+
+The memory associated to the generator has to be freed with the
+function
+\begin{verbatim}
+void ran_random_free(Random *random);
+\end{verbatim}
+
+The name of the currently used generator can be obtained with the
+function
+\begin{verbatim}
+char *ran_random_generator_name(Random *random);
+\end{verbatim}
+You can use a different algorithm for
+random generation, by calling the function
+\begin{verbatim}
+void random_set_generator(Random *random, int id,
+                          unsigned long *seed, int n)
+\end{verbatim}
+\verb|id| is a constant describing the generator to use and seed is an
+integers vector of dimension $n$, used to define the initial state, as
+described in Section~\ref{sec:uniform}.
+Table~\ref{tab:generators} gives supported generators and the
+corresponding constants, as well as the corresponding seed vector size.
+
+\subsection{Linear Congruential Generators}
+\index{generator!linear congruential}
+
+Linear congruential generators (LCGs) have been introduced by
+Lehmer~\cite{Lehm51}.
+A sequence of integers $Z_1, Z_2, \ldots$ is defined by the recursive
+formula
+\begin{equation}
+Z_i = (aZ_{i-1}+c) \mod m.
+\label{eq:lcg}
+\end{equation}
+A first desirable property of a LCG is that it has full period.
+The following theorem, proved by Hull and Dobell~\cite{HullDobe62}, gives
+such a characterization.
+
+\begin{thm}
+The LCG defined in \eqref{eq:lcg} has full period if and only if the
+following three conditions hold:
+\begin{enumerate}
+\item
+the only positive integer that (exactly) divides both $m$ and $c$ is
+1;
+\item
+if $q$ is a prime number that divides $m$, then $q$ divides $a-1$;
+\item
+if 4 divides $m$, then 4 divides a-1.
+\end{enumerate}
+\end{thm}
+
+If $c = 0$, a period equal to $m$ cannot be achieved, but under some
+conditions, we can obtain a period of $m-1$.
+For $m$ prime, it can be shown that the period is $m-1$ if $a$ is a
+primitive element modulo m, that is the smallest integer $l$ for which
+$a^l-1$ is divisible by $m$ is $l=m-1$ (Knuth, 1988, p20).
+LCGs that fullfil these conditions are called prime modulus
+multiplicative LCGs (PMMLCGs).
+
+A generic linear congruential generator can be created using the function
+\begin{verbatim}
+LCG *ran_lcg_new(unsigned long seed);
+\end{verbatim}
+where seed is the initial state of the generator.
+The allocated memory memory can be released using the fonction
+\begin{verbatim}
+void ran_lcg_free(void *lcg);
+\end{verbatim}
+
+\begin{verbatim}
+LCG *ran_lcg_new_with_state(unsigned long *state);
+LCG *ran_lcg_new_with_seed(unsigned long seed);
+unsigned long *ran_lcg_get_state(void *lcg);
+void ran_lcg_set_state(void *lcg, void *state);
+void ran_lcg_init(Random *random, unsigned long seed);
+\end{verbatim}
+
+By default, the created generator is the Standard Minimal generator (see
+Section~\ref{sec:standard_minimal}, but it the parameters can be
+modified using the function
+\begin{verbatim}
+void ran_lcg_set_parameters(LCG *lcg, double a, double c, double m);
+\end{verbatim}
+and a draw can be obtained with the function
+\begin{verbatim}
+double ran_lcg_get_val(void *lcg);
+\end{verbatim}
+The following code defines the infamous \verb|RANDU| generator:
+\begin{lstlisting}
+  unsigned long m = 2;
+
+  r = ran_lcg_new(seed);
+  for (i = 0; i < 30; i++) m *= 2;
+  ran_lcg_set_parameters(r, 65539, 0, m);
+\end{lstlisting}
+
+\subsubsection{Standard minimal generator}
+\index{generator!standard minimal}
+\label{sec:standard_minimal}
+
+A popular, but outdated random generator is the standard minimal,
+following the terminology introduced by Park and
+Miller~\cite{ParkMill88}, while it is known to be not optimal
+(L'Ecuyer and Simard~\cite{LEcuSima07}).
+The standard minimal has been introduced in 1969 by Lewis et
+al.~\cite{LewiGoodMill69}.
+It is a linear congruential generator driven by the recurrence
+\[
+  x_{n+1} = 16807x_n \mod (2^{31}- 1).
+\]
+
+\subsection{Multiple Recursive Generator}
+
+These generators are based on the recurrence
+\[
+  {x_n} = (a_1 x_{n-1} + \cdots + a_k x_{n-k}) \mod {m}.
+\]
+The choice of the parameters is discussed by \citep{LEcu99}, who provides the code for the MRG32k3a generator, proposed in \oratio{}.
+
+\subsection{Generators in $\mathcal{F}_2$}
+
+\subsubsection{Mersenne twister generator}
+
+The Mersenne twister is a pseudorandom number generator developed in
+1997 by Makoto Matsumotoand Takuji Nishimura~\cite{MatsNish98}.
+While it is reputated to be robust and fast, it is not exempt of defaults,
+since if fails some tests defined in TestU01 (L'Ecuyer and
+Simard~\cite{LEcuSima07}).
+The state length is a vector of 624 integers.
+
+\begin{verbatim}
+\end{verbatim}
+
+\section{Non-uniform random numbers generation}
+
+While uniform random number generation are of deep importance, the
+practician will mainly look for other distributions.
+The main reference for non-uniform random number generation is the
+book written by Luc Devroye~\cite{Devr86}, that can be
+downloaded free of charge from the author's website, at the address
+\url{http://cg.scs.carleton.ca/~luc/rnbookindex.html}.
+A copy can also be found at the adress
+\url{http://www.iro.umontreal.ca/~bastin/books/nonuniformrandomvariates.zip}.
+We have also used Evans, Hastings and Peacock~\cite{EvanHastPeac93} as
+reference.
+
+The library aims to use a similar naming scheme amongst the various
+distributions.
+Each routine name will start by \verb|ran_|, followed by the
+distribution name and the function of the routine.
+
+\subsection{Univariate distributions}
+
+\subsubsection{Discrete distributions}
+
+%%%%%%%%%%%%%% BERNOUILLI DISTRIBUTION %%%%%%%%%%%%%%
+
+\paragraph{Bernouilli distribution}
+\index{distribution!Bernouilli}
+
+A Bernouilli variable can take two value only: 1 (success) or 0
+(failure). The probability of success, denoted by $p$, is the
+Bernouilli parameter; $0 \leq p \leq 1$.
+
+You can draw some value from a Bernouilli distribution with parameter $p$
+using the function:
+\begin{verbatim}
+int ran_bernouilli(const Random *random, double p);
+\end{verbatim}
+You can also create a generator more specifically designed for the
+Bernouilli distribution with the following function:
+\begin{verbatim}
+Random *ran_bernouilli_new(unsigned long *seed, int n, double p);
+\end{verbatim}
+A realization can then be obtained by using the function
+\begin{verbatim}
+int ran_bernouilli_get_val(const Random *random);
+\end{verbatim}
+The parameter $p$ can be retrieved with
+\begin{verbatim}
+double ran_bernouilli_get_param(const Random *random);
+\end{verbatim}
+On the other side, you can define the parameter using
+\begin{verbatim}
+double ran_bernouilli_set_param(Random *random, double p)
+\end{verbatim}
+
+%%%%%%%%%%%%%%%% GEOMETRIC DISTRIBUTION %%%%%%%%%%%%%%%%
+
+\paragraph{Geometric distribution}
+
+$X$ is geometrically distributed with parameter $p \in (0,1)$ when
+\[
+P[X = i] = p(1-p)^{(i)}, \ i = 0,1,\ldots
+\]
+A for the Bernouilli variate, $p$ is the success probability of one
+trial, so that $0 \leq p \leq 1$.
+$i$ is number of failures until the first success.
+The geometric distribution is important because it is the distribution
+of the waiting time until success in a sequence of Bernouilli
+trials. The geometric distribution is also sometimes called the Pascal
+distribution.
+
+You can obtain a draw from a geometric distribution of parameter
+$p$ with a general Random object by using the function
+\begin{verbatim}
+int ran_geometric(const Random *random, double p)
+\end{verbatim}
+The geometric distribtion object can be created with the function
+\begin{verbatim}
+Random *ran_geometric_new(unsigned long *seed, int n, double p)
+\end{verbatim}
+A random number can then be drawn with the function
+\begin{verbatim}
+int ran_geometric_get_val(const Random *random)
+\end{verbatim}
+The parameter $p$ can be retrieved and set with the functions
+\begin{verbatim}
+double ran_geometric_get_param(const Random *random)
+\end{verbatim}
+\begin{verbatim}
+void ran_geometric_set_param(Random *random, double p)
+\end{verbatim}
+
+%%%%%%%%%%%%%% RANDOM INTEGERS GENERATION %%%%%%%%%%%%%%
+
+\paragraph{Integer numbers}
+
+A random integer variable $X$, associated to the parameter $max$, is
+assumed to be a discrete variable that presents the property that
+\[
+P[X = i] = \frac{1}{\max},\ \forall i \in [0, \max[ \ \cap\ \mathcal{N}.
+\]
+\begin{center}
+Variate $X$: $\max$.
+Range $\max \in \mathcal{N}_0.$
+\end{center}
+
+A draw can be generated with the function
+\begin{verbatim}
+void ran_intrandom_set_max(Random *ird, unsigned long max)
+\end{verbatim}
+
+An integer random generator can be created with the function
+\begin{verbatim}
+Random *ran_intrandom_new(unsigned long *seed, int n,
+                          unsigned long max)
+\end{verbatim}
+
+\begin{verbatim}
+unsigned long ran_intrandom_get_val(const Random *ird)
+\end{verbatim}
+
+The maximum value can be retrieved with the function
+\begin{verbatim}
+unsigned long ran_intrandom_get_max(const Random *ird)
+\end{verbatim}
+
+\subsubsection{Continuous distributions}
+
+%%%%%%%%%%%%%% ARCSINE DISTRIBUTION %%%%%%%%%%%%%%
+
+\paragraph{Arcsine distribution}
+
+The arcsine distribution is a special case of the beta distribution with both parameters equal to $1/2$.
+The density function is:
+\[
+f(x) =
+\begin{cases}
+\frac{1}{\pi\sqrt{x(1-x)}} & \text{if } 0\leq x \leq 1,\\
+0 & \text{ otherwise}.
+\end{cases}
+\]
+
+You can pick a number from the arcsine with the function
+\begin{verbatim}
+double ran_arcsine(const Random *random)
+\end{verbatim}
+
+It is also possible to create an object more specifically designed for the arcsine distribution with the function
+\begin{verbatim}
+Random *ran_arcsine_new(unsigned long *seed, int n)
+\end{verbatim}
+and then use this function to get some value:
+\begin{verbatim}
+double ran_arcsine_get_val(const Random *random)
+\end{verbatim}
+
+%%%%%%%%%%%%%% CAUCHY DISTRIBUTION %%%%%%%%%%%%%%
+
+\paragraph{Cauchy distribution}
+
+\begin{verbatim}
+double ran_cauchy(const Random *random,
+                  double a, double b)
+\end{verbatim}
+\begin{verbatim}
+Random *ran_cauchy_new(unsigned long *seed, int n
+                       double a, double b)
+\end{verbatim}
+\begin{verbatim}
+double ran_cauchy_get_val(const Random *random)
+\end{verbatim}
+\begin{verbatim}
+double ran_cauchy_standard_get_val(const Random *random)
+\end{verbatim}
+\begin{verbatim}
+double ran_cauchy_get_parameters(const Random *random,
+                                 double *a, double *b)
+\end{verbatim}
+\begin{verbatim}
+double ran_cauchy_set_parameters(Random *random,
+                                 double a, double b)
+\end{verbatim}
+
+%%%%%%%%%%%%%% ERLANG DISTRIBUTION %%%%%%%%%%%%%%
+
+%\paragraph{Erlang distribution}
+%\index{distribution!erlang}
+
+%%%%%%%%%%%%%% EXPONENTIAL DISTRIBUTION %%%%%%%%%%%%%%
+
+\paragraph{Exponential distribution}
+\index{distribution!exponential}
+
+The exponential distrbution, described in
+Section~\ref{sec:stat_exponential}, can be generated with the
+function
+\begin{verbatim}
+double ran_exponential(const Random *random, double lambda)
+\end{verbatim}
+where $\lambda$ is the distribution parameter.
+The other functions are
+\begin{verbatim}
+Random *ran_exponential_new(unsigned long *seed, int n, double lambda)
+double ran_exponential_get_val(const Random *random)
+double ran_exponential_get_parameters(const Random *random)
+void ran_exponential_set_parameters(Random *random, double lambda)
+\end{verbatim}
+
+%%%%%%%%%%%%%% GAMMA DISTRIBUTION %%%%%%%%%%%%%%
+
+\paragraph{Gamma distribution}
+
+\[
+f(x) =
+\begin{cases}
+\frac{1}{\Gamma(a) b^a} x^{a-1} e^{-\frac{x}{b}} & \text{if } x > 0, \\
+0 & \text{otherwise}.
+\end{cases}
+\]
+
+\begin{verbatim}
+double ran_gamma(const Random *random, double a, double b)
+\end{verbatim}
+\begin{verbatim}
+Random *ran_gamma_new(unsigned long *seed, int n,
+                      double a, double b)
+\end{verbatim}
+\begin{verbatim}
+double ran_gamma_get_val(const Random *random)
+\end{verbatim}
+\begin{verbatim}
+double ran_gamma_get_parameters(const Random *random,
+                                double *a, double *b)
+\end{verbatim}
+\begin{verbatim}
+double ran_gamma_set_parameters(Random *random,
+                                double a, double b)
+\end{verbatim}
+
+%%%%%%%%%%%%%% GUMBEL DISTRIBUTION %%%%%%%%%%%%%%
+
+\paragraph{Gumbel distribution}
+
+You can obtain a value from a Gumbel distribution with
+parameters $a$, $b$, using the function:
+\begin{verbatim}
+double ran_gumbel(const Random *random, double a, double b)
+\end{verbatim}
+
+You can create a generator more specifically designed for the
+Gumbel distribution with the following function:
+\begin{verbatim}
+Random *ran_gumbel_new(unsigned long *seed, int n,
+                       double a, double b)
+\end{verbatim}
+Then a value can be obtained by using the function:
+\begin{verbatim}
+int ran_gumbel_get_val(const Random *random)
+\end{verbatim}
+The parameters $a$, $b$ can be retrieved with:
+\begin{verbatim}
+void ran_gumbel_get_parameters(const Random *random,
+                               double *a, double *b)
+\end{verbatim}
+On the other side, you can define the parameter using:
+\begin{verbatim}
+void ran_gumbel_set_parameters(Random *random,
+                               double a, double b)
+\end{verbatim}
+
+%%%%%%%%%%%%%% JOHNSON DISTRIBUTION %%%%%%%%%%%%%%
+
+\paragraph{Johnson distribution}
+
+The Johnson families are part of the most flexible ones, and are able
+to mimic most of standard distributions.
+Its general form is 
+\[
+f(x) = \frac{\delta}{\lambda\sqrt{2\pi}} g' \left(
+  \frac{x-\xi}{\lambda} \right)
+e^{ -\frac{\left(\gamma + \delta g \left( \frac{x-\xi}{\lambda} \right)\right)^2}{2} },
+\]
+where $g$ is one of the following four transformations:
+\[
+g(y) = \begin{cases}
+\ln y & \mbox{lognormal family} \\
+\sinh^{-1}(y) = \ln \left( y + \sqrt{y^2+1}\right) & \mbox{unbounded family} \\
+\ln \left( \frac{y}{1-y} \right) & \mbox{bounded family} \\
+y & \mbox{normal family}.
+\end{cases}
+\]
+\begin{center}
+Variate $J$: $\xi$, $\lambda$, $\gamma$, $\delta$.\\
+Localisation parameter $\xi$.\\
+Scale parameter $\lambda$.
+Form parameters: $\gamma$, $\delta$. \\
+\end{center}
+The support of the distribution depends on the transformation $g$. It
+is $(-\infty,\,\infty)$ for the unbounded and normal family,
+$[\xi,\,\xi + \lambda]$ for the bounded family, and $[\xi, \infty)$
+for the lognormal family.
+
+The associated cumulative distribution function is:
+\[
+F(x) = \Phi\left(\gamma+\delta g \left( \frac{x-\xi}{\lambda} \right)\right).
+\]
+Since the normal and lognormal families reduce to normal and lognormal
+random variables, we consider only bounded and unbounded families.
+The bounded family will be identified with the letters \verb|SB|,
+while the unbounded family will be identified with the letters \verb|SU|.
+
+\subparagraph{Unbounded family}
+
+A draw from an unbounded Johnson variate of parameters $\xi$,
+$\lambda$, $\gamma$, $\delta$ can be obtained by calling the function
+\begin{verbatim}
+double ran_johnsonSU(const Random *random,
+                     double xi, double lambda,
+                     double gamma, double delta);
+\end{verbatim}
+
+As usual, you can define a specific generator using the function
+\begin{verbatim}
+Random *ran_johnsonSU_new(unsigned long *seed, int n,
+                          double xi, double lambda,
+                          double gamma, double delta);
+\end{verbatim}
+and then draw on it with repeated call to
+\begin{verbatim}
+double ran_johnsonSU_get_val(const Random *random);
+\end{verbatim}
+
+The parameters can be retrieved with the function
+\begin{verbatim}
+void ran_johnsonSU_get_parameters(const Random *random,
+                                  double *xi, double *lambda,
+                                  double *gamma, double *delta);
+\end{verbatim}
+and set with
+\begin{verbatim}
+void ran_johnsonSU_set_parameters(Random *random,
+                                  double xi, double lambda, 
+                                  double gamma, double delta);
+\end{verbatim}
+
+\subparagraph{Bounded family}
+
+The functions are the same as for the unbounded case, except that the
+letters \verb|SU| in function names have to be replaced by \verb|SB|.
+This results in the following set of functions:
+\begin{verbatim}
+double ran_johnsonSB(const Random *random,
+                     double xi, double lambda,
+                     double gamma, double delta);
+\end{verbatim}
+\begin{verbatim}
+Random *ran_johnsonSB_new(unsigned long *state,
+                          double xi, double lambda,
+                          double gamma, double delta);
+\end{verbatim}
+\begin{verbatim}
+double ran_johnsonSB_get_val(const Random *random);
+\end{verbatim}
+\begin{verbatim}
+void ran_johnsonSB_get_parameters(const Random *random,
+                                  double *xi, double *lambda,
+                                  double *gamma, double *delta);
+\end{verbatim}
+\begin{verbatim}
+void ran_johnsonSB_set_parameters(Random *random,
+                                  double xi, double lambda, 
+                                  double gamma, double delta);
+\end{verbatim}
+
+%%%%%%%%%%%%%% LOGNORMAL DISTRIBUTION %%%%%%%%%%%%%%
+
+\paragraph{Lognormal distribution}
+
+The density function of a log-normal variate $X$ is
+\[
+f(x) =
+\begin{cases}
+\frac{1}{x \sqrt{2\pi} \sigma} e^{ -\frac{ ( \log x - \mu )^2
+}{2\sigma^2} } & \text{ if } x > 0, \\
+0 & \text{ otherwise.}
+\end{cases}
+\]
+We then write $X \sim LN(\mu, \sigma^2)$. The distribution function is
+\[
+F(x) =
+\begin{cases}
+\frac{1}{2} \left( 1 + \text{erf} \left( \frac{\ln x -
+ \mu}{\sqrt{2}\sigma} \right) \right)
+ & \text{ if } x > 0, \\
+0 & \text{ otherwise.}
+\end{cases}
+\]
+
+$X \sim LN(\mu, \sigma^2)$ if and only if $\ln X \sim N(\mu, \sigma^2)$.
+
+\begin{verbatim}
+double ran_lognormal(const Random *random,
+                     double mu, double sigma)
+\end{verbatim}
+
+\begin{verbatim}
+double ran_lognormal_icdf(const Random *random,
+                          double mu, double sigma)
+\end{verbatim}
+
+\begin{verbatim}
+Random *ran_lognormal_new(unsigned long *seed, int n,
+                          double mu, double sigma)
+\end{verbatim}
+
+\begin{verbatim}
+double ran_lognormal_get_val(Random *random)
+\end{verbatim}
+
+\begin{verbatim}
+double ran_lognormal_get_val_with_parameters
+  (Random *random, double mu, double sigma)
+\end{verbatim}
+
+\begin{verbatim}
+void ran_lognormal_get_parameters
+  (const Random *random, double *mu, double *sigma)
+\end{verbatim}
+
+\begin{verbatim}
+void ran_lognormal_set_parameters(Random *random,
+                                  double mu, double sigma)
+\end{verbatim}
+
+%%%%%%%%%%%%%%% NORMAL DISTRIBUTION %%%%%%%%%%%%%%%
+
+\paragraph{Normal distribution}
+
+A random variable follows a normal distribution $N(\mu, \sigma^2)$ if its density function is given by:
+\[
+f(x) = \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{(x-\mu)^2}{2\sigma^2}}.
+\]
+
+It is possible to use a generic object of type \verb|random| to get
+values from a normal distribution with the following function:
+\begin{verbatim}
+double ran_normal(const Random *random, double mu, double sigma)
+\end{verbatim}
+The method is based on the CDF inversion, which can also be called
+using the function
+\begin{verbatim}
+double ran_normal_icdf(const Random *random, double mu, double sigma)
+\end{verbatim}
+
+It can however be preferable to define a random generator dedicaced to
+deliver random values, with the function
+\begin{verbatim}
+Random *ran_normal_new(unsigned long *seed, int n,
+                       double mean, double stdv)
+\end{verbatim}
+A value can then be obtained with the function
+\begin{verbatim}
+double ran_normal_get_val(Random *random)
+\end{verbatim}
+Is it also possible to get values from an normal $N(\mu,\sigma^2)$
+with the function
+\begin{verbatim}
+double ran_normal_get_val_with_parameters(Random *random,
+				          double mean, double sigma)
+\end{verbatim}
+where $\mu$ is the variance and $\sigma$ is the standard deviation.
+
+Various alternatives has been proposed to generate normal numbers.
+The most famous one has been proposed by Box and Muller, and transform two uniform numbers on (0,1) to $N(0,1)$ numbers.
+It is mathematically elegant, but in practice, slower than the inversion approach, and not compatible with variance-reduction technique.
+A second alternative is the acceptance-rejection method from the Laplace distribution, but it is even slower.
+These two different generation methods are present in \oratio{} for illustration purpose only, but should but used for serious purposes.
+The file \verb|normal_generation.c|, in the examples directory, compare these methods for the generation of $10^8$ draws from a Gaussian distribution.
+On a AMD FX(tm)-8120 Eight-Core Processor, we obtained the following results:
+\begin{verbatim}
+Time with acceptance-rejection method, for 100000000 numbers: 27.978 seconds
+Time with Box-Muller method, for 100000000 numbers: 14.276 seconds
+Time with inversion method, for 100000000 numbers: 9.121 seconds
+\end{verbatim}
+
+\paragraph{Student distribution}
+
+\begin{description}
+\item[Density function]
+\[
+f(x) =
+\begin{cases}
+\frac{1}{2} + & \mbox{if $\nu$ is odd} \\
+\frac{1}{2} + & \mbox{if $\nu$ is even} 
+\end{cases}
+\]
+\end{description}
+
+\paragraph{Triangular distribution}
+
+A triangular distribution generator can be obtained with the function
+\begin{verbatim}
+Random *ran_triangular_new(unsigned long *seed, int n,
+                           double x_min, double x_max, double mode)
+\end{verbatim}
+
+\begin{verbatim}
+double ran_triangular(const Random *random,
+		      double x_min, double x_max, double mode)
+\end{verbatim}
+
+\begin{verbatim}
+double ran_triangular_get_val(const Random *random)
+\end{verbatim}
+
+\begin{verbatim}
+void ran_triangular_get_parameters(const Random *random,
+				   double *x_min, double *x_max, double *mode)
+\end{verbatim}
+
+\begin{verbatim}
+void ran_triangular_set_parameters(Random *random,
+				   double x_min, double x_max, double mode)
+\end{verbatim}
+
+\paragraph{Truncated normal distribution}
+
+The truncated normal distribution is the probability distribution of a
+normally distributed random variable whose value is either bounded
+below or above (or both).
+Assume that $Y ~ N(\mu, sigma^2)$.
+\begin{description}
+\item[Parameters]
+\begin{itemize}
+\item $\mu$: mean of $Y$;
+\item $\sigma$: standard deviation of $Y$;
+\item $a$, $b$: lower and upper bounds of $X$, respectively.
+\end{itemize}
+\item[Density function]
+\[
+f(x) = \frac{\frac{1}{\sigma} \phi \left( \frac{x-\mu}{\sigma} \right)}
+{\frac{1}{\sigma} \Phi \left( \frac{b-\mu}{\sigma} \right) - \Phi \frac{1}{\sigma}\left( \frac{a-\mu}{\sigma} \right)}
+\]
+\end{description}
+
+\paragraph{Truncated normal distribution with mass points}
+
+\subsection{Multivariate distributions}
+
+Function dealing with multivariate distributions are similare to the
+univariate case, except the presence of the prefix \verb|m_| in from
+of the distribution name.
+
+\subsubsection{Multivariate normal}
+
+The multivariate normal is described in \ref{sec:st_mvn}, and can be generated with the following functions.
+A draw from a standard multivariate normal of dimension $n$ can be obtained with the function
+\begin{verbatim}
+void ran_mvn_gaussian(Random *ran, int n, double *x, int incx)
+\end{verbatim}
+As usual, \verb|ran| is a $U(0,1)$ random numbers generator, and the draw in stored in the $n$-dimensional vector $x$, using an increment of \verb|incx|.
+
+A Box-Muller variant is given by the function
+\begin{verbatim}
+void ran_mvn_gaussian_box_muller(Random *ran, int n,
+                                 double *x, int incx)
+\end{verbatim}
+It is advised to not use this variant except for testing purposes, as it is slower than the previous function, based on inversion of the distribution function. Moreover, the Box-Muller approach is not compatible with standard variance reduction techniques.
+
+A draw from a multivariate normal $\cN(\bmu, \bSigma)$, where $\bmu$ is the mean vector and $\bSigma$ is the variance-covariance matrix, can be obtained from the function
+\begin{verbatim}
+void ran_mvn(Random *ran,
+             const enum CBLAS_ORDER Order, int n, double *L, int ldL,
+             double *mu, int incmu, double *x, int incx)
+\end{verbatim}
+In this function $L$ is a lower triangular matrix of leading dimension \verb|ldL|, with orientation given by \verb|Order|, such that $LL' = \bSigma$.
+
+
+\subsubsection{Unit sphere}
+
+Let denote by $C^m$ the n-dimensional unit sphere, that is
+\[
+C^n = \lbrace x \in \mathcal{R}^m \mbox{ s.t. } \|x\|_2 = 1 \rbrace.
+\]
+The following function allows the generation of a random vector
+uniformly distributed on $C^n$.
+
+A specific uniform random number generator on $C^m$ can be created
+with the function
+\begin{verbatim}
+Random *ran_m_unit_sphere_new(unsigned long *seed, int n, int m)
+\end{verbatim}
+which than allow to draw uniformly on $C^m$ using the function
+\begin{verbatim}
+void ran_m_unit_sphere_get_val(Random *ran, int m, double *x)
+\end{verbatim}
+that stores the drawn vector in $x$.
+If you prefer to use a generic random numbers generator, the following
+function achieves the same effect:
+\begin{verbatim}
+void ran_m_unit_sphere(Random *ran, int m, double *x)
+\end{verbatim}
+
+%\subsection{Generic techniques}
+
+\subsection{Acceptance-rejection}
+
+\begin{algo}{Acceptance-rejection technique}
+
+\mbox{}
+
+\noindent
+Repeat
+\begin{enumerate}
+\item
+Generate $Y$ with density $r(x)$.
+\item
+Generate $U: U (0, 1)$ independent of $Y$.
+\end{enumerate}
+until $U \leq f (Y )/t(Y )$; $\qquad$ return Y.
+\end{algo}
+
+\subsection{Special cases}
+
+\subsubsection{Ratio of distributions}
+\index{distribution@ratio}
+
+It is sometimes useful to compute the ratio of two random
+distributions, which can be performed with the following functions.
+\begin{verbatim}
+void ran_generate_ratio_distribution(Random *ran1, Random *ran2,
+			             int n, double *x1, int incx1,
+				     double *x2, int incx2,
+				     double *r, int incr)
+\end{verbatim}
+Both random numbers generators \verb|ran1| and \verb|ran2| must of
+course be initialized, and producing independent sequences (except in
+very specific cases). \verb|n| designs the number of draws to
+produces.
+The vectors $x_1$ will contain draws from the first distribution,
+using \verb|ran_1|, using the increment \verb|incx1| (see
+Section~\ref{sub:laconventions}), while $x_2$ will contain draws
+produced by \verb|ran_2|, using the increment \verb|incx2|.
+The ratios between these draws will be stocked in the vector $r$,
+using the increment \verb|incr|.
+
+This function can of course be memory consuming as it stores vectors
+\verb|x1|,  \verb|x2| and  \verb|r|. A simpler function is
+\begin{verbatim}
+inline double ran_generate_ratio(Random *ran1, Random *ran2,
+				 double *x1, double *x2)
+\end{verbatim}
+This function simply draws one realization from \verb|ran1|, one from
+\verb|ran2|, stores them in elements \verb|x1| and \verb|x2|
+respectively, and returns their ratio.
+
+\subsubsection{Truncated distributions}
+
+For any random variable $X$, it is possible to truncate its
+distribution produced to some interval $[a,b]$ when inversion is used
+as the generation technique.
+This can be obtained by setting three parameters of the random
+generator object:
+\begin{itemize}
+\item
+the desired lower bound of the distribution function, i.e. $F(a)$;
+\item
+the desired upper bound of the distribution function, i.e. $F(b)$;
+\item
+the probability mass of $a$, i.e. $P[X=a]$.
+\end{itemize}
+These parameters can be set with the function
+\begin{verbatim}
+void ran_random_set_truncation(Random *random, double l,
+                               double h, double p);
+\end{verbatim}
+$l$ and $h$ correspond to lower and upper bounds respectively, while
+$p$ is the value $P[X=a]$.
+By default, $l = 0$, $h = 1$, and $p = 0$, so that no truncation is performed.
+
+In order to illustrate how the truncation is performed, let
+$\tilde{F}$ denote the distribution $F$ truncated to the interval
+$(a,b]$, i.e.,
+\[
+ \tilde{F}(x) = \frac{F(x)-F(a)}{F(b)-F(a)}
+\]
+for $a \le x\le b$, $\tilde F(x) = 0$ for $x \le a$, and $F(x) = 1$
+for $x\ge b$.
+Let $U \sim U(F(a),\, F(b))$ and $X=F^{-1}(U)$.
+Since $F$ is monotone, we have
+\begin{multline*}
+P[X\leq x] = P[U\leq F(x)] =\\
+\begin{cases}
+  0 & \mbox{if } F(x)\le F(a) (\mbox{or if } x \le a), \\
+  \frac{F(x)-F(a)}{F(b)-F(a)} & \mbox{if } F(a) \le F(x) \leq F(b)
+  (\mbox{or if } a \le x\leq b), \\
+  1 & \mbox{if } F(x) \ge F(b)  (\mbox{or if } x \ge b).
+\end{cases}
+\end{multline*}
+Therefore, $X$ has distribution $\tilde{F}$.
+
+If $F$ has a jump of size $p$ at $a$ and we want to truncate to
+$[a,b]$, then the algorithm should return $a$ with probability $p$.
+To achieve that, it suffices to generate $U$ uniform over $(F(a)-p,\,
+F(b))$.
+
+\section{Stochastic processes}
+
+\begin{defn}{Stochastic process}
+Given a probability space $(\Omega, \cF, P)$ and a measurable space
+$(S, \Sigma)$ an $S$-valued \Index{stochastic process} $X$ is a collection of $S$-valued random variables on $\Omega$ indexed by a totally ordered set $T$:
+\[
+X = \lbrace X_t\,|\, t \in T\rbrace,
+\]
+where each $X_t$ is $S$-valued random variable on $\Omega$.
+The space $S$ is then called the state space of the process.
+\end{defn}
+
+\subsection{One-dimensional Brownian motion}
+
+\begin{defn}{Standard one-dimensional Brownian motion}
+\index{Brownian motion}
+A standard one-dimensional Brownian motion on $[0,T]$ is a stochastic
+process $\lbrace W(t),\ 0 \leq t \leq T \rbrace$ with the following properties
+\begin{enumerate}[(a)]
+\item
+ W(0) = 0;
+\item
+ the mapping $t \rightarrow W(t)$ is a continuous function on $[0,T]$, almost surely;
+\item
+ the increments
+\[
+ \lbrace W(t_1) - W(t_0), W(t_2) - W(t_1),\ldots, W(t_k) - W(t_{k-1}), \rbrace
+\]
+are independent for any $k$ and any $0 \leq t_0 < t_1 < \ldots < t_k \leq T$;
+\item
+ $W(t)-W(s) \sim N(0, t-s)$, for any $0 \leq s < t \leq T$.
+\end{enumerate}
+\end{defn}
+
+For constants $\mu$ and $\sigma > 0$, a process $X(t)$ is a Brownian motion
+with drift $\mu$ and diffusion coefficient $\sigma^2$ (abbreviated
+$X \sim BM(\mu, \sigma^2)$) is
+\[
+\frac{X(t)-\mu t}{\sigma}
+\]
+is a standard Brownian motion $W$.
+Therefore, we may construct $X$ from a standard Brownian motion $W$ by setting
+\[
+ X(t) = \mu t + \sigma W(t).
+\]
+It follows $X(t) \sim N(\mu t, \sigma^2 t)$, and $X$ solves the stochastic
+differential equation 
+\[
+ dX(t) = \mu dt + \sigma dW(t).
+\]
+We can also start from a non-zero value $X(0) = \alpha$ by simply adding $x$
+to each $X(t)$.
+
+\subsection{One-dimensional geometric Brownian motion}
+
+$S$ follows a geometric Brownian motion of drift $\mu$ and volatility parameter $\sigma$ if it satisfies the stochastic differential equation
+\[
+dS_t = \mu S_t dt + \sigma S_t dW_t,
+\]
+or, equivalently,
+\[
+S(t) = S(0)e^{(\mu-\frac{1}{2}\sigma^2)t+\sigma W(t)}.
+\]
+
+\subsection{Multiple-dimensional geometric Brownian motion}
+
+Suppose that we have a correlation matrix $C$:
+\[
+C =
+\begin{pmatrix}
+1 & \rho_{1,2} & \ldots & \rho{1,n} \\
+\rho_{2,1} & 1 & \ldots & \rho{2,n} \\
+\vdots & \vdots & \ddots & \vdots \\
+\rho_{n,1} & \rho_{n,2} & \ldots & 1
+\end{pmatrix}
+\]
+$\rho_{ij}$ is the correlation between $X_i(t)$ and $X_j(t)$.
+The corresponding covariance matrix is denoted $\Sigma$:
+\[
+\Sigma_{ij} = \sigma_i \sigma_j \rho_{ij}.
+\]
+Assume that $A$ is any matrix for which
+\[
+AA^T = C.
+\]
+For instance, $A$ can be chosen as the Cholesky factor of $C$.
+
+\section{Random permutations}
+
+A random permutation\index{permutation!random}, or
+shuffling\index{shuffling|see{permutation}}, is a random ordering of a
+set of objects, that is, a permutation-valued random variable.
+There are two basic algorithms for doing this, both popularized by
+Donald Knuth.
+The first is simply to assign a random number to each object, and then
+to sort the cards in order of their random numbers. This will generate
+a random permutation, unless two of the random numbers generated are
+the same. This can be eliminated either by retrying these cases, or
+reduced to an arbitrarily low probability by choosing a sufficiently
+wide range of random number choices.
+
+The second, generally known as the Knuth shuffle or Fisher-Yates
+shuffle, is a linear-time algorithm which involves moving through the
+objects set, swapping each object in turn with another object from a
+random position in the part of the set that has not yet been passed
+through (including itself).
+This is the implemented method, that comes in two versions, one for
+generic pointers arrays, on for double vectors:
+\begin{verbatim}
+void ran_shuffle_generic(Random *r, int n, void *x, int incx);
+void ran_shuffle_double(Random *r, int n, double *x, int incx);
+\end{verbatim}
+In these functions, \verb|r| is an initialized random numbers
+generator, $n$ is the number of elements to shuffle, stored or pointed
+by the vector $x$, which has an increment \verb|incx|.
+
+\section{Input-ouput functions}
+
+Two simple functions are available to write random draws in an output
+file $\texttt{f}$.
+The first function allows to write a random vector $v$ of size $d$.
+\begin{verbatim}
+void ran_write_vector(FILE *f, double *v, int d);
+\end{verbatim}
+This function is generalized to an array of dimensions $m \times d$,
+and leading dimension $\texttt{ldS}$ (see
+Section~\ref{sub:laconventions}).
+\begin{verbatim}
+void ran_export_sample(FILE *f, int m, int d, double *S, int ldS);
+\end{verbatim}

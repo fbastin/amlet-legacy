@@ -1,0 +1,183 @@
+\chapter{Graph algorithms}
+
+\section{Definitions}
+
+Let $V$ be a finite set, and denote by
+\[
+E(V) = \lbrace \lbrace u, v \rbrace \,|\, u, v \in V, u \ne v \rbrace,
+\]
+the subsets of $V$ of two distinct elements.
+We define a graph on $V$ as below.
+\begin{defn}{Graph}
+\index{graph}
+A pair $G = (V,E)$ with $E \subseteq E(V)$ is called a graph (on $V$).
+The elements of $V$ are the vertices, and those of $E$ the edges of the graph.
+The \Index{vertex} set of a graph $G$ is denoted by $V_G$ and its edge set by $E_G$.
+Therefore $G = (V_G, E_G)$.
+\end{defn}
+
+In the literature, graphs are also called simple graphs; vertices are called nodes or points; edges are called lines or links.
+A pair $\lbrace u, v \rbrace$ is usually written simply as $uv$.
+Notice that then $uv$ = $vu$.
+In order to simplify notations, we also write $v \in G$ instead of $v \in V_G$.
+
+\section{Computer representation}
+
+As any graph is basically constituted by nodes and edges, we first define a type for the nodes and a type for the edges.
+The graph itself will be represented by an object of type \verb|GR_Graph|.
+Various computer representations are possible, but in many applications, graph are sparse,
+as many possible edges, corresponding to an ordered pair of nodes (in the case of an oriented
+graph) do not exist.
+To account of this situation, we decide to represent a graph simply as a collection of nodes, and each node is associated to a set of input edges and a set of output edges.
+This representation is well suited for oriented graphs, while for non-oriented graphs, we then need to duplicate each edge.
+A graph can then be allocated using the function
+\begin{verbatim}
+GR_Graph *gr_graph_new(int n)
+\end{verbatim}
+where $n$ is the number of nodes. to be known in advance.
+The user has then to add the nodes and the edges.
+In order to help node addition, the function \verb|gr_graph_new| also initialize the set of nodes and give (unique) identifiers from $0$ to $n-1$.
+It is possible to force the numbering to start from a different number using the function
+\begin{verbatim}
+GR_Graph *gr_graph_new_offset(int n, int offset)
+\end{verbatim}
+where \verb|offset| is the first number to use.
+The memory can be freed using the function
+\begin{verbatim}
+void gr_graph_free(GR_graph *graph)
+\end{verbatim}
+This function with also free the memory associated to each node of the graph.
+
+The basic type for a node is \verb|GR_Node|, which has the following attributes:
+\begin{enumerate}
+\item
+\verb|id|: a numeric identifier;
+\item
+\verb|internal_id|: an internal identifier, used for library functions purposes;
+\item
+\verb|label|: a string label;
+\item
+\verb|value|: an array of real values attached ti this node;
+\item
+\verb|in|: the list of input edges;
+\item
+\verb|out|: the list of output edges.
+\end{enumerate}
+A node can be created using the function
+\begin{verbatim}
+GR_Node *gr_node_new()
+\end{verbatim}
+and freed with
+\begin{verbatim}
+void gr_node_free(GR_Node *node)
+\end{verbatim}
+
+The identifiers can be recovered using the functions
+\begin{verbatim}
+int gr_node_get_id(GR_Node *node)
+\end{verbatim}
+and
+\begin{verbatim}
+int gr_node_get_internal_id(GR_Node *node)
+\end{verbatim}
+It is also possible the obtain the internal identifier of the node with the identifier \verb|id| in a given graph with the function
+\begin{verbatim}
+int gr_graph_get_node_internal_id(GR_Graph *graph, int id)
+\end{verbatim}
+The search is linear, and can be quite expensive in large graphs.
+If no node with identifier \verb|id| has been found, the function returns the value -1.
+
+Once the set of nodes created, we can connect them by creating edges.
+The basic function creating an edge from node \verb|origin| to node \verb|destination| is
+\begin{verbatim}
+GR_Edge *gr_edge_new(GR_Node *origin, GR_Node *destination)
+\end{verbatim}
+The memory associated to an edge can be freed with the function
+\begin{verbatim}
+void gr_edge_free(GR_Edge *edge)
+\end{verbatim}
+Each edge has a weight that can be set with the function
+\begin{verbatim}
+double gr_edge_get_weight(GR_Edge *edge)
+\end{verbatim}
+
+An edge can also be created by connecting two nodes of known identifiers in a graph with the function
+\begin{verbatim}
+GR_Edge *gr_graph_connect(GR_Graph *graph,
+                          int origin, int destination,
+                          double weight)
+\end{verbatim}
+As written before, the search of the real identifier of a node can be time consuming, so when possible, it is preferable to use the function below, where \verb|origin| and \verb|destination| are now internal identifiers:
+\begin{verbatim}
+GR_Edge *gr_graph_create_edge(GR_Graph *graph,
+                              int origin, int destination,
+                              double weight)
+\end{verbatim}
+			  
+\section{Graphs algorithms}
+
+\subsection{Shortest paths}
+
+Selecting an origin $s$ and a destination $t$ in a graph, the problem is to find a shortest path
+between these two nodes.
+Various algorithms exist, and the library provides some simple implementations, aiming to
+illustrate the techniques.
+
+\subsubsection{Topologically-ordered algorithms}
+
+The first presented algorithms are inspired from dynamic programming techniques.
+We assume that the graph is topologically-ordered, i.e. it is ordered and an edge $(i,j)$
+can exist only if $i < j$, and that $a_{ij} > 0$ if the edge $(i,j)$ exists.
+Three algorithms are proposed.
+The first is a direct translation of the dynamic programming algorithm.
+If $J(i)$ is the minimum distance from $i$ to $t$, then
+\[
+ J(j) + a_{ij} = J(i),
+\]
+if the edge $(i,j)$ belongs to a shortest path.
+The function
+\begin{verbatim}
+void gr_graph_backward_linking(GR_Graph *graph,
+                               int origin, int destination,
+                               double *J, int *next);
+\end{verbatim}
+implements the method, fixing the distances from the destination to the origin, represented by their internal identifiers.
+On output, \verb|J[i]| contains the distance from node $i$ to the node \verb|destination|,
+and \verb|next[i]| contains the successor of node $i$ on the shortest path from
+\verb|origin| to \verb|destination|.
+
+\begin{verbatim}
+void gr_graph_forward_linking(GR_Graph *graph,
+                              int origin, int destination,
+                              double *D, int *previous);
+\end{verbatim}
+
+\begin{verbatim}
+void gr_graph_accession(GR_Graph *graph,
+                        int origin, int destination,
+                        double *D, int *previous);
+\end{verbatim}
+
+\subsubsection{Label correcting algorithm}
+
+\begin{verbatim}
+void gr_graph_dijkstra(GR_Graph *graph,
+                       int origin, int destination,
+                       double *dist, int *previous);
+\end{verbatim}
+
+\begin{verbatim}
+void gr_graph_dijkstra_edges(GR_Graph *graph,
+                             int origin, int destination,
+                             double *dist, GR_Edge **previous,
+                             double (*weight)(GR_Edge *edge));
+\end{verbatim}
+
+The more general algorithm allows to consider edges of negative weight, as long as there is no negative cycle.
+\begin{verbatim}
+int gr_graph_labelcorrecting_adj(int n,
+                                 int origin, int destination,
+                                 int **adj, double **v_adj,
+                                 double *u,
+                                 int *parent, double *w);
+\end{verbatim}

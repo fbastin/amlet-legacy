@@ -1,0 +1,25 @@
+\chapter{Introduction}
+
+The name ``Ophelia'' stands for ``Optimization and Harmless Estimation Library for AMLET''.
+The painting ``Ophelia'' in the front cover is due to Arthur Hughes in 1865.
+As reflected by its name, this library is part of the larger project
+AMLET, available at the address \amleturl{}.
+This manual covers the version \version{} of \ophelia{}.
+
+\section{Requirements}
+
+\ophelia{} relies heavily on the library \oratio{} (\url{http://oration.slashbin.net}), and the associated dependencies.
+In particular, \ophelia needs a proper \blas{}, as for \oratio{}, so
+we refer to \oratio{} documentation for more details.
+Operations requiring more advanced linear algebra, especially those present in 
+\lapack{}.
+While some \blas{} libraries are delivered with proper \lapack implementations, they are often given standalone, so a copy of required \lapack{} functions are
+embedded in \ophelia{}, and we will follow the associated conventions.
+
+\section{Conventions}
+
+$x(i)$ designs the $i$-th component of the vector $x$.
+When comparing two vectors $x$ and $y$ in $\R^n$, an inequality $x \leq y$ is meant componentwise,
+that is $x(i) \leq y(i),\ i = 1,\ldots,n$.
+We also follow the matrix conventions presented in the \texttt{NTools} component
+of \oratio{}.

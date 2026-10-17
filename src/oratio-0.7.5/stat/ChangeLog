@@ -1,0 +1,143 @@
+2009-10-19  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* triangular.c (st_triangular_icdf): new function.
+
+2008-11-11  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* gamma.c (st_gamma_mean): new function.
+
+2008-04-30  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* descriptive.c (st_descriptive_quantiles): new function.
+
+	* stat_error.h: new file.
+
+2008-04-27  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* descriptive.c: file analysis.c has been renamed descriptive.c
+	(st_median): new function; compute the median of observations.
+	(st_median_observation): new function; compute the median of
+	observations, with the restriction that the returned element must
+	be an existing observation.
+
+	* stat_descriptive.h: file analysis.h has been renamed as stat_descriptive.h
+
+	* ChangeLog: file is now is stat subdirectory
+
+2007-06-27  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* stat/percentile.c (st_percentile): minor bug correction.
+
+2007-06-20  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* stat/analysis.h: comments update.
+
+2007-05-09  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* stat/normal.c: revision of the functions definitions in order to
+	respect the adopted naming scheme.
+
+	* stat/fisher.c (st_fisher_pdf): st_fisher_dist is now called st_fisher_pdf. 
+
+2007-05-08  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* stat/exponential.c: new file: support of the exponential distribution.
+
+	* stat/exponential.h: new file.
+
+	* stat/gamma.c (st_gamma_pdf): revision of the fonction.
+
+2006-10-02  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* bootstrap: test if automake is installed.
+
+2006-09-27  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* configure.in: no more references to blas and ntools libraries.
+
+	* stat/poisson.c (st_poisson_pdf): the call to nt_factorial_ln has
+	been removed, and a (small) function factorial_ln has been added,
+	in order to make the library independent of ntools (and therefore
+	from any blas library).
+
+2006-09-26  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* stat/exceptions.h: new file
+
+2006-09-22  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* stat/normal.c (st_normal_pdf_trunc): function removal.
+
+2006-09-21  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* stat/lognormal.c (st_lognormal_cdf): comment update, and
+	simplified definition.
+	(st_lognormal_pdf): comment update; variables have been renamed
+	for consistencies issues.
+	(st_lognormal_dist_trunc): removed function.
+
+2006-08-18  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* stat/uniform.c (st_uniform_pdf): function name change in order
+	to reflect the conventions; comments update.
+
+2006-07-31  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* stat/poisson.c (st_poisson_pdf): new function.
+
+2005-06-16  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* stat/normal.c (st_normal_cum_func): new function.
+
+	* stat/percentile.h: revised definition of ST_CUM_FUNC.
+
+	* stat/ttest.h: addition of the t-test.
+
+2005-04-20  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* stat/stat.h: _min and _max definitions removed.
+
+2004-05-06  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* stat/normal.c, stat/lognormal.c: uses float.h constants instead
+	of values.h ones in order to improve portability under Cygwin.
+
+2003-10-01  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* stat/normal.c (st_inv_cum_gauss): new function.
+
+	* stat/percentile.c (st_percentile_func): corrected bug for
+	quantile less than median.
+
+2003-06-18  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* bootstrap: new bootstrap to help reconfiguration.
+
+2002-11-03  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* stat/chi.c: added functions st_chi_square_density,
+	st_chi_square_mean, st_chi_square_variance.
+
+2002-09-10  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* general: no longer dependencies with mc library
+	
+	* stat/percentile.c (st_percentile_func): remove references to mc
+	library (now it uses constants defined in float.h).
+
+	* stat/normal.c (st_cum_gauss): remove references to mc library
+	(now it uses constants defined in float.h).
+	
+2001-04-04  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* stat/student.c: add student cumulative function
+
+	* general: begin to rewrites headers; distributions are now in
+	different files
+
+2001-03-21  Fabian Bastin  <fbas@math.fundp.ac.be>
+	
+	* stat/gamma.c (st_gamma_cf): Bug fixed in st_gamma_cf
+
+	* general: library now independant of ntools library        
+	

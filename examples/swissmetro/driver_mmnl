@@ -1,0 +1,36 @@
+# Swissmetro: mixed logit with a normally distributed time coefficient
+# (specification of Biogeme example 05normalMixture, observations treated
+# as independent). Data: run swissmetro_to_amlet.py first.
+
+PROBLEM = "Swissmetro MMNL";
+output "results_mmnl";
+
+nobs = 6768;
+np = 6768;
+nalt = 3;
+
+nvar = 6;
+iddep = 6;
+censor = 1;
+idcensor = 5;
+
+niter = 300;
+eps = 1e-6;
+
+# ASC_TRAIN, ASC_CAR, B_TIME ~ N(mean, std), B_COST
+btype = { CONSTANT, CONSTANT, NORMAL, CONSTANT };
+b = { 0.0, 0.0, 0.0, 0.1, 0.0 };
+
+nrep = 1000;
+seed1 = 12345;
+sampling = monte_carlo;
+
+format = Train96;
+load "swissmetro_train96";
+
+method = MCBTRDA;
+hessian_update = BFGS;
+hessian_approx = true;
+robust = true;
+bias = 0;
+validation = false;

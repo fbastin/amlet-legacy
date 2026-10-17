@@ -1,0 +1,200 @@
+\chapter{First steps with \amlet{}}
+\label{ch:launch}
+
+\amlet{} can be used as a C library or a standalone application.
+When used as a library, more complex models can be described and more analysis can be performed, but at the expense of some programming efforts.
+The use as a standalone application is easier, but the range of models that can be estimated is more limited.
+
+\section{Standalone application}
+
+When \amlet{} is used as a command-line application, it has to be launched
+from a text-console.
+The basic usage is
+\begin{verbatim}
+amlet [OPTIONS] FILE
+\end{verbatim}
+where \verb|FILE| designs the driver file (see
+Section~\ref{sec:driver}), and \verb|[OPTIONS]| corresponds to
+optional options, as described in Table~\ref{tab:options}. The
+options can be used in short or long form; for instance, the command
+\begin{verbatim}
+amlet -o log driver
+\end{verbatim}
+has the same effect that
+\begin{verbatim}
+amlet --output log driver
+\end{verbatim}
+
+\begin{table}[htb]
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+short & long & argument & function \\
+%\hline
+\verb|-d| & \verb|--debug| & - & activate debug mode \\
+\hline
+\verb|-h| & \verb|--help| & - & print help message \\
+\hline
+\verb|-o| & \verb|--output| & file name
+& save the log information into a file \\
+\hline
+\verb|-v| & \verb|--verbose| & - & verbose mode \\
+\hline
+\verb|-V| & \verb|--version| & - & print version number \\
+\hline
+\end{tabular}
+\caption{command-line options}
+\label{tab:options}
+\end{center}
+\end{table}
+
+We briefly describe these options here, and cover them in more details
+in the relevant sections.
+\begin{description}
+\item[debug] is meant for development purposes, delivering additional
+  messages on the standard output in order to help debugging code;
+\item[help] option makes \amlet{} displaying some brief help on the
+  screen, and then exits.
+\item[output] allows the user to define the name of the log
+file (see Section~\ref{se:logfile}).
+\item[verbose] option informs AMLET to print additional information on
+  the screen during execution.
+\item[version] prints the version number on the screen, afterwhat
+the program exits.
+\end{description}
+
+\section{Driver file}
+\label{sec:driver}
+
+The \amlet{} driver file expresses a specification of the model to
+calibrate, as well as of the optimization method to apply.
+The driver has to be written in raw text format; examples of driver
+files can be found in Appendix~\ref{app:driver}.
+It basically consists of two kinds of lines: the command ones and the
+affectations ones.
+A command line has the following form:
+\begin{verbatim}
+command parameters;
+\end{verbatim}
+In other terms if consists of a command followed by the parameters to
+apply to this command. An affection line has the form
+\begin{verbatim}
+variable = value;
+\end{verbatim}
+The value can be an integer, a real, a string or a set, depending on the
+variable that has to be affected. In some cases, a predefined constant
+identifier can be used instead of a numerical quantity. String values
+are any sequence of characters, enclosed within double
+quotes; a correct string would be for example
+\begin{verbatim}
+``this is a string''
+\end{verbatim}
+You cannot use double quotes inside a string.
+We give in Table~\ref{tab:variables} the name of the main variables,
+in alphabetical order. There will be discussed in more details in the
+relevant sections.
+\begin{table}[htbp]
+\begin{small}
+\begin{center}
+\begin{tabular}{|c|c|p{6cm}|}
+\hline
+{\bf Parameter} & {\bf Default value} & {\bf Function} \\
+\hline
+\verb|b| & $(0,\ldots,0)^T$ & starting point \\
+\hline
+\verb|btype| & & type of the utilities coefficients \\
+\hline
+\verb|bgen| & & logit parameters for synthetic population generation \\
+\hline
+\verb|bgentype| & & type of the utilities coefficents during observations
+generation\\
+\hline
+\verb|censor| & & 0 if all individuals face to all alternatives, 1
+otherwise \\
+\hline
+\verb|iddep| & & dependent variable index\\
+\hline
+\verb|idcensor| & & variable index corresponding to the alternatives
+availability \\
+\hline
+\verb|draws| & & indicates if new draws are to be generated or if they
+have to be read from an external file\\
+\hline
+\verb|drawsname| & & name of the file containing the draws\\
+\hline
+\verb|eps| & & tolerance used for optimization \\
+\hline
+\verb|format| & \verb|Train96| & format of the data file \\
+\hline
+\verb|hessian_update| & & Hessian approximation method \\
+\hline
+\verb|level_accuracy| & & significance level used for objective accuracy
+evaluation \\
+\hline
+\verb|method| & & optimization method \\
+\hline
+\verb|np| & & number of individuals \\
+\hline
+\verb|nalt| & & number of alternatives \\
+\hline
+\verb|niter| & & maximum number of iterations during the optimization
+process \\
+\hline
+\verb|nobs| & & total number of observations \\
+\hline
+\verb|nrep| & & number of draws \\
+\hline
+\verb|nvar| & & number of variables (coefficients) \\
+\hline
+\verb|problem| & & problem name \\
+\hline
+\verb|robust| & & indicates if robust estimation of variance-covariance
+matrix has to be used \\
+\hline
+\verb|rangen| & & random numbers generation method \\
+\hline
+\verb|sampling| & & sampling method \\
+\hline
+\verb|randomization| & & randomization strategy \\
+\hline
+\verb|seed1| & & seed of the random generator\\
+\hline
+\verb|validation| & \verb|false| & results validation \\
+\hline
+\end{tabular}
+\caption{variables}
+\label{tab:variables}
+\end{center}
+\end{small}
+\end{table}
+
+You can also write comments with the characters \# or \makeatletter
+@\makeatother. The remaining of the line is then ignored by
+\amlet{}, except if these characters are part of a string. The driver
+file is case unsensitive, except for filenames, depending on the
+operating system on which \amlet{} is executed.
+
+\subsubsection{Commands}
+
+We now briefly review the commands of \amlet{}. First, the command
+\verb|output| expresses the name of file where the results will be saved:
+\begin{verbatim}
+output ``results'';
+\end{verbatim}
+where \verb|results| has to be replaced with the name that you want.
+If no \verb|output| command is present in the drive file, the name
+will be set by default to the name of the driver file followed by
+\verb|.output|.
+
+The next two commands allow to specify an existing observations file
+or to generate a file that will be filled with synthetic data.
+Assuming that your observations file has the name \verb|data|, you can
+load it into \amlet{} with the command
+\begin{verbatim}
+load ``data'';
+\end{verbatim}
+On the other name, synthetic data can be obtained with the command
+\begin{verbatim}
+generate ``data'';
+\end{verbatim}
+The structure of the data files is explained in Section~\ref{sec:data}.

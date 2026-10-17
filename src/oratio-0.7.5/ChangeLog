@@ -1,0 +1,188 @@
+2010-09-12  Fabian Bastin  <bastin@Tricia>
+
+	* dstruct/dslist.c (ds_list_remove): bug fix.
+
+2010-04-03  Fabian Bastin  <bastin@Tricia>
+
+	* ran/mrg32k3a.c (ran_mrg32k3a_init): bug fix.
+
+2009-11-23  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* ran/mvn.c (ran_mvn): new function.
+
+	* stat/descriptive.c (st_mean): increment bug correction.
+	(st_covariance): major bug correction.
+
+2009-10-27  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* moca/baker.c: new file.
+
+2009-09-18  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* stat/erlang.c: new supported distribution.
+
+	* ran/exponential.c: various bugs fixes.
+
+2009-09-10  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* ran/permutations.c: new file
+
+2009-01-27  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* test/ntools/ntools_test.h: new file.
+
+2009-01-03  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* stat/triangular.c: new supported distribution.
+
+2008-10-02  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* stat/cauchy.c: new supported distribution.
+
+2008-09-24  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* stat/estimator.c: new file regrouping statistical properties
+	functions for estimators.
+
+2008-09-17  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* ntools/constants.h: addition of various mathematical constants.
+
+2007-11-15  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* ran/dirac.c: addition of the Dirac distribution.
+
+2007-07-04  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* src/student.c: new distribution.
+
+	* src/random.c (ran_random_set_generator): revision of the function.
+
+2007-06-18  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* src/m_unit_sphere.c: new file.
+
+2007-06-17  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* src/random.c (ran_random_new_with_size): take the case size
+	equal 0 into account.
+
+2007-06-14  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* src/normal.c: major revision of the implementation to improve the coherence.
+
+2006-07-04  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* src/normal.c (ran_lognormal_from_U): major bug correction (was
+	generating a normal).
+
+2006-06-01  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* src/bernouilli.c (ran_bernouilli_from_U): new function.
+
+2006-05-31  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* src/normal.c (ran_lognormal_from_U): new function.
+
+	* src/triangular.c (ran_triangular): slight revision.
+
+2005-07-08  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* src/random.c (ran_translate_seed): new function.
+
+2005-07-04  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* src/gamma.c (ran_gamma_get_val): minor bug correction.
+
+	* src/cauchy.c (ran_cauchy_get_val): minor bug correction.
+
+2005-04-20  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* testing/test_ran.c (Uniform_test): minor bug correction
+
+	* src/ran.h: inline keywords have been removed
+
+	* src/mt19937.h: inline keywords have been removed
+
+2005-02-02  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* src/geometric.c: newly supported distribution
+
+	* src/misc.c (ran_credits): new function
+
+2005-01-06  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* global: revision 0.7.1
+	
+	* ran.cfg: new configuration file; start of doxygen support
+
+	* src/ran.h: correction of the definition of some set_parameters
+	function; the library can now be compiled with gcc-3.2
+
+2004-05-12  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* global: revision 0.7.0
+
+	* src/random.c (ran_random_get_parameters_number): new function
+
+2004-05-11  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/normal.c (ran_normal_icdf): new function to generate
+	normally distributed value (more complient with quasi-Monte Carlo
+	draws)
+
+	* src/lognormal.c (ran_lognormal_icdf): new function to generate
+	normally distributed value (more complient with quasi-Monte Carlo
+	draws)
+
+2004-04-25  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* global: revision 0.6.2
+
+	* src/triangular.c: new supported distribution
+
+2003-06-18  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* global: revision 0.6.1
+
+	* bootstrap: new bootstrap to help reconfiguration.
+
+	* testing/Makefile.am: fullfills now distcheck requirements.
+
+	* doc/Makefile.am: fullfills now distcheck requirements.
+	
+
+2003-05-13  Fabian Bastin  <fbas@our.domain.is.not.set>
+
+	* src/random.c (ran_random_generator_name): association of names
+	to the generators, that can be known by the user.
+
+2003-03-18  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* global: new release 0.6.0; now supports different uniform
+	generators.
+	
+	* src/ecuyer.h: former rng.h now renamed ecuyer.h to show explicit
+	that we use L'Ecuyer's algorithm.
+
+	* src/millerpark.h: Millerpark generator added.
+
+2002-10-25  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/rng.h: new header file in order to have a better abstraction
+	scheme.
+
+2002-10-22  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/arcsine.c: Arcsine distribution now supported.
+	* src/gumbel.c: Gumbel distribution now supported.
+
+2002-10-16  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* src/bernouilli.c: Bernouilli distribution now supported.
+
+2002-09-09  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* general: in all functions '_new', change 'int seed' by 'int
+	*seed', so the user can know the seed generated.
+

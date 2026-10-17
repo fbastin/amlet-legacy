@@ -1,0 +1,4 @@
+2008-05-04  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* ran/cauchy_test.h (cauchy_test): new test.
+

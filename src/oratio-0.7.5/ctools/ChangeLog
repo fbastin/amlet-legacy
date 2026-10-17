@@ -1,0 +1,105 @@
+2010-05-21  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* ctools/file.c: comments revision for the function c_file_get_text.
+
+  * doc/ctools.tex: c_file_get_text function is now documented.
+
+2008-04-28  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* ctools_error.h: file "error.h" has been renamed "ctools_error.h".
+
+2007-06-18  Fabian Bastin  <bastin@iro.umontreal.ca>
+
+	* ctools/memory.h: comments update. 
+
+2006-10-02  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* bootstrap: test if automake is installed.
+
+2006-07-20  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/ctime.c (ctools_read_standard_time): new function.
+
+2006-02-03  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/symbol.c: new function.
+
+	* ctools/symbol.h: the token indifier is now of type int instead
+	of unsigned int.
+
+2005-11-21  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/memory.h (_free): new macro.
+
+2005-11-10  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/types.h (void): new file.
+
+2005-08-31  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/cstring.c (c_string_clone): this function is deprecated
+	and has been removed; strdup from the C standard library plays
+	the same rule.
+
+2005-08-18  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/ctime.c (ctools_read_standard_date_time): new function.
+	(ctools_read_european_date_time): new function.
+
+2005-07-22  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/cstring.c (c_string_clone): the implementation of this
+	function was missing.
+
+2005-07-13  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/file.c (c_fopen): new function.
+
+2005-06-30  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* configure.in: revised architecture and compiler specific options
+	gestion.
+
+2005-04-18  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/values.h: new file.
+
+2005-04-12  Fabian Bastin  <fabian.bastin@cerfacs.fr>
+
+	* ctools/symbol.c (c_symbol_get_name): new function.
+
+	* ctools/ctime.c (ctools_timestamp): new function.
+
+2004-12-03  Fabian Bastin  <fbas@cvfbastin.cv.ic.ac.uk>
+
+	* ctools/file.c (c_file_get_line_b): new function
+
+	* ctools.cfg: new configuration file; start of doxygen support
+
+2004-12-02  Fabian Bastin  <fbas@cvfbastin.cv.ic.ac.uk>
+
+	* ctools/file.c (c_file_get_line): bug correction
+
+2003-06-18  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* bootstrap: new bootstrap to help reconfiguration.
+
+2003-02-06  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* ctools/file.h: function c_file_check_exist added in the header
+	file
+
+2002-07-05  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* global: version 0.4.0 released
+
+	* ctools/error.c:  error routines now accepts list of arguments
+
+	* ctools/memory.c: definition of function c_realloc
+
+2002-01-05  Fabian Bastin  <fbas@math.fundp.ac.be>
+
+	* v0.3.1 released.
+
+	* ctools/file.c: function c_file_check_exists takes now account of
+	symbolic files

@@ -1,0 +1,863 @@
+diff -ruN amlet-0.13.1/amlet/amlet_btr.c amlet-0.13.1/amlet/amlet_btr.c
+--- amlet-0.13.1/amlet/amlet_btr.c	2015-02-17 04:47:55.000000000 -0500
++++ amlet-0.13.1/amlet/amlet_btr.c	2026-10-13 11:27:49.903585278 -0400
+@@ -78,7 +78,7 @@
+  *        precision: > 0;
+  *        ssamp: current sampling size
+  */
+-inline int candidate_size(int n, double var,
++int candidate_size(int n, double var,
+ 			  double quantile, double precision,
+ 			  int ssamp, int min_size)
+ {
+@@ -87,12 +87,12 @@
+ 
+   t = quantile/(n*precision);
+   t = t*t*var;
+-  size = (t > INT_MAX) ? INT_MAX : _max(min_size, ceil(t));
++  size = (t > INT_MAX) ? INT_MAX : nt_max(min_size, ceil(t));
+ 
+   return size;
+ }
+ 
+-inline void stupid_uss(double ratio, double rsize, dcl_data *md,
++void stupid_uss(double ratio, double rsize, dcl_data *md,
+ 		       int suggested_size)
+ {
+   /* only for debugging purposes */
+@@ -110,18 +110,18 @@
+     ratio, rsize, suggested_size); */
+ 
+   if (ratio >= 1.0)
+-    size_sampling = _min(a1*max_size, a2*suggested_size);
++    size_sampling = nt_min(a1*max_size, a2*suggested_size);
+   else if (ratio >= rsize)
+     /* the ratio between the observed decrease and the precision
+        is greater the the ratio between the used size and the
+        suggested size */
+-    size_sampling = _min(a1*max_size, ratio*suggested_size);
++    size_sampling = nt_min(a1*max_size, ratio*suggested_size);
+   else if (ratio >= RATIO_THRESHOLD)
+-    size_sampling = _min(a1*max_size, suggested_size);
++    size_sampling = nt_min(a1*max_size, suggested_size);
+   else
+     size_sampling = max_size;
+ 
+-  size_sampling = _max(min_size, size_sampling);
++  size_sampling = nt_max(min_size, size_sampling);
+ 
+   /*  if (verbose)
+       printf("End update sampling size: %d\n", size_sampling); */
+@@ -141,20 +141,20 @@
+     ratio, rsize, suggested_size); */
+ 
+   if (ratio >= 1.0)
+-    size_sampling = _min(a1*max_size, a2*suggested_size);
++    size_sampling = nt_min(a1*max_size, a2*suggested_size);
+   else if (ratio >= rsize)
+     /* the ratio between the observed decrease and the precision
+        is greater the the ratio between the used size and the
+        suggested size */
+-    size_sampling = _min(a1*max_size, ratio*suggested_size);
++    size_sampling = nt_min(a1*max_size, ratio*suggested_size);
+   else if (ratio >= RATIO_THRESHOLD)
+-    size_sampling = _min(a1*max_size, suggested_size);
++    size_sampling = nt_min(a1*max_size, suggested_size);
+   else
+     size_sampling = max_size;
+ 
+-  size_sampling = _min(size_sampling, 2*current);
++  size_sampling = nt_min(size_sampling, 2*current);
+ 
+-  size_sampling = _max(min_size, size_sampling);
++  size_sampling = nt_max(min_size, size_sampling);
+ 
+   /*  if (verbose)
+       printf("End update sampling size: %d\n", size_sampling); */
+@@ -228,7 +228,7 @@
+ 
+   /* initial sampling size */
+   min_size = MINSAMPLING;
+-  md->size_sampling = _max(min_size, rint(md->max_size/10.0));
++  md->size_sampling = nt_max(min_size, rint(md->max_size/10.0));
+   md->neval = 0;
+   /* md->size_sampling = md->max_size; */
+ 
+@@ -301,7 +301,7 @@
+ 				    md->size_sampling, min_size);
+ 
+     rmodel = (*epsilon > 0.0) ? model_decrease/(*epsilon) : DBL_MAX;
+-    rsize = (double)md->size_sampling / _min(md->max_size, suggested_size);
++    rsize = (double)md->size_sampling / nt_min(md->max_size, suggested_size);
+ 
+     md2->size_sampling = update_sampling_size(rmodel, rsize,
+ 					      suggested_size, min_size,
+@@ -340,7 +340,7 @@
+ 
+ 	/* Perhaps we could use the following code, in conjunction
+ 	   with bias estimation */
+-	/* if (fabs(fct_decrease) <= _max(*epsilon, epsilonplus))
++	/* if (fabs(fct_decrease) <= nt_max(*epsilon, epsilonplus))
+ 	  newsize = ceil(0.5*(md->size_sampling+md2->size_sampling));
+ 	  else */
+ 	if (tmp_ssize < md2->size_sampling) {
+@@ -375,11 +375,11 @@
+ 	  /* Compute the sample size correspondinf to the bias */
+ 	  tmp = 0.5/(md->np*model_decrease)*variance;
+ 	  newsize = (tmp > INT_MAX) ?
+-	    INT_MAX : _max(md2->size_sampling, ceil(tmp));
++	    INT_MAX : nt_max(md2->size_sampling, ceil(tmp));
+ 	  if (newsize == md2->size_sampling)
+ 	    newsize = md->size_sampling;
+ 	  else {
+-	    newsize = _min(md->size_sampling, newsize);
++	    newsize = nt_min(md->size_sampling, newsize);
+ 	    //	    printf("RESULAT %d\n", newsize);
+ 	  }
+ 	  //	  newsize = md->size_sampling;
+@@ -437,15 +437,15 @@
+ 	if (dval < 0.5*RATIO_THRESHOLD*dlast*epsilonplus) {
+ 	  if (tmp_ssize < md2->size_sampling) {
+ 	    /* we have increased the sampling size */
+-	    min_size = _min(ceil(0.5*(md2->size_sampling+tmp_ssize)),
++	    min_size = nt_min(ceil(0.5*(md2->size_sampling+tmp_ssize)),
+ 			    md2->max_size);
+-	    /*	    min_size = _min(tmp_ssize+
++	    /*	    min_size = nt_min(tmp_ssize+
+ 		    ceil(M_SQRT1_2*(md2->size_sampling-tmp_ssize)),
+ 		    md2->max_size); */
+ 	  }
+ 	  else
+ 	    /* we have decreased the sampling size */
+-	    min_size = _min(md2->size_sampling+1, md2->max_size);
++	    min_size = nt_min(md2->size_sampling+1, md2->max_size);
+ 	}
+ 
+ 	/* record the value */
+@@ -456,7 +456,7 @@
+ 	dlast = success-last[md->size_sampling];
+ 	dval = oldvals[md->size_sampling]-btr->value;
+ 	if (dval < 0.5*RATIO_THRESHOLD*dlast*(*epsilon))
+-	  min_size = _min(ceil(0.5*(md2->size_sampling+tmp_ssize)),
++	  min_size = nt_min(ceil(0.5*(md2->size_sampling+tmp_ssize)),
+ 			  md->max_size);
+ 	/* record the value */
+ 	oldvals[md->size_sampling] = btr->value;
+@@ -602,7 +602,7 @@
+ 
+   /* initial sampling size */
+   min_size = MINSAMPLING;
+-  md->size_sampling = min_size;//_max(min_size, rint(md->max_size/10.0));
++  md->size_sampling = min_size;//nt_max(min_size, rint(md->max_size/10.0));
+   /* md->size_sampling = md->max_size; */
+ 
+   /* Memory allocation */
+@@ -659,7 +659,7 @@
+ 
+     md->size_sampling = md->twopowers[pstart];
+     do {
+-      md->size_sampling = _min(tmp_ssize, md->twopowers[pstart]);
++      md->size_sampling = nt_min(tmp_ssize, md->twopowers[pstart]);
+       if (fg)
+ 	new_value[pstart] = fg(x_cand, n, md, epsilonplus+pstart,
+ 			       variance2+pstart, md->newgrad[pstart], restart);
+@@ -701,7 +701,7 @@
+ 				    md->err_quantile, fct_decrease,
+ 				    md->size_sampling, min_size);
+       
+-    rsize = (double)md->size_sampling / _min(md->max_size, suggested_size);
++    rsize = (double)md->size_sampling / nt_min(md->max_size, suggested_size);
+ 
+     new_size = update_sampling_size_rtr(rmodel, rsize, tmp_ssize, suggested_size, min_size, md->max_size);
+ 
+@@ -729,10 +729,10 @@
+       else {
+ 	/* get the value back */
+       	pstart = nt_two_power_ceil(new_size);
+-	md->size_sampling = _min(twopowers[pstart], md->max_size);
++	md->size_sampling = nt_min(twopowers[pstart], md->max_size);
+ 	/* if md->size_sampling is greater than tmp_ssize, we have not
+ 	   computed the value... we cannot increase the sample size! */
+-	md->size_sampling = _min(md->size_sampling, tmp_ssize);
++	md->size_sampling = nt_min(md->size_sampling, tmp_ssize);
+ 
+ 	/* Only the following line for the monotonic version. */
+ 	//	md->size_sampling = tmp_ssize;
+diff -ruN amlet-0.13.1/amlet/amlet_config.h amlet-0.13.1/amlet/amlet_config.h
+--- amlet-0.13.1/amlet/amlet_config.h	2015-02-17 04:47:54.000000000 -0500
++++ amlet-0.13.1/amlet/amlet_config.h	2026-10-13 11:27:49.938585821 -0400
+@@ -19,15 +19,15 @@
+ extern "C" {
+ #endif
+ 
+-  int loose;       /* 1 if we are not strict on the syntax of driver files,
++  extern int loose;       /* 1 if we are not strict on the syntax of driver files,
+ 		      0 else */
+ 
+-  NTLog *mclog;
+-  int nfctev;
++  extern NTLog *mclog;
++  extern int nfctev;
+ 
+-  dcl_data data;
++  extern dcl_data data;
+ 
+-  unsigned int twopowers[31];
++  extern unsigned int twopowers[31];
+ 
+   typedef struct {
+     char *logname;    /* name of the log file */
+diff -ruN amlet-0.13.1/amlet/amlet_data.c amlet-0.13.1/amlet/amlet_data.c
+--- amlet-0.13.1/amlet/amlet_data.c	2015-03-26 22:24:09.000000000 -0400
++++ amlet-0.13.1/amlet/amlet_data.c	2026-10-13 11:27:49.903585278 -0400
+@@ -52,7 +52,7 @@
+  *
+  * @return 0 is no error has been found, AMLET_ERROR_REPETITIONS otherwise.
+  */
+-inline int amlet_check_repetitions(int np, int nobs, int *rep)
++int amlet_check_repetitions(int np, int nobs, int *rep)
+ {
+   int i, j;
+ 
+diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
+--- amlet-0.13.1/amlet/driver.c	2015-03-29 13:57:37.000000000 -0400
++++ amlet-0.13.1/amlet/driver.c	2026-10-13 11:28:05.547827929 -0400
+@@ -104,7 +104,7 @@
+   for (i = NAME; i < END_RESERVED_WORDS; i++) dr->var[i].s = 0;
+ }
+ 
+-inline void driver_free_array(AMLET_Driver *dr, int id)
++void driver_free_array(AMLET_Driver *dr, int id)
+ {
+   free(dr->array[id].array);
+   dr->array[id].array = NULL;
+@@ -115,8 +115,6 @@
+   int i;
+   int nalt;
+ 
+-  printf("Coucou 1\n");
+-
+   nalt = dr->var[NALT].i;
+ 
+   for (i = 0; i < END_ARRAY_WORDS; i++) driver_free_array(dr, i);
+diff -ruN amlet-0.13.1/amlet/external_strategy.c amlet-0.13.1/amlet/external_strategy.c
+--- amlet-0.13.1/amlet/external_strategy.c	2015-02-17 04:47:54.000000000 -0500
++++ amlet-0.13.1/amlet/external_strategy.c	2026-10-13 11:27:49.907585340 -0400
+@@ -17,7 +17,7 @@
+ 
+ #include <oratio/oratio.h>
+ 
+-//      (dr.var[VARREP].i) ? _max(36, rint(dr.var[NREP].i / 40.0)) :
++//      (dr.var[VARREP].i) ? nt_max(36, rint(dr.var[NREP].i / 40.0)) :
+ 
+ /**
+  * External strategies
+@@ -40,7 +40,7 @@
+ 
+   if (optimality_ratio >= draw_ratio) {
+     aes->current *= aes->factor;
+-    aes->current = _min(aes->current, aes->final);
++    aes->current = nt_min(aes->current, aes->final);
+   }
+ }
+ 
+diff -ruN amlet-0.13.1/amlet/info.c amlet-0.13.1/amlet/info.c
+--- amlet-0.13.1/amlet/info.c	2015-03-26 22:24:43.000000000 -0400
++++ amlet-0.13.1/amlet/info.c	2026-10-13 11:28:03.171791075 -0400
+@@ -20,7 +20,7 @@
+ /**
+  * @param info is the numerical identifier of the message to print.
+  */
+-inline char *amlet_info_message(int info)
++char *amlet_info_message(int info)
+ {
+   return amlet_error_msgs[info].name;
+ }
+@@ -39,10 +39,7 @@
+   printf("\n");
+   printf("Supported options:\n");
+   printf(" -o FILE, --output FILE: save log information into a file\n");
+-  printf(" -f FORMAT, --format FORMAT: format of the output file (raw or html)\n");
+-  printf(" -l, --loose: loose mode\n");
+   printf(" -h, --help: display this help message\n");
+-  printf(" -s, --safe; safeguard mode\n");
+   printf(" -V, --version: display the program version\n");
+   printf(" -v, --verbose: verbose mode\n");
+   printf("\nPlease signal any bugs to <%s>\n", EMAIL);
+diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
+--- amlet-0.13.1/amlet/io.c	2015-03-27 07:36:19.000000000 -0400
++++ amlet-0.13.1/amlet/io.c	2026-10-13 11:33:28.181602595 -0400
+@@ -135,7 +135,7 @@
+   return n;
+ }
+ 
+-inline void line(FILE *output, int len)
++void line(FILE *output, int len)
+ {
+   int i;
+ 
+@@ -143,7 +143,7 @@
+   fprintf(output, "\n");
+ }
+ 
+-inline void section(FILE *output, char *string)
++void section(FILE *output, char *string)
+ {
+   int i;
+ 
+@@ -153,7 +153,7 @@
+   fprintf(output, "\n\n");
+ }
+ 
+-inline void subsection(FILE *output, char *string)
++void subsection(FILE *output, char *string)
+ {
+   int i;
+ 
+@@ -410,6 +410,12 @@
+ 
+   long sec, ms;
+ 
++  /* Number of terms over which ll has been averaged: individuals for
++     mixed logit models, observations for multinomial logit models.
++     ll0 and llc are always averaged over observations. With panel data
++     (np < nobs) the totals were previously all computed as mean*np. */
++  int nll = n_random_coeff ? md->np : md->nobs;
++
+   t = _mallocs(md->npar, double);
+   tmp = _mallocs(md->npar, double);
+   nt_vect_zeros(md->npar, tmp, 1);
+@@ -517,19 +523,19 @@
+   fprintf(f, "\n");
+   line(f, len[0]);
+   table_cell(f, format, len[1], "Optimal");
+-  table_cell(f, format, len[2], "%12.10g", ll*md->np);
++  table_cell(f, format, len[2], "%12.10g", ll*nll);
+   table_cell(f, format, len[3], "%12.10g", ll);
+-  table_cell(f, format, len[4], "%12.10g", (ll*md->np)/md->nobs);
++  table_cell(f, format, len[4], "%12.10g", (ll*nll)/md->nobs);
+   table_line_end(f, format);
+   table_cell(f, format, len[1], "At zero");
+-  table_cell(f, format, len[2], "%12.10g", ll0*md->np);
+-  table_cell(f, format, len[3], "%12.10g", ll0);
+-  table_cell(f, format, len[4], "%12.10g", (ll0*md->np)/md->nobs);
++  table_cell(f, format, len[2], "%12.10g", ll0*md->nobs);
++  table_cell(f, format, len[3], "%12.10g", (ll0*md->nobs)/nll);
++  table_cell(f, format, len[4], "%12.10g", ll0);
+   table_line_end(f, format);
+   table_cell(f, format, len[1], "At constants");
+-  table_cell(f, format, len[2], "%12.10g", llc*md->np);
+-  table_cell(f, format, len[3], "%12.10g", llc);
+-  table_cell(f, format, len[4], "%12.10g", (llc*md->np)/md->nobs);
++  table_cell(f, format, len[2], "%12.10g", llc*md->nobs);
++  table_cell(f, format, len[3], "%12.10g", (llc*md->nobs)/nll);
++  table_cell(f, format, len[4], "%12.10g", llc);
+   table_line_end(f, format);
+   line(f, len[0]);
+ 
+@@ -588,7 +594,7 @@
+ 
+   subsection(f, "Statistics");
+ 
+-  ll *= md->np;
++  ll *= nll;
+   ll0 *= md->nobs;
+ 
+   fprintf(f, "\n");
+@@ -618,7 +624,7 @@
+     for (j = 0; j < md->npar; j++) {
+       if ((j % MAX_COLUMNS) == 0 && md->npar > MAX_COLUMNS) {
+ 	fprintf(f, "Line %d (columns %d to %d):\n",
+-		i+1, j+1, _min(j+MAX_COLUMNS, md->npar));
++		i+1, j+1, nt_min(j+MAX_COLUMNS, md->npar));
+       }
+       if (i >= j)
+ 	fprintf(f, " %12g", m->RCov[j][i]);
+@@ -638,7 +644,7 @@
+     for (j = 0; j < md->npar; j++) {
+       if ((j % MAX_COLUMNS) == 0 && md->npar > MAX_COLUMNS)
+ 	fprintf(f, "Line %d (columns %d to %d):\n",
+-		i+1, j+1, _min(j+MAX_COLUMNS, md->npar));
++		i+1, j+1, nt_min(j+MAX_COLUMNS, md->npar));
+       if (i == j)
+ 	fprintf(f, " %12g", 1.0);
+       else if (i > j)
+@@ -708,7 +714,7 @@
+  * @return 0 is the lecture has encountered no difficulties, else an
+  *   error identifier.
+  */
+-inline int amlet_read_repetitions(char *repname, int *rep, int np)
++int amlet_read_repetitions(char *repname, int *rep, int np)
+ {
+   FILE *f;
+   int i, r;
+diff -ruN amlet-0.13.1/amlet/lattice.c amlet-0.13.1/amlet/lattice.c
+--- amlet-0.13.1/amlet/lattice.c	2015-02-17 04:47:53.000000000 -0500
++++ amlet-0.13.1/amlet/lattice.c	2026-10-13 11:27:49.911585402 -0400
+@@ -259,7 +259,7 @@
+  *   k=0,...,(AMLET_DEFAULT_LATTICE_NUMBER)-1, and followed by the correspond
+  *   lattice parameters for AMLET_DEFAULT_LATTICE_MAX_DIMENSION dimensions.
+  */
+-inline int *amlet_get_default_lattice()
++int *amlet_get_default_lattice()
+ {
+   return R1Lattice_05;
+ }
+@@ -270,12 +270,12 @@
+  *
+  * @return the maximum dimension of predefined rank-1 lattices.
+  */
+-inline int amlet_get_default_lattice_max_dimension()
++int amlet_get_default_lattice_max_dimension()
+ {
+   return AMLET_DEFAULT_LATTICE_MAX_DIMENSION;
+ }
+ 
+-inline int amlet_get_default_lattice_number()
++int amlet_get_default_lattice_number()
+ {
+   return AMLET_DEFAULT_LATTICE_NUMBER;
+ }
+diff -ruN amlet-0.13.1/amlet/likelihood.c amlet-0.13.1/amlet/likelihood.c
+--- amlet-0.13.1/amlet/likelihood.c	2015-02-17 05:00:25.000000000 -0500
++++ amlet-0.13.1/amlet/likelihood.c	2026-10-13 11:27:49.938585821 -0400
+@@ -20,6 +20,7 @@
+ #include <oratio/oratio.h>
+ 
+ #include "logit.h"
++#include "mixedlogit.h"
+ #include "utilities.h"
+ 
+ #define DFLT_ERR   1e100  /* Default error (a value that is assumed to be much
+@@ -30,7 +31,7 @@
+ #define SAFE_VALUE 1e-150 /* this value will be used as the minimum
+ 			     value in some computations. */
+ 
+-inline void set_L(int n, double *L, double *x)
++void set_L(int n, double *L, double *x)
+ {
+   int i, j, k;
+ 
+@@ -43,7 +44,7 @@
+ /**
+  * @param i is the individual index.
+  */
+-inline void derive_logit(int i, int n, double ***obs, int choice,
++void derive_logit(int i, int n, double ***obs, int choice,
+ 			 double den, int *avail, double *tgrad, double *grad,
+ 			 dcl_data *md, double *utility, int shift)
+ {
+@@ -79,7 +80,7 @@
+  * @param theta is the vector of model parameters.
+  * @param antithetic is equal to 1 if we work with antithetic variates, 0 else.
+  */
+-inline void set_beta(int nvar, double *beta, double *theta,
++void set_beta(int nvar, double *beta, double *theta,
+ 		     const int *btype,
+ 		     double **sample, int s, int indidx, int ssamp,
+ 		     int size_elem, dcl_data *md,
+@@ -112,7 +113,7 @@
+   }
+ }
+ 
+-inline void set_beta_mvn(int n, double *beta, double *theta,
++void set_beta_mvn(int n, double *beta, double *theta,
+ 			 const int *btype,
+ 			 double **sample, int s, int indidx, int ssamp,
+ 			 int size_elem, dcl_data *md,
+@@ -127,7 +128,7 @@
+   st_mvn_convert(CblasRowMajor, n, L, n, theta+(n*(n+1))/2, 1, beta, 1);
+ }
+ 
+-inline void set_beta_copula(int n, double *beta, double *theta,
++void set_beta_copula(int n, double *beta, double *theta,
+ 			    const int *btype,
+ 			    double **sample, int s, int indidx, int ssamp,
+ 			    int size_elem, dcl_data *md,
+@@ -175,7 +176,7 @@
+  * @param np is a pointer to some nonparametric structure,
+  *   corresponding to type, or NULL is no such object is needed.
+  */
+-inline void deriv_coeff(int type, double *grad, double coeff,
++void deriv_coeff(int type, double *grad, double coeff,
+ 			double factor, double draw, void *np)
+ {
+   /* We should be able to avoid the variable pos here... */
+@@ -217,7 +218,7 @@
+  * @param choice is the index of the alternative chosen by ind.
+  * @param md is the data structure about the problem.
+  */
+-inline void sll_derivate_utilities(int ind, int time, int samp_idx,
++void sll_derivate_utilities(int ind, int time, int samp_idx,
+ 				   int choice, const double *beta,
+ 				   const double *prob,
+ 				   double *tgrad, dcl_data *md)
+@@ -267,7 +268,7 @@
+  * @param choice is the index of the alternative chosen by ind.
+  * @param md is the data structure about the problem.
+  */
+-inline void sll_derivate_utilities_mvn(int ind, int time, int samp_idx,
++void sll_derivate_utilities_mvn(int ind, int time, int samp_idx,
+ 				       int choice, const double *beta,
+ 				       const double *prob,
+ 				       double *tgrad, dcl_data *md)
+@@ -320,7 +321,7 @@
+  * @param md is the data structure about the problem.
+  * @param den is on output the denominator of the logit function.
+  */
+-inline void compute_utilities(double *beta, double ***obs,
++void compute_utilities(double *beta, double ***obs,
+ 			      dcl_data *md, int ind, int time,
+ 			      double *utility, double *den)
+ {
+@@ -353,7 +354,7 @@
+  *
+  * @return the choice probability.
+  */ 
+-inline double compute_prob_mixed(double *theta, double ***obs,
++double compute_prob_mixed(double *theta, double ***obs,
+ 				 double **sampling, dcl_data *md,
+ 				 int s, int ind, int max_size,
+ 				 double *utility, int derivate, int antithetic)
+@@ -534,7 +535,7 @@
+     /* compute the utility of each alternative */
+     compute_utilities(theta, obs, md, i, 0, utility, &den);
+ 
+-    prob = _max(utility[choices[i]]/den, SAFE_VALUE);
++    prob = nt_max(utility[choices[i]]/den, SAFE_VALUE);
+     md->sprob[i] = prob;
+     ll += (log(prob)-ll)/(i+1-shift);
+ 
+@@ -552,7 +553,7 @@
+  *
+  * @param md is the data structure about the problem.
+  */
+-inline double sll_variance_draw(int ind, int size, dcl_data *md)
++double sll_variance_draw(int ind, int size, dcl_data *md)
+ {
+   /* Compute sigma^2/mu^2, with sigma^2 = E[L^2]-mu*mu */
+   return md->som[ind]/(md->sprob[ind]*md->sprob[ind])-1.0;
+@@ -604,7 +605,7 @@
+ 
+     /* we check the value of prob to avoid failure of the
+        logarithm operation */
+-    prob = _max(prob, SAFE_VALUE);
++    prob = nt_max(prob, SAFE_VALUE);
+ 
+     ll += (log(prob)-ll)/(i+1);
+     /* compute the variance */
+@@ -681,7 +682,7 @@
+ 
+     /* we check the value of prob to avoid failure of the
+        logarithm operation */
+-    md->sprob[i] = _max(md->sprob[i], SAFE_VALUE);
++    md->sprob[i] = nt_max(md->sprob[i], SAFE_VALUE);
+ 
+     if (md->bias) {
+       /* compute the variance */
+@@ -837,7 +838,7 @@
+ 
+     /* we check the value of prob to avoid failure of the
+        logarithm operation */
+-    md->sprob[i] = _max(md->sprob[i], SAFE_VALUE);
++    md->sprob[i] = nt_max(md->sprob[i], SAFE_VALUE);
+ 
+     /* compute the variance */
+     var[i] = sll_variance_draw(i, ssamp, md);
+@@ -923,7 +924,7 @@
+ 
+     /* we check the value of prob to avoid failure of the
+        logarithm operation */
+-    md->sprob[i] = _max(md->sprob[i], SAFE_VALUE);
++    md->sprob[i] = nt_max(md->sprob[i], SAFE_VALUE);
+ 
+     /* compute the variance */
+     *variance += sll_variance_draw(i, ssamp, md);
+@@ -941,7 +942,7 @@
+       md->sprob[i] += (iprob-md->sprob[i]) / (j+1);
+       md->som[i] += (iprob*iprob-md->som[i]) / (j+1);
+     }
+-    md->sprob[i] = _max(md->sprob[i], SAFE_VALUE);
++    md->sprob[i] = nt_max(md->sprob[i], SAFE_VALUE);
+     
+     *variance += sll_variance_draw(i, ssamp, md);
+   }
+diff -ruN amlet-0.13.1/amlet/log.h amlet-0.13.1/amlet/log.h
+--- amlet-0.13.1/amlet/log.h	2015-02-17 04:47:55.000000000 -0500
++++ amlet-0.13.1/amlet/log.h	2026-10-13 11:27:49.938585821 -0400
+@@ -16,7 +16,7 @@
+ extern "C" {
+ #endif
+ 
+-  NTLog *mclog;
++  extern NTLog *mclog;
+ 
+   void amlet_log(char *msg, ...);
+ 
+diff -ruN amlet-0.13.1/amlet/logit.c amlet-0.13.1/amlet/logit.c
+--- amlet-0.13.1/amlet/logit.c	2015-02-17 04:47:53.000000000 -0500
++++ amlet-0.13.1/amlet/logit.c	2026-10-13 11:27:49.914585448 -0400
+@@ -18,7 +18,7 @@
+  *
+  * @param nalt is the number of alternatives.
+  */
+-inline void amlet_basic_utilities_safeguard(double *utilities,
++void amlet_basic_utilities_safeguard(double *utilities,
+ 					  int *availability, int nalt)
+ {
+   double trans = -1.0e300;
+@@ -28,7 +28,7 @@
+ 
+   /* Determine the maximum utility. */
+   for (k = 0; k < nalt; k++)
+-      if (availability[k]) trans = _max(trans, utilities[k]);
++      if (availability[k]) trans = nt_max(trans, utilities[k]);
+ 
+   util = exp(trans);
+   if (!finite(util) || util == 0.0) {
+@@ -57,7 +57,7 @@
+  * @return the probability choice if choice is positive (or null),
+  *   -1.0 else.
+  */
+-inline double amlet_utilities_safeguard(double *utilities, double *den,
++double amlet_utilities_safeguard(double *utilities, double *den,
+ 					int *availability, int nalt, int choice)
+ {
+   const double ln2 = log(2);
+@@ -68,7 +68,7 @@
+ 
+   /* Determine the maximum utility. */
+   for (k = 0; k < nalt; k++)
+-      if (availability[k]) trans = _max(trans, utilities[k]);
++      if (availability[k]) trans = nt_max(trans, utilities[k]);
+ 
+   util = exp(trans);
+   if (!finite(util) || util == 0.0) {
+@@ -93,7 +93,7 @@
+ /**
+  * Logit formula.
+  */
+-inline double dcl_logit(double *utils, int *avail, int nalt, int j)
++double dcl_logit(double *utils, int *avail, int nalt, int j)
+ {
+   int i;
+   double den;
+@@ -104,7 +104,7 @@
+   return exp(utils[j])/den;
+ }
+ 
+-inline void dcl_logit_probs(double *prob,
++void dcl_logit_probs(double *prob,
+ 			    double *utils, int *avail, int nalt)
+ {
+   int i;
+diff -ruN amlet-0.13.1/amlet/mixedlogit.c amlet-0.13.1/amlet/mixedlogit.c
+--- amlet-0.13.1/amlet/mixedlogit.c	2015-02-17 05:00:41.000000000 -0500
++++ amlet-0.13.1/amlet/mixedlogit.c	2026-10-13 11:27:49.938585821 -0400
+@@ -7,6 +7,10 @@
+  * Licensed under the BSD License.
+  **/
+ 
++#include <math.h>
++
++#include "mixedlogit.h"
++
+ /**
+  * Compute the simulation bias.
+  *
+@@ -21,7 +25,7 @@
+  *
+  * @return the bias of simulation
+  */
+-inline double simulation_bias(int popsize, double alpha, double accuracy)
++double simulation_bias(int popsize, double alpha, double accuracy)
+ {
+   double t = accuracy/alpha;
+   if (isnan(t)) t = 0.0;
+diff -ruN amlet-0.13.1/amlet/model.c amlet-0.13.1/amlet/model.c
+--- amlet-0.13.1/amlet/model.c	2015-02-17 04:47:53.000000000 -0500
++++ amlet-0.13.1/amlet/model.c	2026-10-13 11:27:55.445671239 -0400
+@@ -13,6 +13,15 @@
+ #include <ophelia/ophelia.h>
+ 
+ /**
++ * Global variables declared in amlet_config.h and log.h.
++ */
++int loose = 0;
++NTLog *mclog = NULL;
++int nfctev = 0;
++dcl_data data;
++unsigned int twopowers[31];
++
++/**
+  * Create a new model.
+  *
+  * @return a newly memory-allocated model.
+@@ -53,7 +62,7 @@
+  *
+  * @param m is a pointer to a defined model.
+  */
+-inline OP_Problem *amlet_get_problem(AMLET_Model *m)
++OP_Problem *amlet_get_problem(AMLET_Model *m)
+ {
+   return m->p;
+ }
+@@ -81,7 +90,7 @@
+  *
+  * @return the identifier of the sampling method associated to the model.
+  */
+-inline int amlet_get_sampling_id(AMLET_Model *m)
++int amlet_get_sampling_id(AMLET_Model *m)
+ {
+   return m->sampling_id;
+ }
+diff -ruN amlet-0.13.1/amlet/nonparametric.c amlet-0.13.1/amlet/nonparametric.c
+--- amlet-0.13.1/amlet/nonparametric.c	2015-02-17 04:47:54.000000000 -0500
++++ amlet-0.13.1/amlet/nonparametric.c	2026-10-13 11:27:49.919585526 -0400
+@@ -16,7 +16,7 @@
+  *
+  * @return 1 is the type is considered as nonparametric, 0 else.
+  */
+-inline int amlet_is_nonparametric(int type)
++int amlet_is_nonparametric(int type)
+ {
+   return (type < MOCA_END_DISTRIBUTIONS) ? 0 : 1;
+ }
+diff -ruN amlet-0.13.1/amlet/observations.c amlet-0.13.1/amlet/observations.c
+--- amlet-0.13.1/amlet/observations.c	2015-03-27 07:47:30.000000000 -0400
++++ amlet-0.13.1/amlet/observations.c	2026-10-13 11:27:49.920585541 -0400
+@@ -95,7 +95,7 @@
+   return n;
+ }
+ 
+-inline double set_var(int partype, double *par, int *pos, Random *r,
++double set_var(int partype, double *par, int *pos, Random *r,
+ 		      void *data)
+ {
+   double val;
+diff -ruN amlet-0.13.1/amlet/optimization.c amlet-0.13.1/amlet/optimization.c
+--- amlet-0.13.1/amlet/optimization.c	2015-03-27 07:55:23.000000000 -0400
++++ amlet-0.13.1/amlet/optimization.c	2026-10-13 11:27:49.920585541 -0400
+@@ -19,7 +19,7 @@
+ #include "io.h"
+ #include "log.h"
+ 
+-inline void amlet_btr_set_hessian_approx(BTR *b, int hessian_id)
++void amlet_btr_set_hessian_approx(BTR *b, int hessian_id)
+ {
+   switch (hessian_id) {
+   case HESSIAN_BHHH:
+diff -ruN amlet-0.13.1/amlet/sample.c amlet-0.13.1/amlet/sample.c
+--- amlet-0.13.1/amlet/sample.c	2015-03-27 07:34:30.000000000 -0400
++++ amlet-0.13.1/amlet/sample.c	2026-10-13 11:27:49.920585541 -0400
+@@ -24,7 +24,7 @@
+  * @return an allocated tabular of the required size to store the
+  *   draws, with each line corresponding to one individual.
+  */
+-inline double **amlet_sample_alloc(int pop, int n, int s)
++double **amlet_sample_alloc(int pop, int n, int s)
+ {
+   int i;
+   double **S;
+@@ -41,7 +41,7 @@
+  * @param S is the (allocated) array of draws.
+  * @param pop is the population size.
+  */
+-inline void amlet_sample_free(double **S, int pop)
++void amlet_sample_free(double **S, int pop)
+ {
+   int i;
+ 
+diff -ruN amlet-0.13.1/amlet/solve.c amlet-0.13.1/amlet/solve.c
+--- amlet-0.13.1/amlet/solve.c	2015-02-17 04:47:54.000000000 -0500
++++ amlet-0.13.1/amlet/solve.c	2026-10-13 11:27:49.920585541 -0400
+@@ -63,7 +63,7 @@
+ 
+     x = opti->b->x;
+ 
+-    opti->b->tol = _max(tol, NLP_MINIMUM_TOL);
++    opti->b->tol = nt_max(tol, NLP_MINIMUM_TOL);
+     opti->b->max_iter = maxiter;
+ 
+     btr_set_constants(opti->b, 0.01, 0.75, 0.5, 0.5);
+@@ -85,7 +85,7 @@
+ 
+     x = opti->bf->x;
+ 
+-    opti->b->tol = _max(tol, NLP_MINIMUM_TOL);
++    opti->b->tol = nt_max(tol, NLP_MINIMUM_TOL);
+     opti->b->max_iter = maxiter;
+ 
+     opti->b->d1 = NULL;
+@@ -108,7 +108,7 @@
+  * @param x is the parameters vectors, set to an initial value on output.
+  * @param incx is the increment to use in x.
+  */
+-inline void amlet_ml_starting_point(int n, double *x, int incx)
++void amlet_ml_starting_point(int n, double *x, int incx)
+ {
+   int i;
+ 
+diff -ruN amlet-0.13.1/amlet/utilities.c amlet-0.13.1/amlet/utilities.c
+--- amlet-0.13.1/amlet/utilities.c	2015-02-17 04:47:54.000000000 -0500
++++ amlet-0.13.1/amlet/utilities.c	2026-10-13 11:27:49.938585821 -0400
+@@ -7,6 +7,10 @@
+  * Licensed under the Open Software License version 2.1
+  */
+ 
++#include <oratio/cblas.h>
++
++#include "utilities.h"
++
+ /**
+  * Compute the derivative of a (deterministic) linear utility.
+  *
+@@ -14,7 +18,7 @@
+  * @param ind is the individual index.
+  * @param alt is the alternative index.
+  */
+-inline void derive_utility(int n, int ind, int alt,
++void derive_utility(int n, int ind, int alt,
+ 			   double *grad, double ***obs)
+ {
+   cblas_dcopy(n, obs[ind][alt], 1, grad, 1);
+diff -ruN amlet-0.13.1/amlet/variable.c amlet-0.13.1/amlet/variable.c
+--- amlet-0.13.1/amlet/variable.c	2015-02-17 04:47:53.000000000 -0500
++++ amlet-0.13.1/amlet/variable.c	2026-10-13 11:27:49.921585557 -0400
+@@ -124,7 +124,7 @@
+  * @param x is the variables vector.
+  * @param pinv it the permutation vector that has to be applied to x.
+  */
+-inline void dcl_variable_restore(int n, double *x, int *pinv)
++void dcl_variable_restore(int n, double *x, int *pinv)
+ {
+   ds_perm_inp(n, x, sizeof(double), pinv);
+ }
+diff -ruN amlet-0.13.1/src/exec.c amlet-0.13.1/src/exec.c
+--- amlet-0.13.1/src/exec.c	2015-03-27 11:15:39.000000000 -0400
++++ amlet-0.13.1/src/exec.c	2026-10-13 11:27:49.922585572 -0400
+@@ -413,7 +413,7 @@
+   /* TODO: IS err_quantile really necessary? */
+   data.err_quantile = st_gaussian_icdf(1-dr.var[LEVEL_ACCURACY].d/2.0);
+ 
+-  work = _mallocs(_max(4*npar, npar+data.nfixed), double);
++  work = _mallocs(nt_max(4*npar, npar+data.nfixed), double);
+   amlet_model_init(m, npar);
+ 
+   int nsize = (n_random_coeff) ? data.np : data.nobs;
+diff -ruN amlet-0.13.1/src/exec.h amlet-0.13.1/src/exec.h
+--- amlet-0.13.1/src/exec.h	1969-12-31 19:00:00.000000000 -0500
++++ amlet-0.13.1/src/exec.h	2026-10-13 11:27:49.835584223 -0400
+@@ -0,0 +1,12 @@
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++  /**
++   * Main program
++   */
++  int amlet_exec(int argc, char *argv[]);
++
++#ifdef __cplusplus
++}
++#endif

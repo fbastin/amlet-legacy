@@ -1,0 +1,151 @@
+\chapter{Introduction}
+
+\begin{quote}
+\begin{flushright}
+{\sl Heere sweet Lord, at your service.}\\
+Horatio, The Tragedie of Hamlet.
+\end{flushright}
+\end{quote}
+
+This document covers the version \version{} of the library \name{},
+and is itself on a beta development level.
+Any suggestion should be sent to \mail.
+
+The library design is also subject to modifications, so please refer
+to this documentation if you face linkage problems after the upgrade
+of the library.
+You can also consult the file \verb|ChangeLog| at the root of the
+package, as well as in each subdirectories to read more specific
+changes.
+
+\section{A brief overview}
+
+\name{} is a collection of sublibraries, each of then aiming to cover
+some specific needs.
+These components are
+\begin{description}
+\item[C Tools]: collection of basic C utilities;
+\item[Data strucutres]: basic data structures as lists and trees;
+\item[Numerical utilities]: various basic numerical tools, as finite
+  and central difference, special functions,\ldots;
+\item[Statistical tools]: basic statistical analysis and distributions
+  properties routines;
+\item[Random numbers]: (pseudo-)random numbers generation;
+\item[Quasi-Monte Carlo]: quasi-Monte Carlo sequences generation.
+\end{description}
+Each of these parts is described in more details in the next chapters.
+A set of example files is also provided in the directory \texttt{examples}.
+
+\section{Requirements and installation}
+\label{sec:requirements}
+
+\subsection{Environment variables}
+
+In order to allow the various libraries to be found during the
+compilation process and execution, please add
+the following lines in the file $\verb|.bashrc|$, present at the
+root of your home directory:
+\begin{verbatim}
+export LIBRARY_PATH=/usr/local/lib:$LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+\end{verbatim}
+This line can be placed at any position position in the
+\verb|.bashrc| file, but be careful to use a raw text editor. From a
+text console, your can reach your home directory by simply enter the
+command
+\begin{verbatim}
+cd
+\end{verbatim}
+
+The place where the program and the libraries will be installed may vary
+following the operating system.
+If you benefit from administration rights, the installation paths will
+be typically \verb|/usr/local/bin| for the programs and
+\verb|/usr/local/lib| for the libraries.
+If you have not these rights, the typical locations will be
+\verb|$HOME/bin| and \verb|$HOME/lib|, where \verb|$HOME| is the user
+repertory.
+%For reference, we will design by \verb|INSTALL_PATH| the path where the programs are installed.
+
+\subsection{OpenBLAS}
+\label{sec:blas}
+
+\oratio{} makes heavy use of \cblas{}, the C version of \blas{} (Basic Linear Algebra Subroutines) functions, that have to be installed first.
+Any library implementing these routines should be compatible, but could possibly
+require the modification of the file \verb|configure.in| to be
+detected.
+A recommended version is \textsf{OpenBLAS}, available at \url{http://www.openblas.net}.
+It is based on \textsf{GotoBLAS2}, available at \url{http://www.tacc.utexas.edu/research-development/tacc-software/gotoblas2}, a \blas{} implementation proposed by the University of Texas at Austin.
+Praised as one of the best implementations, it has been released under BSD license in 2010, but is no more maintained.
+
+\textsf{OpenBLAS} installation requires to compile its source code. At the time of writing, the last version was 0.2.14. First, extract the code and compile it with the commands
+\begin{verbatim}
+tar zxvf OpenBLAS-0.2.14.tar.gz
+cd OpenBLAS-0.2.14
+make
+\end{verbatim}
+If you do not have the utility \textsf{wget} installed, you will also have to manually downoad LAPACK on Netlib.
+The considered version of OpenBLAS requires LAPACK 3.5.0, available at the address \url{http://www.netlib.org/lapack/#_lapack_version_3_5_0}, but newer versions of OpenBLAS could rely on more recent LAPACK distributions.
+The LAPACK archive has to be copied in the OpenBLAS main directory.
+
+After the compilation, you can install the library with the command
+\begin{verbatim}
+sudo make install
+\end{verbatim}
+assuming that your account has enough administration rights.
+By default, OpenBLAS is installed in the directory \verb|/opt/OpenBLAS|, but it is possible to specify the installation directory using the option \verb|PREFIX|, for instance
+\begin{verbatim}
+sudo make PREFIX=/usr/local install
+\end{verbatim}
+Since \verb|/usr/local| is the directory where \oratio{} is installed by defaults, it is a good idea to centralize the installation inside this directory.
+
+\subsection{\oratio{} installation}
+
+Once these dependencies are satisfied, the library can
+be installed with the following instructions:
+\begin{verbatim}
+./configure
+make
+sudo make install
+\end{verbatim}
+Optimization compilation options can be specified as arguments of \verb|configure|, for instance:
+\begin{verbatim}
+./configure CFLAGS=''-O2'' FFLAGS="-O2"
+\end{verbatim}
+
+This documentation can also be generated using the command
+\begin{verbatim}
+make pdf
+\end{verbatim}
+which however requires a proper installation of \LaTeX.
+
+\section{Conventions}
+
+$x(i)$ designs the $i$-th component of the vector $x$.
+When comparing two vectors $x$ and $y$ in $\rit^n$, an inequality $x \leq y$ is meant componentwise,
+that is $x(i) \leq y(i),\ i = 1,\ldots,n$.
+
+\section{Credits}
+
+The development of the library has been initiated at FUNDP - the University of
+Namur (Belgium), continued at the CERFACS (Toulouse, France), and is
+currently pursued at the Universit\'e de Montr\'eal (QC, Canada).
+
+Various people have contributed to this library.
+Their names is written at the beginning of concerned files, and the
+complete list is reproduced here, by alphabetical order: Adrien
+Bonneu, Cinzia Cirillo, Pierre Derian, Jordan Goblet, Gabriel Schwanen.
+
+\section{Miscellaneous}
+
+\name{} stands for {\sl Operational Research, A Toolbox in Operation}.
+Most of the routines were partially or totally written during
+the development of the software {\sf AMLET} ({\sl Another Mixed Logit
+Estimation Tool}).
+The name is a reference to the Shapekespeare's masterpiece Hamlet.
+Horatio was the best friend of Hamlet, as the library \name{} is the
+primary companion of the software {\sf AMLET}.
+
+The painting of the front cover is due to Eug\`ene Delacroix, in 1835,
+under the name {\sl  Hamlet and Horatio in the Graveyard}.
+

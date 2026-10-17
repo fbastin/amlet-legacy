@@ -1,0 +1,62 @@
+General
+-------
+
+In cblas calls, set some lda's.
+
+In BTR with dynamic accuracy, predefine other terminaison tests...
+
+BFGS
+----
+
+We should work directly with the Cholesky factors instead of the
+complete Hessian approximation.
+The secant initialization should be revised.
+
+The initialization of the secant matrix should be revised.
+
+In order to get rid off clapack, we  should use clapack_dposv from
+ATLAS instead of dposvx.
+
+Hessian approximations
+----------------------
+
+In BTR, for Gauss-Newton updates, we always update it, even if the
+iterates is rejected, and so the approximation does not change...
+
+Model computation
+-----------------
+
+The model computation should not require an explicit hessian, but
+rather a routine to compute Hessian-vector product.
+
+Terminaison messages
+--------------------
+
+Takes inspiration from DONLP2.
+
+Cauchy
+------
+
+Possibly a problem of generality with the call to model in pcauchy.c.
+
+Stopping test
+-------------
+
+It would be nice to check that the stopping test is adapted.
+Function not tested: int btr_stop_projection_relative(BTR *btr, double rho,
+					 double val, double *typx, double typf)
+
+Projected conjugated gradients
+------------------------
+
+Few iterations are performed. Relax the stopping test?
+
+Tests
+----
+
+Constrained tests should be rewritten.
+
+BTRDA
+-----
+
+Introduire un terme d'erreur dans Rosenbrock.

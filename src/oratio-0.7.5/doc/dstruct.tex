@@ -1,0 +1,143 @@
+\chapter{DSTRUCT}
+
+This library has as objective to allow easy manipulation of standard
+data structures, from basic operations to less standard, while useful
+ones.
+The library is not architecture optimized, so it is possible that you
+can find architecture-dependent libraries that are more efficient for
+your own needs, in which case this I would not suggest you to use this
+library.
+This library is meant to be general-purpose, while complying with the
+C language, in order to improve its portability.
+
+\section{Conventions}
+
+Each function of the library has a definition starting with
+\verb|ds_|, followed by its main purpose (e.g. \verb|list|,
+\verb|sort|,\ldots), '\verb|_|', and is specific function.
+If several functions exist for a similar feature, but are specialez
+for a specific data type, the function specification will be preceded
+by a letter designing the data type.
+The main ones are \verb|d| for double, \verb|i| for integer and
+\verb|g| for generic (\verb|void| pointer).
+
+\section{Function types}
+
+Several routines rely and standardized definition types.
+An important situation is the comparison of two elements with respect to some user-defined ordre.
+The comparison functions have to follow to following prototype:
+\begin{verbatim}
+ typedef int (*DSCompareFunc)(const void *a, const void *b);
+\end{verbatim}
+By convention, a comparison function should return 0 if \verb|a| is considered equal to \verb|b|
+(with respect to the defined order), a strictly positive number if \verb|a| is strictly greater
+than \verb|b|, and a strictly negative number if \verb|a| is strictly smaller than \verb|b|.
+
+\section{Linked lists}
+\label{sec:list}
+
+A linked \Index{list} is probably one of the most used data structure, so the
+library supports the two main variants: singly-linked lists and
+doubly-linked lists.
+The same functions are defined for these two kinds of list, and the
+convention is to prefix the function name by \verb|ds_list| for
+a doubly-linked list, and \verb|ds_slist| for a singly-linked list.
+Both lists take \verb|void *|, allowing the use of any kind of structure.
+
+\subsection{Singly linked lists}
+
+A singly linked list has the type \verb|DS_SList|.
+
+\subsection{Doubly linked lists}
+
+A singly linked list has the type \verb|DS_List|.
+
+\section{Searching functions}
+
+\begin{verbatim}
+int ds_search_double(const void *a, const void *b)
+\end{verbatim}
+\begin{verbatim}
+int ds_search_int(const void *a, const void *b)
+\end{verbatim}
+\begin{verbatim}
+int ds_search_pint(const void *a, const void *b)
+\end{verbatim}
+\begin{verbatim}
+long ds_find_dicho(void *base, int nmemb, size_t size, void *critere,
+		   DSCompareFunc search)
+\end{verbatim}
+\begin{verbatim}
+long ds_find_inter(void *base, int nmemb, size_t size, void *critere,
+		   DSCompareFunc search)
+\end{verbatim}
+
+\section{Sorting and permutation functions}
+
+\subsection{Permutations}\index{permutation}
+\label{sec:permutations}
+
+A permutation $p$ is defined as vector of size $n$ whose elements are
+integers in $0,\ldots,n-1]$, all being distinct, such that is $a$ is
+some array, the application of the permutation produce an array $v$
+defined as
+\[
+  v[i] = a[p[i]].
+\]
+
+The function \verb|ds_perm| and \verb|ds_perm_inp| apply some
+pertumation to an general array, the first producing a new array, the
+last replacing the original array by the permuted one.
+
+\subsection{Heapsort}
+
+We have not implemented the Quicksort algorithm since it is already
+available in the standard C library, and in most cases, it is
+sufficient (and efficient), but still has a worst case in $O(n^2)$.
+We present an implementation of the Heapsort algorithm, both for
+standard types and for generic data.
+While the implementation is sufficient for most needs, 
+C++ programmers are also adviced to turn for the Standard Templates
+Library (at least for good implemented ones), since the proposed
+functions are often reported to be faster than the C implementations,
+including those present in Standard C Libraries.
+More efficient, but more difficult to implement, is the Introsort
+method, due to Musser~\cite{Muss97}, that combines the usual nice
+behaviour of Quicksort, while avoiding the worst case, since its
+complexity follows the $O(n \log n)$ of Heapsort.
+The \verb|dstruct| does not currenctly propose Introsort.
+
+The basic version of the proposed Heapsort algorithm are the following
+ones, dealing with double and integer vectors. In order to indicate
+which data type is concerned, the name \verb|heapsort| is simply
+prefixed by '\verb|d|' (for double) and '\verb|i|' (for integer).
+\begin{verbatim}
+void ds_sort_dheapsort(int n, double *array);
+\end{verbatim}
+\begin{verbatim}
+void ds_sort_iheapsort(int n, int *array);
+\end{verbatim}
+Each one takes as arguments the number of elements in the array to
+sort, and a pointer to the array itself.
+
+The generic version of Heapsort in \verb|dstruct| has a similar
+declaration than the quicksort standard library, so you can easily
+change the called function:
+\begin{verbatim}
+void ds_sort_gheapsort(void *base, size_t nmemb, size_t size,
+		       int(*compar)(const void *, const void *));
+\end{verbatim}
+
+Sorting is nothing else that generating a particular permutation of
+the original vector, and it sometimes useful to knows this
+permutation.
+Each Heapsort algorithm has an equivalent version generating this
+permutation, defined as in Section~\ref{sec:permutations}.
+
+\begin{verbatim}
+void ds_sort_dheapsort_with_perm(int n, double *array, int *perm);
+\end{verbatim}
+
+\begin{verbatim}
+void ds_sort_iheapsort_with_perm(int n, double *array, int *perm);
+\end{verbatim}
