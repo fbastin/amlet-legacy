@@ -250,6 +250,7 @@ void sll_derivate_utilities(int ind, int time, int samp_idx,
 	  deriv_coeff(md->btype[l], tgrad+pos, beta[l],
 		      prob[k]*
 		      (md->obs[obsidx][k][l]-md->obs[obsidx][choice][l]),
+		      (md->btype[l] == CONSTANT) ? 0.0 :
 		      md->sampling[ind][samp_idx*md->n_random_coeff+spos],
 		      obj);
 	}

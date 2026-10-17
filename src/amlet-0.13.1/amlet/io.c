@@ -58,7 +58,7 @@ char *set_output_name(AMLET_Model *m, char *buff,
   }
 
   len = strlen(dr->output);
-  buff = _reallocs(buff, len, char);
+  buff = _reallocs(buff, len+1, char);
   strcpy(buff,  dr->output);
 
   return buff;
@@ -72,7 +72,7 @@ char *set_logname(char **buff, AMLET_Driver *dr, amlet_config *ac)
   int len;
 
   len = strlen(AMLET_DEFAULT_LOG);
-  *buff = _mallocs(len, char);
+  *buff = _mallocs(len+1, char);
   strcpy(*buff, AMLET_DEFAULT_LOG);
 
   return *buff;

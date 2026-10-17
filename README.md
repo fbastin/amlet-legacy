@@ -7,17 +7,18 @@ mixed logit models by maximum simulated likelihood. It includes the adaptive
 Monte Carlo trust-region algorithms (BTR / BTRDA) developed by
 F. Bastin, C. Cirillo and Ph. L. Toint. The code is no longer actively
 developed. This directory makes the last release, **AMLET 0.13.1**, build and
-run on current Linux systems (tested with GCC 13.3, Ubuntu 24.04, October
-2026), with as few source changes as possible.
+run on current Linux systems, with as few source changes as possible. It was
+tested with GCC 13.3 on Ubuntu 24.04 in October 2026, and the CI builds it
+with GCC 13 (Ubuntu 24.04) and GCC 15 (Ubuntu 26.04).
 
 The directory contains:
 
 | Path | Content |
 |---|---|
 | `src/oratio-0.7.5/` | ORATIO numerical libraries (random numbers, QMC, statistics, linear algebra). Unchanged. |
-| `src/ophelia-0.7.4/` | OPHELIA nonlinear optimisation library (trust-region solvers). Unchanged. |
+| `src/ophelia-0.7.4/` | OPHELIA nonlinear optimisation library (trust-region solvers). One missing prototype added (see below). |
 | `src/amlet-0.13.1/` | AMLET, with the fixes listed below. |
-| `patches/amlet-0.13.1-2026.patch` | All code changes to the original `amlet-0.13.1.tar.gz` (the license change is not included). |
+| `patches/` | All code changes to the original `amlet-0.13.1.tar.gz` and `ophelia-0.7.4.tar.gz` (the license change is not included). |
 | `build.sh` | Builds the three packages into a local prefix. Needs no root access. |
 | `run_examples.sh` | Runs the examples and checks the results against reference values. |
 | `examples/` | Redistributable examples (see below). |
@@ -87,25 +88,31 @@ significant digits. To reproduce published mixed logit results exactly, you
 would need the AMLET version that was used at the time (the archive keeps
 releases 0.7 to 0.13).
 
-## Changes with respect to amlet-0.13.1.tar.gz
+## Changes with respect to the original tarballs
 
-The 2015 tarball did not compile with any compiler. With the fixes below,
-compilation needs no special flags.
+The 2015 AMLET tarball did not compile with any compiler. With the fixes
+below, compilation needs no special flags.
 
 1. **Missing file**: `src/exec.h` was missing from the tarball. It is restored from 0.12.0; it only declares a prototype.
 2. **Undefined `_max` / `_min`**: they now use ORATIO's `nt_max` / `nt_min` macros, as AMLET 0.12.0 did.
 3. **Global variables defined in headers** (`amlet_config.h`, `log.h`): these break linking with GCC ≥ 10 (`-fno-common`). They are now declared `extern` and defined once in `amlet/model.c`.
 4. **`inline` functions in `.c` files**: under C99 semantics (GCC ≥ 5) they emit no external symbol, so linking failed. The `inline` qualifier was removed; the behaviour is unchanged.
-5. **Missing prototypes**: `simulation_bias()`, `isnan()`, `cblas_dcopy()`.
+5. **Missing prototypes**: `simulation_bias()`, `isnan()`, `cblas_dcopy()`, and `yylex()` in the driver parser. GCC ≥ 14 rejects calls to undeclared functions.
    - `simulation_bias()` returns a `double` but was implicitly declared as `int`. **In builds of the 0.13.x tarballs, the bias correction (`bias = 1`) therefore used a garbage value.** This is fixed. Earlier versions (≤ 0.12) are not affected.
 6. **Log-likelihood totals for panel data** (`np < nobs`): the "Total" column, ρ² and the likelihood-ratio statistic multiplied per-observation averages by the number of individuals. They now use the correct count, consistent with AMLET 0.10.x. Parameter estimates were never affected.
-7. **Cosmetics**: a leftover debug message ("Coucou 1") is removed, and `--help` no longer lists the options `-s`, `-l` and `-f`, which 0.13 no longer accepts.
+7. **Out-of-bounds accesses**, found with AddressSanitizer: two file-name buffers in `amlet/io.c` were one byte too short, and at the last draw `sll_derivate_utilities()` (`amlet/likelihood.c`) read one element past the array of draws for a constant coefficient. The value read was not used, so the results do not change.
+8. **Cosmetics**: a leftover debug message ("Coucou 1") is removed, and `--help` no longer lists the options `-s`, `-l` and `-f`, which 0.13 no longer accepts.
+
+OPHELIA 0.7.4 has a single change: `ophelia/btr.h` now declares
+`nlp_set_derivatives_type()`, which `rtr.c` calls; without it, GCC ≥ 14 stops
+with an error. ORATIO 0.7.5 is unchanged. The changes are in
+`patches/amlet-0.13.1-2026.patch` and `patches/ophelia-0.7.4-2026.patch`.
 
 ## Known limitations (not changed)
 
 - Driver files written for AMLET ≤ 0.10 may use `nests = 1;`. In 0.13.1 the keyword is `nnests`, and the old form crashes the parser. Rename it.
 - The log-likelihood "at constants" is not computed in 0.13.1 (printed as 0).
-- `seed2` is not implemented (see `src/amlet-0.13.1/KNOWN_BUGS`).
+- `seed2` is not implemented (see `src/amlet-0.13.1/TODO`).
 - In `set_beta()` (`amlet/likelihood.c`), the antithetic transformation is also applied to the (unused) draw of constant coefficients. The code is misleadingly indented, but the result is harmless. `sll_derivate_utilities_mvn()` is never called and uses an uninitialised variable.
 - Only the `amlet` and `src` subdirectories of AMLET are built. The original `test/` program and the LaTeX manual sources are kept but not built.
 

@@ -19,6 +19,7 @@
   extern FILE *yyin;
   extern void yyrestart(FILE *input_file);
   int  yyerror(char *s);
+  int  yylex(void);
 
   int lineno;
   AMLET_Driver *dr;

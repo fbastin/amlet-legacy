@@ -1,0 +1,15 @@
+diff -ruN ophelia-0.7.4/ophelia/btr.h ophelia-0.7.4/ophelia/btr.h
+--- ophelia-0.7.4/ophelia/btr.h	2015-02-23 03:50:30.000000000 -0500
++++ ophelia-0.7.4/ophelia/btr.h	2026-10-17 11:16:33.000000000 -0400
+@@ -69,6 +69,11 @@
+   double nlp_btr(BTR *btr, C_GENERIC f, C_GENERIC g, void *data,
+ 		 FILE *output, double **hessian, double *work);
+ 
++  /**
++   * Define if derivatives are computed along with the function or not.
++   */
++  void nlp_set_derivatives_type(BTR *b, int f_type, int *d1, int *d2);
++
+ #ifdef __cplusplus
+ }
+ #endif

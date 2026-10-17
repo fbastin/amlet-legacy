@@ -69,6 +69,11 @@ extern "C" {
   double nlp_btr(BTR *btr, C_GENERIC f, C_GENERIC g, void *data,
 		 FILE *output, double **hessian, double *work);
 
+  /**
+   * Define if derivatives are computed along with the function or not.
+   */
+  void nlp_set_derivatives_type(BTR *b, int f_type, int *d1, int *d2);
+
 #ifdef __cplusplus
 }
 #endif
