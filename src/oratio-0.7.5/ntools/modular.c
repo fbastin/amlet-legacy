@@ -11,6 +11,14 @@
 
 #include "string.h"
 
+/* If not zero, nt_modular_vecvec() reproduces ORATIO <= 0.7.5. */
+static int nt_modular_legacy = 0;
+
+void nt_modular_set_legacy(int legacy)
+{
+  nt_modular_legacy = legacy;
+}
+
 /**
  * Compute ax+y mod m.
  *
@@ -108,7 +116,13 @@ double nt_modular_vecvec(int n, double *a, double *x,
 {
   int i;
 
-  for (i = 0; i < n; i++) y += nt_modular_daxpy(a[i], x[i], y, m);
+  for (i = 0; i < n; i++)
+    if (nt_modular_legacy)
+      /* ORATIO <= 0.7.5 added the running sum again: the result is not
+	 reduced modulo m. */
+      y += nt_modular_daxpy(a[i], x[i], y, m);
+    else
+      y = nt_modular_daxpy(a[i], x[i], y, m);
 
   return y;
 }

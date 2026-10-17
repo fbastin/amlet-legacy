@@ -50,7 +50,7 @@ else
   skip_swiss=0
 fi
 
-fmt='%-11s %-12s %14s %14s %11s %11s  %s\n'
+fmt='%-11s %-18s %14s %14s %11s %11s  %s\n'
 printf "\n$fmt" example driver "expected LL" "obtained LL" "expected SE" "obtained SE" status
 while IFS=$'\t' read -r ex driver output expected tol se_expected se_tol source; do
   case "$ex" in ''|\#*) continue ;; esac

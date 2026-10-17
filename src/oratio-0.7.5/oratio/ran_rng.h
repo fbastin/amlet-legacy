@@ -36,6 +36,20 @@ extern "C" {
 #define RAN_DEFAULT_SEED_LENGTH 6
 
   /**
+   * Reproduce, or not, the MRG32k3a generator of ORATIO <= 0.7.5.
+   *
+   * Up to ORATIO 0.7.5, the first component of MRG32k3a used x(n-1)
+   * instead of x(n-2), and the jumps to the next stream or substream were
+   * not reduced modulo m (see nt_modular_set_legacy()). The sequences
+   * differed from L'Ecuyer's MRG32k3a.
+   *
+   * @param legacy is 0 (default) for L'Ecuyer's MRG32k3a, or 1 to
+   *   reproduce the random draws of ORATIO <= 0.7.5. It must be set
+   *   before any random generator is created.
+   */
+  void ran_mrg32k3a_set_legacy(int legacy);
+
+  /**
    * Uniform random generator structure
    */
 

@@ -338,6 +338,7 @@ int amlet_exec(int argc, char *argv[])
 
   /* Random generation */
   seed = dr.var[SEED1].i;
+  ran_mrg32k3a_set_legacy(dr.var[LEGACY_RNG].i);
   ran = ran_random_new(dr.var[RANGEN].i, &seed, 1);
 
   if (m->verbose) {
@@ -345,6 +346,8 @@ int amlet_exec(int argc, char *argv[])
     nt_log_write(mclog, "Random generator used: %s\n",
 		 ran_random_generator_name(ran));
     nt_log_write(mclog, "Seed for random generator: %d\n", seed);
+    if (dr.var[LEGACY_RNG].i)
+      nt_log_write(mclog, "Legacy MRG32k3a streams (ORATIO 0.7.5, AMLET 0.13.1)\n");
   }
 
   dcl_memory_allocate(data.nobs, data.nalt, data.nvar, dr.var[CENSOR].i,

@@ -190,6 +190,7 @@ sequences \\
 \subsection{Rank-1 lattices}
 
 \section{Pseudo-random numbers generators}
+\label{sec:rng}
 
 Each method requires the use of a uniform random numbers generator,
 whose quality is important to ensure quality of the results.
@@ -218,6 +219,8 @@ Standard minimal & \verb|standard| \\
 \hline
 L'Ecuyer's generator & \verb|ecuyer| \\
 \hline
+MRG32K3a (default) & \verb|mrg32k3a| \\
+\hline
 MT19937 & \verb|mt19937| \\
 \hline
 \end{tabular}
@@ -225,7 +228,19 @@ MT19937 & \verb|mt19937| \\
 \label{tab:rangen}
 \end{center}
 \end{table}
-\textit{The MRG32K3a keyword seems to be missing!}
+
+Up to the 2026 rebuild of \amlet{} 0.13.1, the MRG32K3a generator of
+\oratio{} 0.7.5 differed from L'Ecuyer's: its first component used
+$x_{n-1}$ instead of $x_{n-2}$, and the jumps to the next stream or
+substream were not reduced modulo $m$. It now produces L'Ecuyer's
+MRG32K3a sequences, streams and substreams, so that simulated results
+differ from those of \amlet{} 0.13.1. To reproduce them, set
+\begin{verbatim}
+legacy_rng = true;
+\end{verbatim}
+in the driver file. The legacy generator is not MRG32K3a and its
+statistical properties are unknown: use it only to reproduce earlier
+results.
 
 Each random generator produces a sequence of points that mimics draws
 from an uniform distribution on $(0,1)$.. These sequences are however

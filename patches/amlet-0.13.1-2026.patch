@@ -219,10 +219,46 @@ diff -ruN amlet-0.13.1/amlet/amlet_data.c amlet-0.13.1/amlet/amlet_data.c
  {
    int i, j;
  
+diff -ruN amlet-0.13.1/amlet/amlet_driver.h amlet-0.13.1/amlet/amlet_driver.h
+--- amlet-0.13.1/amlet/amlet_driver.h
++++ amlet-0.13.1/amlet/amlet_driver.h	2026-10-17 16:20:06.000000000 -0400
+@@ -57,6 +57,8 @@
+ 			computing statistical informations */
+ 
+     RANGEN,          /* random numbers generator identifier */
++    LEGACY_RNG,      /* 1 to reproduce the MRG32k3a draws of ORATIO 0.7.5
++			(AMLET 0.13.1), 0 for L'Ecuyer's MRG32k3a */
+     SAMPLING,        /* sampling method */
+     RANDOMIZATION,   /* randomization method */
+     QMCREP,          /* number of samplings for accuracy estimation with
+@@ -147,6 +149,7 @@
+     {"hessian_approx", HESSIAN_APPROX},
+ 
+     {"rangen", RANGEN},
++    {"legacy_rng", LEGACY_RNG},
+     {"sampling", SAMPLING},
+     {"randomization", RANDOMIZATION},
+     {"qmcrep", QMCREP},
+@@ -213,6 +216,7 @@
+ 
+   static const c_symbol rangen[] = {
+     {"ecuyer", RAN_LECUYER88B},
++    {"mrg32k3a", RAN_MRG32K3A},
+     {"standard", RAN_STANDARDMINIMAL},
+     {"parkmiller", RAN_STANDARDMINIMAL},
+     {"mt19937", RAN_MT19937}
 diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
 --- amlet-0.13.1/amlet/driver.c	2015-03-29 13:57:37.000000000 -0400
-+++ amlet-0.13.1/amlet/driver.c	2026-10-13 11:28:05.547827929 -0400
-@@ -104,7 +104,7 @@
++++ amlet-0.13.1/amlet/driver.c	2026-10-17 16:20:06.000000000 -0400
+@@ -71,6 +71,7 @@
+   dr->var[ROBUST].i = 1;
+ 
+   dr->var[RANGEN].i = RAN_MRG32K3A;
++  dr->var[LEGACY_RNG].i = 0;
+   dr->var[SAMPLING].i = MOCA_MONTE_CARLO;
+   dr->var[RANDOMIZATION].i = 0;
+   dr->var[QMCREP].i = 1;
+@@ -104,7 +105,7 @@
    for (i = NAME; i < END_RESERVED_WORDS; i++) dr->var[i].s = 0;
  }
  
@@ -231,7 +267,7 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
  {
    free(dr->array[id].array);
    dr->array[id].array = NULL;
-@@ -115,8 +115,6 @@
+@@ -115,8 +116,6 @@
    int i;
    int nalt;
  
@@ -308,7 +344,7 @@ diff -ruN amlet-0.13.1/amlet/info.c amlet-0.13.1/amlet/info.c
    printf("\nPlease signal any bugs to <%s>\n", EMAIL);
 diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
 --- amlet-0.13.1/amlet/io.c	2015-03-27 07:36:19.000000000 -0400
-+++ amlet-0.13.1/amlet/io.c	2026-10-17 11:16:33.000000000 -0400
++++ amlet-0.13.1/amlet/io.c	2026-10-17 16:20:06.000000000 -0400
 @@ -58,7 +58,7 @@
    }
  
@@ -367,7 +403,16 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
    t = _mallocs(md->npar, double);
    tmp = _mallocs(md->npar, double);
    nt_vect_zeros(md->npar, tmp, 1);
-@@ -517,19 +523,19 @@
+@@ -494,6 +500,8 @@
+     fprintf(f, "Draws generation method: %s\n",
+ 	    moca_get_method_name(amlet_get_sampling_id(m)));
+     fprintf(f, "Final number of random draws: %d\n", ndraws);
++    if (dr->var[LEGACY_RNG].i)
++      fprintf(f, "Random draws: legacy MRG32k3a streams (legacy_rng = true)\n");
+   }
+ 
+   fprintf(f, "\n");
+@@ -517,19 +525,19 @@
    fprintf(f, "\n");
    line(f, len[0]);
    table_cell(f, format, len[1], "Optimal");
@@ -395,7 +440,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
    table_line_end(f, format);
    line(f, len[0]);
  
-@@ -588,7 +594,7 @@
+@@ -588,7 +596,7 @@
  
    subsection(f, "Statistics");
  
@@ -404,7 +449,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
    ll0 *= md->nobs;
  
    fprintf(f, "\n");
-@@ -618,7 +624,7 @@
+@@ -618,7 +626,7 @@
      for (j = 0; j < md->npar; j++) {
        if ((j % MAX_COLUMNS) == 0 && md->npar > MAX_COLUMNS) {
  	fprintf(f, "Line %d (columns %d to %d):\n",
@@ -413,7 +458,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
        }
        if (i >= j)
  	fprintf(f, " %12g", m->RCov[j][i]);
-@@ -638,7 +644,7 @@
+@@ -638,7 +646,7 @@
      for (j = 0; j < md->npar; j++) {
        if ((j % MAX_COLUMNS) == 0 && md->npar > MAX_COLUMNS)
  	fprintf(f, "Line %d (columns %d to %d):\n",
@@ -422,7 +467,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
        if (i == j)
  	fprintf(f, " %12g", 1.0);
        else if (i > j)
-@@ -708,7 +714,7 @@
+@@ -708,7 +716,7 @@
   * @return 0 is the lecture has encountered no difficulties, else an
   *   error identifier.
   */
@@ -883,8 +928,25 @@ diff -ruN amlet-0.13.1/amlet/variable.c amlet-0.13.1/amlet/variable.c
  }
 diff -ruN amlet-0.13.1/src/exec.c amlet-0.13.1/src/exec.c
 --- amlet-0.13.1/src/exec.c	2015-03-27 11:15:39.000000000 -0400
-+++ amlet-0.13.1/src/exec.c	2026-10-13 11:27:49.922585572 -0400
-@@ -413,7 +413,7 @@
++++ amlet-0.13.1/src/exec.c	2026-10-17 16:20:06.000000000 -0400
+@@ -338,6 +338,7 @@
+ 
+   /* Random generation */
+   seed = dr.var[SEED1].i;
++  ran_mrg32k3a_set_legacy(dr.var[LEGACY_RNG].i);
+   ran = ran_random_new(dr.var[RANGEN].i, &seed, 1);
+ 
+   if (m->verbose) {
+@@ -345,6 +346,8 @@
+     nt_log_write(mclog, "Random generator used: %s\n",
+ 		 ran_random_generator_name(ran));
+     nt_log_write(mclog, "Seed for random generator: %d\n", seed);
++    if (dr.var[LEGACY_RNG].i)
++      nt_log_write(mclog, "Legacy MRG32k3a streams (ORATIO 0.7.5, AMLET 0.13.1)\n");
+   }
+ 
+   dcl_memory_allocate(data.nobs, data.nalt, data.nvar, dr.var[CENSOR].i,
+@@ -413,7 +416,7 @@
    /* TODO: IS err_quantile really necessary? */
    data.err_quantile = st_gaussian_icdf(1-dr.var[LEVEL_ACCURACY].d/2.0);
  

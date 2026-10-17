@@ -500,6 +500,8 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
     fprintf(f, "Draws generation method: %s\n",
 	    moca_get_method_name(amlet_get_sampling_id(m)));
     fprintf(f, "Final number of random draws: %d\n", ndraws);
+    if (dr->var[LEGACY_RNG].i)
+      fprintf(f, "Random draws: legacy MRG32k3a streams (legacy_rng = true)\n");
   }
 
   fprintf(f, "\n");

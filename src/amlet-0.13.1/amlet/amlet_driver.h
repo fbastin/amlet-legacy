@@ -57,6 +57,8 @@ extern "C" {
 			computing statistical informations */
 
     RANGEN,          /* random numbers generator identifier */
+    LEGACY_RNG,      /* 1 to reproduce the MRG32k3a draws of ORATIO 0.7.5
+			(AMLET 0.13.1), 0 for L'Ecuyer's MRG32k3a */
     SAMPLING,        /* sampling method */
     RANDOMIZATION,   /* randomization method */
     QMCREP,          /* number of samplings for accuracy estimation with
@@ -147,6 +149,7 @@ extern "C" {
     {"hessian_approx", HESSIAN_APPROX},
 
     {"rangen", RANGEN},
+    {"legacy_rng", LEGACY_RNG},
     {"sampling", SAMPLING},
     {"randomization", RANDOMIZATION},
     {"qmcrep", QMCREP},
@@ -213,6 +216,7 @@ extern "C" {
 
   static const c_symbol rangen[] = {
     {"ecuyer", RAN_LECUYER88B},
+    {"mrg32k3a", RAN_MRG32K3A},
     {"standard", RAN_STANDARDMINIMAL},
     {"parkmiller", RAN_STANDARDMINIMAL},
     {"mt19937", RAN_MT19937}

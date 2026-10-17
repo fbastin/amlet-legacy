@@ -154,6 +154,21 @@ extern "C" {
 			   double y, double m);
 
   /**
+   * Reproduce, or not, the modular products of ORATIO <= 0.7.5.
+   *
+   * Up to ORATIO 0.7.5, nt_modular_vecvec() added the running sum again
+   * at each step, so that its result, and the results of the functions
+   * built on it (nt_modular_matvec(), ...), were not reduced modulo m.
+   * The MRG32k3a generator uses them to jump to the next stream or
+   * substream: its streams differed from L'Ecuyer's.
+   *
+   * @param legacy is 0 (default) for the correct computation, or 1 to
+   *   reproduce the random draws of ORATIO <= 0.7.5. It must be set
+   *   before any random generator is created.
+   */
+  void nt_modular_set_legacy(int legacy);
+
+  /**
    * Returns v = A*x mod m.
    *
    * @param A is a matrix of leading dimension incA, stored by rows. In

@@ -25,6 +25,15 @@
 
 #define fact    5.9604644775390625e-8    /* 1 / 2^24 */
 
+/* If not zero, reproduce the generator of ORATIO <= 0.7.5. */
+static int legacy = 0;
+
+void ran_mrg32k3a_set_legacy(int l)
+{
+  legacy = l;
+  nt_modular_set_legacy(l);
+}
+
 /* Default initial seed of the package. Will be updated to become
    the seed of the next created stream. */
 static double nextSeed[6] = { 12345, 12345, 12345, 12345, 12345, 12345 };
@@ -146,8 +155,9 @@ double ran_mrg32k3a_get_val(void *mrg)
 
   MRG32K3a *rng = (MRG32K3a *)mrg;
 
-  /* Component 1 */
-  p1 = a12*rng->s[2] - a13n*rng->s[0];
+  /* Component 1: x(n) = a12 x(n-2) - a13n x(n-3). ORATIO <= 0.7.5 used
+     x(n-1) instead of x(n-2). */
+  p1 = a12*rng->s[legacy ? 2 : 1] - a13n*rng->s[0];
   k = p1/m1;   p1 -= k*m1;
   if (p1 < 0.0) p1 += m1;
   /* Update the state. */

@@ -23,6 +23,39 @@ diff -ruN oratio-0.7.5/ntools/f2c.h oratio-0.7.5/ntools/f2c.h
  typedef short int shortlogical;
  typedef char logical1;
  typedef char integer1;
+diff -ruN oratio-0.7.5/ntools/modular.c oratio-0.7.5/ntools/modular.c
+--- oratio-0.7.5/ntools/modular.c	2015-07-06 22:53:03.000000000 -0400
++++ oratio-0.7.5/ntools/modular.c	2026-10-17 16:19:52.000000000 -0400
+@@ -11,6 +11,14 @@
+ 
+ #include "string.h"
+ 
++/* If not zero, nt_modular_vecvec() reproduces ORATIO <= 0.7.5. */
++static int nt_modular_legacy = 0;
++
++void nt_modular_set_legacy(int legacy)
++{
++  nt_modular_legacy = legacy;
++}
++
+ /**
+  * Compute ax+y mod m.
+  *
+@@ -108,7 +116,13 @@
+ {
+   int i;
+ 
+-  for (i = 0; i < n; i++) y += nt_modular_daxpy(a[i], x[i], y, m);
++  for (i = 0; i < n; i++)
++    if (nt_modular_legacy)
++      /* ORATIO <= 0.7.5 added the running sum again: the result is not
++	 reduced modulo m. */
++      y += nt_modular_daxpy(a[i], x[i], y, m);
++    else
++      y = nt_modular_daxpy(a[i], x[i], y, m);
+ 
+   return y;
+ }
 diff -ruN oratio-0.7.5/oratio/f2c.h oratio-0.7.5/oratio/f2c.h
 --- oratio-0.7.5/oratio/f2c.h	2015-05-15 06:34:05.000000000 -0400
 +++ oratio-0.7.5/oratio/f2c.h	2026-10-17 12:08:46.000000000 -0400
@@ -48,3 +81,83 @@ diff -ruN oratio-0.7.5/oratio/f2c.h oratio-0.7.5/oratio/f2c.h
  typedef short int shortlogical;
  typedef char logical1;
  typedef char integer1;
+diff -ruN oratio-0.7.5/oratio/ntools.h oratio-0.7.5/oratio/ntools.h
+--- oratio-0.7.5/oratio/ntools.h	2015-05-15 06:34:06.000000000 -0400
++++ oratio-0.7.5/oratio/ntools.h	2026-10-17 16:19:52.000000000 -0400
+@@ -154,6 +154,21 @@
+ 			   double y, double m);
+ 
+   /**
++   * Reproduce, or not, the modular products of ORATIO <= 0.7.5.
++   *
++   * Up to ORATIO 0.7.5, nt_modular_vecvec() added the running sum again
++   * at each step, so that its result, and the results of the functions
++   * built on it (nt_modular_matvec(), ...), were not reduced modulo m.
++   * The MRG32k3a generator uses them to jump to the next stream or
++   * substream: its streams differed from L'Ecuyer's.
++   *
++   * @param legacy is 0 (default) for the correct computation, or 1 to
++   *   reproduce the random draws of ORATIO <= 0.7.5. It must be set
++   *   before any random generator is created.
++   */
++  void nt_modular_set_legacy(int legacy);
++
++  /**
+    * Returns v = A*x mod m.
+    *
+    * @param A is a matrix of leading dimension incA, stored by rows. In
+diff -ruN oratio-0.7.5/oratio/ran_rng.h oratio-0.7.5/oratio/ran_rng.h
+--- oratio-0.7.5/oratio/ran_rng.h	2016-08-02 13:22:53.000000000 -0400
++++ oratio-0.7.5/oratio/ran_rng.h	2026-10-17 16:19:52.000000000 -0400
+@@ -36,6 +36,20 @@
+ #define RAN_DEFAULT_SEED_LENGTH 6
+ 
+   /**
++   * Reproduce, or not, the MRG32k3a generator of ORATIO <= 0.7.5.
++   *
++   * Up to ORATIO 0.7.5, the first component of MRG32k3a used x(n-1)
++   * instead of x(n-2), and the jumps to the next stream or substream were
++   * not reduced modulo m (see nt_modular_set_legacy()). The sequences
++   * differed from L'Ecuyer's MRG32k3a.
++   *
++   * @param legacy is 0 (default) for L'Ecuyer's MRG32k3a, or 1 to
++   *   reproduce the random draws of ORATIO <= 0.7.5. It must be set
++   *   before any random generator is created.
++   */
++  void ran_mrg32k3a_set_legacy(int legacy);
++
++  /**
+    * Uniform random generator structure
+    */
+ 
+diff -ruN oratio-0.7.5/ran/mrg32k3a.c oratio-0.7.5/ran/mrg32k3a.c
+--- oratio-0.7.5/ran/mrg32k3a.c	2015-06-25 00:11:40.000000000 -0400
++++ oratio-0.7.5/ran/mrg32k3a.c	2026-10-17 16:19:52.000000000 -0400
+@@ -25,6 +25,15 @@
+ 
+ #define fact    5.9604644775390625e-8    /* 1 / 2^24 */
+ 
++/* If not zero, reproduce the generator of ORATIO <= 0.7.5. */
++static int legacy = 0;
++
++void ran_mrg32k3a_set_legacy(int l)
++{
++  legacy = l;
++  nt_modular_set_legacy(l);
++}
++
+ /* Default initial seed of the package. Will be updated to become
+    the seed of the next created stream. */
+ static double nextSeed[6] = { 12345, 12345, 12345, 12345, 12345, 12345 };
+@@ -146,8 +155,9 @@
+ 
+   MRG32K3a *rng = (MRG32K3a *)mrg;
+ 
+-  /* Component 1 */
+-  p1 = a12*rng->s[2] - a13n*rng->s[0];
++  /* Component 1: x(n) = a12 x(n-2) - a13n x(n-3). ORATIO <= 0.7.5 used
++     x(n-1) instead of x(n-2). */
++  p1 = a12*rng->s[legacy ? 2 : 1] - a13n*rng->s[0];
+   k = p1/m1;   p1 -= k*m1;
+   if (p1 < 0.0) p1 += m1;
+   /* Update the state. */

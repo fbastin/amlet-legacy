@@ -71,6 +71,7 @@ void driver_init_defaults(AMLET_Driver *dr)
   dr->var[ROBUST].i = 1;
 
   dr->var[RANGEN].i = RAN_MRG32K3A;
+  dr->var[LEGACY_RNG].i = 0;
   dr->var[SAMPLING].i = MOCA_MONTE_CARLO;
   dr->var[RANDOMIZATION].i = 0;
   dr->var[QMCREP].i = 1;
