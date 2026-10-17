@@ -2,7 +2,7 @@
  * alternative.h
  *
  * AMLET (Another Mixed Logit Estimation Tool)
- * Copyright (C) 2004-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2004-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

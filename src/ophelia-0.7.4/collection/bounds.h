@@ -2,7 +2,7 @@
  * bounds.h
  *
  * OPHELIA Library - test problems with bound constraints
- * Copyright (C) 2006-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2006-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

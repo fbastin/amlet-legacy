@@ -2,7 +2,7 @@
  * unconstrained.h
  *
  * OPHELIA Library - unconstrained test problems
- * Copyright (C) 2006-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2006-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

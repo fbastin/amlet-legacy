@@ -2,7 +2,7 @@
  * individual.c
  *
  * AMLET Library
- * Copyright (C) 2004-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2004-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the BSD License.
  **/

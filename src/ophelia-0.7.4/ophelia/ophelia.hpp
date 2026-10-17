@@ -2,7 +2,7 @@
  * ophelia.hpp
  *
  * OPHELIA Library
- * Copyright (C) 1999-2015 Fabian Bastin <bastin.bastin@cirrelt.ca>
+ * Copyright (C) 1999-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

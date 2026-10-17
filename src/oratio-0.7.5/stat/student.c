@@ -2,7 +2,7 @@
  * student.c
  *
  * STAT Library
- * Copyright (C) 2001-2007 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2001-2007 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

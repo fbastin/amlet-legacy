@@ -2,7 +2,7 @@
  * oratio.h
  *
  * "Operational Research, A Toolbox in Operation"
- * Copyright (C) 2008-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2008-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

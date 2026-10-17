@@ -2,7 +2,7 @@
  * ctimer.c
  *
  * ORATIO Library - CTools module
- * Copyright (C) 2002-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2002-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

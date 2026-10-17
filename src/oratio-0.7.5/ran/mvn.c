@@ -2,7 +2,7 @@
  * mvn.c
  *
  * ORATIO Library
- * Copyright (C) 2009-2012 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2009-2012 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

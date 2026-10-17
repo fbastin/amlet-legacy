@@ -16,7 +16,7 @@
 
 #define COPYRIGHT   "Copyright (C) 2002-2015"
 #define AUTHORS     "Fabian Bastin and contributors"
-#define EMAIL       "fabian.bastin@cirrelt.ca"
+#define EMAIL       "fabian.bastin@gmail.com"
 #define COMMAND     "amlet"
 #define PROGRAM     "AMLET"
 

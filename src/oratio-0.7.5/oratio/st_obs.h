@@ -3,7 +3,7 @@
  *
  * ORATIO Library
  * Statistical routines
- * Copyright (C) 1999-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 1999-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

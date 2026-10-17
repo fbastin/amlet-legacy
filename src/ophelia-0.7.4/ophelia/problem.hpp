@@ -2,7 +2,7 @@
  * problem.hpp
  *
  * OPHELIA Library
- * Copyright (C) 2005-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2005-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

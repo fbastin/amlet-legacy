@@ -2,7 +2,7 @@
  * leastsquares.h
  *
  * OPHELIA Library - least squares problems
- * Copyright (C) 2006-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
+ * Copyright (C) 2006-2015 Fabian Bastin <fabian.bastin@gmail.com>
  *
  * Licensed under the MIT License
  */

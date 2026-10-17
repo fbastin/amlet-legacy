@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(src/amlet.c, 0.13.1, fabian.bastin@cirrelt.ca)
+AC_INIT(src/amlet.c, 0.13.1, fabian.bastin@gmail.com)
 
 AM_CONFIG_HEADER(config.h)
 
