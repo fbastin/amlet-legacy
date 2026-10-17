@@ -114,10 +114,22 @@ To obtain them, contact the original data owners.
 
 ## License
 
-AMLET, OPHELIA and ORATIO are © Fabian Bastin and co-authors. They are
-distributed under the Open Software License v2.1; some files are under a
-BSD licence, as stated in their headers (see `src/*/COPYING`). The 2026 changes
-are distributed under the same terms.
+AMLET, OPHELIA and ORATIO are © Fabian Bastin and co-authors. This
+repository is distributed under the MIT License (see `LICENSE`).
+
+Releases up to 0.13.1 were distributed under the Open Software License v2.1.
+The source trees still carry that notice (`src/*/COPYING`, file headers, the
+banner printed by `amlet`). For files whose only copyright holder is Fabian
+Bastin, the MIT License replaces it. The following files keep their own terms:
+
+- files whose copyright notice also names other authors (the BFGS and
+  line-search files of OPHELIA, and some random-variate generators of ORATIO)
+  remain under the Open Software License v2.1;
+- third-party code keeps the licence stated in its header or distribution:
+  `getopt_long.c` (ISC), the Mersenne Twister generator (BSD), the LAPACK
+  routines in `src/ophelia-0.7.4/lapack/`, the MINPACK-2 test problems in
+  `src/ophelia-0.7.4/collection/minpack2/`, the Bison-generated parser and the
+  autotools build scripts.
 
 ## References
 
