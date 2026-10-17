@@ -112,7 +112,10 @@ ORATIO 0.7.5 and OPHELIA 0.7.4 shipped a `config.guess` from about 2000. Its
 test program calls `printf()` without `<stdio.h>`, so with GCC ≥ 14
 `configure` stops with "cannot guess build type". It is replaced by the
 `config.guess` of AMLET 0.13.1 (2009-11-20), which matches their
-`config.sub` (2009-06-11). The patches do not include this file.
+`config.sub` (2009-06-11). The patches do not include this file. Their
+`install-sh`, `mkinstalldirs`, `test-driver`, `config.guess` and `config.sub`
+are also made executable, as in AMLET: on Ubuntu 26.04, whose `mkdir` comes
+from uutils coreutils, `make install` runs `install-sh`.
 
 ## Known limitations (not changed)
 
