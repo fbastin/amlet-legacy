@@ -25,8 +25,10 @@ The directory contains:
 
 ```sh
 # Debian/Ubuntu prerequisites (or libopenblas-dev instead of libblas-dev + liblapack-dev)
-sudo apt install build-essential libblas-dev liblapack-dev python3 curl
+sudo apt install build-essential libblas-dev liblapack-dev python3 curl git
 
+git clone https://github.com/fbastin/amlet-legacy.git
+cd amlet-legacy
 bash build.sh                 # installs into ./local  (about 1 minute)
 bash run_examples.sh          # 6 examples, about 40 seconds
 ./local/bin/amlet my_driver   # estimate your own model
