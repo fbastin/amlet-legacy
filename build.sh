@@ -99,6 +99,31 @@ export CPPFLAGS="-I$PREFIX/include ${CPPFLAGS:-}"
 export LDFLAGS="-L$PREFIX/lib -L$SHIM ${LDFLAGS:-}"
 export LIBS="$LAPACK_LIBS $BLAS_LIBS ${LIBS:-}"
 
+# git does not keep file dates: after a clone, configure.ac or a .y file may
+# look newer than the files generated from it, and make would then try to
+# rerun autotools or bison. Make each generated file newer than its sources.
+refresh() {  # refresh <generated file> <sources...>
+  local out="$1" src; shift
+  [ -e "$out" ] || return 0
+  for src in "$@"; do
+    if [ -e "$src" ] && [ "$src" -nt "$out" ]; then touch "$out"; return 0; fi
+  done
+}
+
+fix_timestamps() {  # fix_timestamps <tree>
+  local d="$1" f
+  refresh "$d/aclocal.m4" "$d/configure.ac" "$d"/m4/*.m4 "$d/acinclude.m4"
+  refresh "$d/configure" "$d/configure.ac" "$d/aclocal.m4"
+  refresh "$d/config.h.in" "$d/configure.ac" "$d/aclocal.m4"
+  find "$d" -name Makefile.in | while read -r f; do
+    refresh "$f" "${f%.in}.am" "$d/configure.ac" "$d/aclocal.m4"
+  done
+  find "$d" \( -name '*.y' -o -name '*.l' \) | while read -r f; do
+    refresh "${f%.*}.c" "$f"
+    refresh "${f%.*}.h" "${f%.*}.c"
+  done
+}
+
 # configure_build <source dir> <subdirs to build and install...>
 # The old Makefiles do not support out-of-tree (VPATH) builds, so each source
 # tree is copied into $BUILD and built there; src/ stays untouched. The copy
@@ -109,6 +134,7 @@ configure_build() {
   local dir="$BUILD/$(basename "$src")"
   mkdir -p "$dir"
   cp -pR "$src/." "$dir/"   # -p keeps timestamps; otherwise make reruns automake
+  fix_timestamps "$dir"
   log "Configuring $(basename "$src")"
   (cd "$dir" && "${CONFIG_SHELL:-/bin/sh}" ./configure --prefix="$PREFIX" CFLAGS="$CFLAGS" \
      > configure.log 2>&1) || die "configure failed, see $dir/configure.log"
