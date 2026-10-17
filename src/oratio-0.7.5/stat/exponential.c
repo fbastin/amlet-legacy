@@ -4,7 +4,7 @@
  * ORATIO Library - statistical module
  * Copyright (C) 1999-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include "oratio/constants.h"

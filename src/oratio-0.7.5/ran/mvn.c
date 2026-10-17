@@ -4,7 +4,7 @@
  * ORATIO Library
  * Copyright (C) 2009-2012 Fabian Bastin <fabian.bastin@cirrelt.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include "oratio/cblas.h"

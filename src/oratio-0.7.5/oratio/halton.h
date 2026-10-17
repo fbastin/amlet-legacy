@@ -4,7 +4,7 @@
  * ORATIO Library - MOCA module
  * Copyright (C) 2005-2010 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __ORATIO_MOCA_HALTON_H__

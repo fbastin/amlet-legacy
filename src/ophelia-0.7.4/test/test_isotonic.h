@@ -4,7 +4,7 @@
  * NLP (NonLinear Programming) Library
  * Copyright (C) 2005-2007 Fabian Bastin, CERFACS <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __OPHELIA_TESTING_ISOTONIC_H__

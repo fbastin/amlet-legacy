@@ -4,7 +4,7 @@
  * ORATIO Library - statistical functions
  * Copyright (C) 2001-2012 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __ORATIO_STAT_STUDENT_H__

@@ -4,7 +4,7 @@
  * Random Numbers Library
  * Copyright (C) 2004-2007 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __RAN_MT19937_H__

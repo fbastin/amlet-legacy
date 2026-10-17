@@ -4,7 +4,7 @@
  * C Tools
  * Copyright (C) 2000-2011 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __ORATIO_CTOOLS_MEMORY_H__

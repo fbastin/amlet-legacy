@@ -4,7 +4,7 @@
  * ORATIO Library
  * Copyright (C) 2006 <fabian.bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include "caffeine.h"

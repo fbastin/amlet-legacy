@@ -4,7 +4,7 @@
  * ORATIO Library - CTools module
  * Copyright (C) 2002-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include <config.h>

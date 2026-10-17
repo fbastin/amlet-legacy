@@ -4,7 +4,7 @@
  * NTools Library
  * Copyright (C) 2005 Fabian Bastin <fabian.bastin@cerfacs.fr>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __NTOOLS_INFINITY_H__

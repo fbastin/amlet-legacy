@@ -4,7 +4,7 @@
  * AMLET Library
  * Copyright (C) 2011 Fabian Bastin <fbas@math.fundp.ac.be>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __AMLET_LOGIT_H__

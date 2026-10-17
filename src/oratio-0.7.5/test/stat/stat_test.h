@@ -4,7 +4,7 @@
  * ORATIO Library
  * Copyright (C) 1999-2009 <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __ORATIO_STAT_TEST_H__

@@ -4,7 +4,7 @@
  * NTools Library
  * Copyright (C) 2002 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include <ntools/norm.h>

@@ -4,7 +4,7 @@
  * AMLET (Another Mixed Logit Estimation Tool)
  * Copyright (C) 2002-2008 Fabian Bastin <fbas@math.fundp.ac.be>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include "amlet_btr.h"

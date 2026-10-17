@@ -4,7 +4,7 @@
  * Monte Carlo and Quasi-Monte Carlo Library
  * Copyright (C) 2005 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __ORATIO_MOCA_GENERATION_H__

@@ -4,7 +4,7 @@
  * OPHELIA Library
  * Copyright (C) 2004-2011 Fabian Bastin <fbas@math.fundp.ac.be>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __OPHELIA_TEST_H__

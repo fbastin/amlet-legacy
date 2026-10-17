@@ -4,7 +4,7 @@
  * OPHELIA Library 
  * Copyright (C) 2004 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include "test_siman.h"

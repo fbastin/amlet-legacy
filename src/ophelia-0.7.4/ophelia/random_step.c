@@ -4,7 +4,7 @@
  * OPHELIA Library - random step
  * Copyright (C) 1999-2004 Fabian Bastin <fbas@math.fundp.ac.be>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include <sa_step.h>

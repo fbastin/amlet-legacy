@@ -4,7 +4,7 @@
  * MOCA (Another Mixed Logit Estimation Tool)
  * Copyright (C) 2006 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include <oratio/ntools.h>

@@ -4,7 +4,7 @@
  * Monte-Carlo and Quasi-Monte Carlo Library
  * Copyright (C) 2008 <fabian.bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include "caffeine.h"

@@ -4,7 +4,7 @@
  * C Tools
  * Copyright (C) 2005 Fabian Bastin <slashbin@namurlug.org>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __CTOOLS_VALUES_H__

@@ -4,7 +4,7 @@
  * STAT Library
  * Copyright (C) 2006 Fabian Bastin <bastin@cerfacs.fr>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __STAT_TRUNCATION_H__

@@ -4,7 +4,7 @@
  * OPHELIA Library
  * Copyright (C) 2009-2010 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include <oratio/oratio.h>

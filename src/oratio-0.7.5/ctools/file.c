@@ -4,7 +4,7 @@
  * C Tools
  * Copyright (C) 2000-2010 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include "oratio/cfile.h"

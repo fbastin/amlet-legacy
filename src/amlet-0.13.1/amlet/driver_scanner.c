@@ -551,7 +551,7 @@ char *yytext_ptr;
  * AMLET (Another Mixed Logit Estimation Tool)
  * Copyright (C) 2002-2010 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 /**
  * Scanner for the driver file

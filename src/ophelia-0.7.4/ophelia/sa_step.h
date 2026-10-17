@@ -4,7 +4,7 @@
  * ATHOS Library
  * Copyright (C) 1999-2004 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __ATHOS_SA_STEP_H__

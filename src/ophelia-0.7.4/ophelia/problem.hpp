@@ -4,7 +4,7 @@
  * OPHELIA Library
  * Copyright (C) 2005-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include <string>

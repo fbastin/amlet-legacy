@@ -15,7 +15,7 @@ The directory contains:
 | `src/oratio-0.7.5/` | ORATIO numerical libraries (random numbers, QMC, statistics, linear algebra). Unchanged. |
 | `src/ophelia-0.7.4/` | OPHELIA nonlinear optimisation library (trust-region solvers). Unchanged. |
 | `src/amlet-0.13.1/` | AMLET, with the fixes listed below. |
-| `patches/amlet-0.13.1-2026.patch` | All changes to the original `amlet-0.13.1.tar.gz`. |
+| `patches/amlet-0.13.1-2026.patch` | All code changes to the original `amlet-0.13.1.tar.gz` (the license change is not included). |
 | `build.sh` | Builds the three packages into a local prefix. Needs no root access. |
 | `run_examples.sh` | Runs the examples and checks the results against reference values. |
 | `examples/` | Redistributable examples (see below). |
@@ -117,19 +117,25 @@ To obtain them, contact the original data owners.
 AMLET, OPHELIA and ORATIO are © Fabian Bastin and co-authors. This
 repository is distributed under the MIT License (see `LICENSE`).
 
-Releases up to 0.13.1 were distributed under the Open Software License v2.1.
-The source trees still carry that notice (`src/*/COPYING`, file headers, the
-banner printed by `amlet`). For files whose only copyright holder is Fabian
-Bastin, the MIT License replaces it. The following files keep their own terms:
+Releases up to 0.13.1 were distributed under the Open Software License v2.1
+(OSL). In this repository, the files whose only copyright holder is Fabian
+Bastin are under the MIT License, and their headers say so. The license
+statement of each package is in `src/*/COPYING`. The following files keep
+their own terms, as stated in their headers:
 
-- files whose copyright notice also names other authors (the BFGS and
-  line-search files of OPHELIA, and some random-variate generators of ORATIO)
-  remain under the Open Software License v2.1;
-- third-party code keeps the licence stated in its header or distribution:
-  `getopt_long.c` (ISC), the Mersenne Twister generator (BSD), the LAPACK
-  routines in `src/ophelia-0.7.4/lapack/`, the MINPACK-2 test problems in
-  `src/ophelia-0.7.4/collection/minpack2/`, the Bison-generated parser and the
-  autotools build scripts.
+- files whose copyright notice also names other authors remain under the OSL
+  (text in `src/*/COPYING.OSL`): `amlet/lattice.h`; the BFGS and line-search
+  files of OPHELIA (`bfgs.c`, `bfgs.h`, `dcsrch.c`, `linesearch.h`); and, in
+  ORATIO, `ran/johnson.c`, `ran/standardminimal.c`, `ran/standardminimal.h`,
+  `ran/student.c`, `ran/truncatednormal.c` and `test/ran/test_truncatednormal.c`;
+- a few other files are under a BSD license;
+- third-party code keeps its own license: `getopt_long.c` (ISC), the Mersenne
+  Twister generator (BSD), the LAPACK routines in `src/ophelia-0.7.4/lapack/`,
+  the MINPACK-2 test problems in `src/ophelia-0.7.4/collection/minpack2/`, the
+  Bison-generated parser and the autotools build scripts.
+
+The PDF manuals in `doc/` are the original ones and still state the OSL; their
+LaTeX sources are updated.
 
 ## References
 

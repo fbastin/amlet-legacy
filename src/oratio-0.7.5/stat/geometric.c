@@ -4,7 +4,7 @@
  * ORATIO Library - statistical module
  * Copyright (C) 2009 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 /**

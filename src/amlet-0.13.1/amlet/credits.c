@@ -4,7 +4,7 @@
  * AMLET Library
  * Copyright (C) 2002-2015 Fabian Bastin <fabian.bastin@cirrelt.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #include "config.h"  /* produced by the configure command */
@@ -42,7 +42,7 @@ void amlet_credits(FILE *f, char *start, char *end)
   fprintf(f, "%s Fabian Bastin (et al.)", COPYRIGHT);
   fprintf(f, "%s\n", end);
   fprintf(f, "%s", start);
-  fprintf(f, "Licensed under Open Software License 2.1");
+  fprintf(f, "Licensed under the MIT License");
   fprintf(f, "%s\n", end);
   fprintf(f, "%s", start);
   fprintf(f, "Department of Mathematics, University of Namur (2002-2004)");

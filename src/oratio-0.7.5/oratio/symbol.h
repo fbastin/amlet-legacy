@@ -4,7 +4,7 @@
  * C Tools
  * Copyright (C) 2002-2006 Fabian Bastin <bastin@cerfacs.fr>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __CTOOLS_SYMBOL_H__

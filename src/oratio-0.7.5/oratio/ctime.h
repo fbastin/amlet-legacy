@@ -4,7 +4,7 @@
  * ORATIO Library - CTools module
  * Copyright (C) 2005 Fabian Bastin <slashbin@slashbin.be>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __ORATIO_CTOOLS_TIME_H__

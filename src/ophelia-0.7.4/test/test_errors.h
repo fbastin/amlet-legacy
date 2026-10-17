@@ -4,7 +4,7 @@
  * NLP (NonLinear Programming) Library
  * Copyright (C) 2005-2006 Fabian Bastin, CERFACS <bastin@cerfacs.fr>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __NLP2_TESTING_ERRORS_H__

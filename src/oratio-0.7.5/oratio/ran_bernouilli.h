@@ -4,7 +4,7 @@
  * ORATIO Library - Random Numbers Generation module
  * Copyright (C) 2010 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __ORATIO_RAN_BERNOUILLI_H__

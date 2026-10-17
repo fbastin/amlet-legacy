@@ -4,7 +4,7 @@
  * ATHOR Library
  * Copyright (C) 1999-2008 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __NLP2_MODEL_H__

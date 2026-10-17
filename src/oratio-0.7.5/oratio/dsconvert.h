@@ -4,7 +4,7 @@
  * ORATIO Library
  * Copyright (C) 2000-2002 Fabian Bastin <bastin@iro.umontreal.ca>
  *
- * Licensed under the Open Software License version 2.1
+ * Licensed under the MIT License
  */
 
 #ifndef __DSTRUCT_CONVERT_H__
