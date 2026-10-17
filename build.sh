@@ -25,6 +25,11 @@ BUILD="${BUILD:-$ROOT/build}"
 JOBS="${JOBS:-$(nproc 2>/dev/null || echo 2)}"
 CC="${CC:-gcc}"
 CFLAGS="${CFLAGS:--O2}"
+# The MRG32k3a states of ORATIO are not always reduced modulo m (see the
+# README), so some products exceed 2^53 and the random draws depend on how
+# they are rounded. Fused multiply-adds (FMA) change them completely, e.g. on
+# Ubuntu 26.04 or with -march=x86-64-v3: forbid them, always.
+CFLAGS="$CFLAGS -ffp-contract=off"
 
 ORATIO=oratio-0.7.5
 OPHELIA=ophelia-0.7.4

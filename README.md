@@ -122,6 +122,7 @@ from uutils coreutils, `make install` runs `install-sh`.
 - Driver files written for AMLET ≤ 0.10 may use `nests = 1;`. In 0.13.1 the keyword is `nnests`, and the old form crashes the parser. Rename it.
 - The log-likelihood "at constants" is not computed in 0.13.1 (printed as 0).
 - `seed2` is not implemented (see `src/amlet-0.13.1/TODO`).
+- In ORATIO, `nt_modular_vecvec()` (`ntools/modular.c`) adds the running sum again at each step (`y += ...` instead of `y = ...`). The MRG32k3a states computed with it (for each new stream or substream) are therefore not reduced modulo m. The streams differ from L'Ecuyer's reference generator, and some products exceed 2^53, so the draws depend on floating-point rounding: with fused multiply-add instructions (FMA, used by default on Ubuntu 26.04 or with `-march=x86-64-v3`) the draws change completely. `build.sh` therefore always compiles with `-ffp-contract=off`, which gives the same draws everywhere. Fixing the function would change every simulated result, so it is left as is.
 - In `set_beta()` (`amlet/likelihood.c`), the antithetic transformation is also applied to the (unused) draw of constant coefficients. The code is misleadingly indented, but the result is harmless. `sll_derivate_utilities_mvn()` is never called and uses an uninitialised variable.
 - Only the `amlet` and `src` subdirectories of AMLET are built. The original `test/` program and the LaTeX manual sources are kept but not built.
 

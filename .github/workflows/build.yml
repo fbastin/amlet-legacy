@@ -30,6 +30,7 @@ jobs:
       - name: Build
         run: |
           gcc --version | head -1
+          gcc -Q --help=target | grep -E '^ +-m(arch=|fma )'
           bash build.sh
 
       - name: Run examples
