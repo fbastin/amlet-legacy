@@ -101,7 +101,10 @@ maxima.
 Simulated results depend on the pseudo-random draws. They are reproducible
 for a given `seed1` on a given build. A different BLAS or compiler may change
 the last digits, which is why the mixed-logit tolerances in
-`examples/reference_values.tsv` are looser.
+`examples/reference_values.tsv` are looser. On the Australia mixed logit
+examples, the optimization stops at slightly different points depending on
+the BLAS and the compiler (the log-likelihood differs in the 8th digit), and
+the standard errors vary by up to about 1%: they are checked to within 3%.
 
 The examples compute the standard errors with the exact Hessian
 (`hessian_approx = false`, the default). Until v0.13.1-3, most of the mixed

@@ -2,15 +2,15 @@
 australia	driver_mnl	results_mnl	-199.1283687	1e-8	0.978816	1e-5	Greene, Econometric Analysis (conditional logit, TravelMode data): -199.128
 australia	driver_mnl_bfgs	results_mnl_bfgs	-199.1283687	1e-8	0.97881592	1e-5	Same model with the BFGS line-search method: same optimum
 australia	driver_mnl_rtr	results_mnl_rtr	-199.1283687	1e-8	0.97881661	1e-5	Same model with the retrospective trust-region method: same optimum
-australia	driver_mmnl	results_mmnl	-178.9961242	1e-4	1.6463295	1e-3	AMLET 0.13.1 rebuilt in 2026 (L'Ecuyer's MRG32k3a, 1000 draws, seed1 = 100); exact Hessian: LL and SE identical to an independent computation in Python
+australia	driver_mmnl	results_mmnl	-178.9961242	1e-4	1.6463295	0.03	AMLET 0.13.1 rebuilt in 2026 (L'Ecuyer's MRG32k3a, 1000 draws, seed1 = 100); exact Hessian: LL and SE identical to an independent computation in Python
 australia	driver_mmnl_legacy	results_mmnl_legacy	-178.491005	1e-4	1.6062496	0.1	AMLET 0.13.1 (legacy_rng = true: draws of ORATIO 0.7.5; BFGS Hessian, as in the original drivers)
-australia	driver_mmnl_halton	results_mmnl_halton	-178.6251363	1e-4	1.6630769	1e-3	Randomly shifted Halton draws, fixed sample size (mcbtr)
-australia	driver_mmnl_sobol	results_mmnl_sobol	-178.6627822	1e-4	1.6747086	1e-3	Sobol draws, fixed sample size (mcbtr)
-australia	driver_mmnl_lattice	results_mmnl_lattice	-178.6551847	1e-4	1.6664545	1e-3	Randomly shifted rank-1 lattice with 887 points, fixed sample size (mcbtr)
-australia	driver_mmnl_mlhs	results_mmnl_mlhs	-178.6560012	1e-4	1.6670717	1e-3	Modified Latin hypercube sampling, fixed sample size (mcbtr)
-australia	driver_mmnl_uniform	results_mmnl_uniform	-179.0727962	1e-4	2.6174573	1e-3	Uniform coefficient; classical covariance (robust = false)
-australia	driver_mmnl_spline	results_mmnl_spline	-172.5045331	1e-4	8.0294596	1e-3	Cubic B-spline (nonparametric) coefficient, monotonicity constraints (mcbtrc)
-australia	driver_mmnl_ecuyer	results_mmnl_ecuyer	-178.5302781	1e-4	1.6998292	1e-3	L'Ecuyer 1988 generator with shuffle (Numerical Recipes ran2)
+australia	driver_mmnl_halton	results_mmnl_halton	-178.6251363	1e-4	1.6630769	0.03	Randomly shifted Halton draws, fixed sample size (mcbtr)
+australia	driver_mmnl_sobol	results_mmnl_sobol	-178.6627822	1e-4	1.6747086	0.03	Sobol draws, fixed sample size (mcbtr)
+australia	driver_mmnl_lattice	results_mmnl_lattice	-178.6551847	1e-4	1.6664545	0.03	Randomly shifted rank-1 lattice with 887 points, fixed sample size (mcbtr)
+australia	driver_mmnl_mlhs	results_mmnl_mlhs	-178.6560012	1e-4	1.6670717	0.03	Modified Latin hypercube sampling, fixed sample size (mcbtr)
+australia	driver_mmnl_uniform	results_mmnl_uniform	-179.0727962	1e-4	2.6174573	0.03	Uniform coefficient; classical covariance (robust = false)
+australia	driver_mmnl_spline	results_mmnl_spline	-172.5045331	1e-4	8.0294596	0.03	Cubic B-spline (nonparametric) coefficient, monotonicity constraints (mcbtrc)
+australia	driver_mmnl_ecuyer	results_mmnl_ecuyer	-178.5302781	1e-4	1.6998292	0.03	L'Ecuyer 1988 generator with shuffle (Numerical Recipes ran2)
 simulated	driver_errc	results_errc	-4876.582987	1e-4	0.0237499	1e-3	AMLET 0.13.1 rebuilt in 2026 (synthetic data, true coefficients = 1)
 simulated	driver_errc_import	results_errc_import	-4876.582987	1e-4	0.0237499	1e-3	Data written by driver_errc (Train99), read back: same results as driver_errc
 simulated	driver_errc_legacy	results_errc_legacy	-4789.682641	1e-4	0.042104117	1e-3	AMLET 0.13.1 (legacy_rng = true: synthetic data and draws of ORATIO 0.7.5; BFGS Hessian, as in the original drivers)
