@@ -276,8 +276,8 @@ int amlet_generate_observations(amlet_config *ac,
 
   /* Initialize the synthetic population parameters. */
   if (dr->array[BGENTYPE].n != nvar)
-    amlet_error(ac, mclog->f, 1, AMLET_ERROR_PARSING,
-		"incorrect number of parameters in bgentype declaration");
+    return amlet_error(ac, mclog->f, 1, AMLET_ERROR_PARSING,
+		       "incorrect number of parameters in bgentype declaration");
   bgentype = _mallocs(nvar, int);
   driver_affect_integer(bgentype, dr->array+BGENTYPE);
 
@@ -296,8 +296,8 @@ int amlet_generate_observations(amlet_config *ac,
 
   /* Initialize the parameters. */
   if (dr->array[BGEN].n != npargen)
-    amlet_error(ac, mclog->f, 1, AMLET_ERROR_PARSING,
-		"incorrect number of parameters in bgen declaration");
+    return amlet_error(ac, mclog->f, 1, AMLET_ERROR_PARSING,
+		       "incorrect number of parameters in bgen declaration");
   par = _mallocs(npargen, double);
   driver_affect_real(par, dr->array+BGEN);
 

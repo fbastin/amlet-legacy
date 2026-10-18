@@ -1,3 +1,67 @@
+diff -ruN oratio-0.7.5/moca/halton.c oratio-0.7.5/moca/halton.c
+--- oratio-0.7.5/moca/halton.c	2015-07-06 22:30:52.000000000 -0400
++++ oratio-0.7.5/moca/halton.c	2026-10-17 22:28:20.000000000 -0400
+@@ -177,12 +177,15 @@
+     ? 1 : 0;
+   if (scrambled) {
+     if (s > HALTON_BW_MAXDIM) {
+-      if (loose)
++      if (loose) {
+ 	c_warning("scrambled Halton sequences are only available up to dimension 16; no scrambling will be made");
++	/* ORATIO <= 0.7.5 scrambled anyway, reading past the table */
++	scrambled = 0;
++      }
+       else
+ 	c_error("scrambled Halton sequences only available up to dimension 16; stop");
+     }
+-    scrambling = moca_halton_std_permutations();
++    if (scrambled) scrambling = moca_halton_std_permutations();
+   }
+ 
+   /* For each dimension, generate the corresponding Halton sequence */
+diff -ruN oratio-0.7.5/moca/randomization.c oratio-0.7.5/moca/randomization.c
+--- oratio-0.7.5/moca/randomization.c	2015-07-06 22:29:47.000000000 -0400
++++ oratio-0.7.5/moca/randomization.c	2026-10-17 22:28:20.000000000 -0400
+@@ -10,6 +10,21 @@
+ #include "oratio/moca.h"
+ #include "oratio/cblas.h"
+ 
++/* If not zero, reproduce ORATIO <= 0.7.5: its padding, 1.0/(4.0*(1 << 31)),
++   overflowed (1 << 31 is INT_MIN with GCC) and was subtracted. */
++static int moca_legacy = 0;
++
++void moca_set_legacy(int legacy)
++{
++  moca_legacy = legacy;
++}
++
++/* Padding of 2^-33 added to 32-bit random numbers. */
++static double padding32(void)
++{
++  return (moca_legacy ? -1.0 : 1.0)/(4.0*2147483648.0);
++}
++
+ /**
+  * Randomly shift a vector of points, modulo one.
+  *
+@@ -58,7 +73,7 @@
+ {
+   int i;
+ 
+-  for (i = 0; i < s; i++) shift[i] = ran_random_get_val(r)+1.0/(4.0*(1 << 31));
++  for (i = 0; i < s; i++) shift[i] = ran_random_get_val(r)+padding32();
+ }
+ 
+ /**
+@@ -73,7 +88,7 @@
+ void moca_shift_uniform_init32(Random *r, int s, double *shift)
+ {
+   int i;
+-  double sh = ran_random_get_val(r)+1.0/(4.0*(1 << 31));
++  double sh = ran_random_get_val(r)+padding32();
+ 
+   for (i = 0; i < s; i++) shift[i] = sh;
+ }
 diff -ruN oratio-0.7.5/ntools/f2c.h oratio-0.7.5/ntools/f2c.h
 --- oratio-0.7.5/ntools/f2c.h	2015-05-15 06:34:06.000000000 -0400
 +++ oratio-0.7.5/ntools/f2c.h	2026-10-17 12:08:46.000000000 -0400
@@ -81,6 +145,25 @@ diff -ruN oratio-0.7.5/oratio/f2c.h oratio-0.7.5/oratio/f2c.h
  typedef short int shortlogical;
  typedef char logical1;
  typedef char integer1;
+diff -ruN oratio-0.7.5/oratio/moca.h oratio-0.7.5/oratio/moca.h
+--- oratio-0.7.5/oratio/moca.h	2015-05-15 06:34:06.000000000 -0400
++++ oratio-0.7.5/oratio/moca.h	2026-10-17 22:28:20.000000000 -0400
+@@ -187,6 +187,15 @@
+   void moca_shift_init32(Random *r, int s, double *shift);
+ 
+   /**
++   * Reproduce, or not, the random shifts of ORATIO <= 0.7.5, whose
++   * padding of 2^-33 was subtracted instead of added (an integer
++   * overflow).
++   *
++   * @param legacy is 0 (default) or 1 to reproduce ORATIO <= 0.7.5.
++   */
++  void moca_set_legacy(int legacy);
++
++  /**
+    * Initialize a random shift vector with a padding for 32-bit random
+    * numbers generators; each component is set to the same number.
+    *
 diff -ruN oratio-0.7.5/oratio/ntools.h oratio-0.7.5/oratio/ntools.h
 --- oratio-0.7.5/oratio/ntools.h	2015-05-15 06:34:06.000000000 -0400
 +++ oratio-0.7.5/oratio/ntools.h	2026-10-17 16:19:52.000000000 -0400
@@ -164,6 +247,71 @@ diff -ruN oratio-0.7.5/ran/johnson.c oratio-0.7.5/ran/johnson.c
  }
  
  /**
+diff -ruN oratio-0.7.5/ran/lecuyer88b.c oratio-0.7.5/ran/lecuyer88b.c
+--- oratio-0.7.5/ran/lecuyer88b.c	2015-07-06 23:18:07.000000000 -0400
++++ oratio-0.7.5/ran/lecuyer88b.c	2026-10-17 22:28:20.000000000 -0400
+@@ -45,7 +45,9 @@
+   int k;
+   int i;
+ 
+-  unsigned long s1, s2;
++  /* signed: the tests s1 < 0 and s2 < 0 below were never true with the
++     unsigned long of ORATIO <= 0.7.5 */
++  long s1, s2;
+   int iy;
+ 
+   LEcuyer88b *ecu = (LEcuyer88b *)r;
+@@ -57,7 +59,7 @@
+   /* Génération d'un nombre sur base d'un algorithme construit sur la
+    * méthode congruentielle, et utilisant l'algorithme de Schrage */
+   k = s1/IQ1;
+-  s1 = IA1*(ecu->s[0]-k*IQ1)-k*IR1;
++  s1 = IA1*(s1-k*IQ1)-k*IR1;
+   /* S1=40014*(S1-IQ1*Floor(S1/IQ1))-Floor(S1/IQ1)*12211 */
+   if (s1<0) s1 += IM1;
+ 
+@@ -95,16 +97,20 @@
+ {
+   int i;
+ 
+-  memcpy(rng->s, state, 2*sizeof(double));
++  long s0;
++
++  memcpy(rng->s, state, 2*sizeof(unsigned long));
+ 
+   /* Generation of an array of 32 numbers in order to allow postponed output */
+   for (i = ntab+7; i >= 0; i--) {
+     int k;
+ 
+-    k = rng->s[0]/IQ1;
+-    rng->s[0] = IA1*(rng->s[0]-k*IQ1)-k*IR1;
+-    if (rng->s[0] < 0) rng->s[0] +=IM1;
+-    if (i < ntab) rng->iv[i] = rng->s[0];
++    s0 = rng->s[0];
++    k = s0/IQ1;
++    s0 = IA1*(s0-k*IQ1)-k*IR1;
++    if (s0 < 0) s0 += IM1;
++    rng->s[0] = s0;
++    if (i < ntab) rng->iv[i] = s0;
+   }
+ 
+   rng->iy = rng->iv[0];
+@@ -112,8 +118,13 @@
+ 
+ void ran_lecuyer88b_init(LEcuyer88b *rng, unsigned long *seed, int n)
+ {
+-  if (n == 1)
+-    rng->s[0] = rng->s[1] = *seed;
++  unsigned long s[2];
++
++  if (n == 1) {
++    /* ORATIO <= 0.7.5 did not fill the shuffle table in this case */
++    s[0] = s[1] = *seed;
++    ran_lecuyer88b_set_state(rng, s);
++  }
+   else /* n == 2 */
+     ran_lecuyer88b_set_state(rng, seed);
+ }
 diff -ruN oratio-0.7.5/ran/mrg32k3a.c oratio-0.7.5/ran/mrg32k3a.c
 --- oratio-0.7.5/ran/mrg32k3a.c	2015-06-25 00:11:40.000000000 -0400
 +++ oratio-0.7.5/ran/mrg32k3a.c	2026-10-17 16:19:52.000000000 -0400

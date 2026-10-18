@@ -56,8 +56,8 @@ extern "C" {
     {"", AMLET_HELP_EXIT},
     {"", AMLET_VERSION_EXIT},
     {"error while parsing amlet options", AMLET_ERROR_OPTIONS},
-    {"", AMLET_ERROR_CHOICES},
-    {"", AMLET_ERROR_PARSING},
+    {"invalid choices", AMLET_ERROR_CHOICES},
+    {"error in the driver file", AMLET_ERROR_PARSING},
     {"unable to open draws file", AMLET_ERROR_DRAWS_FILE_OPENING},
     {"error during draws reading", AMLET_ERROR_DRAWS_FILE_READING},
     {"error with the repetitions number",
@@ -66,15 +66,15 @@ extern "C" {
      AMLET_ERROR_REPETITIONS_FILE_OPENING},
     {"error while reading repetitions file",
      AMLET_ERROR_REPETITIONS_FILE_READING},
-    {"", AMLET_ERROR_PEOPLE},
-    {"", AMLET_ERROR_STARTING_POINT},
+    {"invalid number of individuals", AMLET_ERROR_PEOPLE},
+    {"invalid starting point (b)", AMLET_ERROR_STARTING_POINT},
     /* Data file */
-    {"", AMLET_ERROR_UNKNOWN_FORMAT},
-    {"", AMLET_ERROR_FILE_OPEN},
+    {"unknown data format", AMLET_ERROR_UNKNOWN_FORMAT},
+    {"unable to open a data file", AMLET_ERROR_FILE_OPEN},
     {"error in data reading", AMLET_ERROR_DATA_READING},
-    {"", AMLET_ERROR_OPTIMISATION},
+    {"error during the optimization", AMLET_ERROR_OPTIMISATION},
     /* XML */
-    {"", AMLET_ERROR_XML_PARSING}
+    {"error while parsing XML", AMLET_ERROR_XML_PARSING}
   };
 
   /**

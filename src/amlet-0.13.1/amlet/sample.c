@@ -60,17 +60,36 @@ void amlet_sample_free(double **S, int pop)
  * @param sample contains, on output, the generated sample.
  */
 void amlet_sample_generate_01(FILE *f, Random *ran, int np, int method,
-			      int n, int s, double **sample)
+			      int n, int s, double **sample, int randomization)
 {
   int i, j;
 
   switch (method) {
   case MOCA_HALTON: {
-    MOCA_Halton *h;
+    /* The same Halton points for all individuals, each with its own
+       random shift. randomization adds scrambling or shuffling; AMLET
+       <= 0.13.1 ignored it. */
+    int scrambling = (randomization == MOCA_HALTON_RANDOMIZATION_SCRAMBLING ||
+		      randomization == MOCA_HALTON_RANDOMIZATION_SHIFTING_SCRAMBLING);
+    int shuffling = (randomization == MOCA_HALTON_RANDOMIZATION_SHUFFLING ||
+		     randomization == MOCA_HALTON_RANDOMIZATION_SHIFTING_SHUFFLING);
     double shift[s];
 
-    h = moca_halton_new(s, MOCA_HALTON_NO_SCRAMBLING);
-    moca_halton_sample(h, n, sample[0], s);
+    if (scrambling) {
+      /* Braaten-Weller scrambling, up to dimension 16 */
+      double **rows = _mallocs(n, double *);
+
+      for (j = 0; j < n; j++) rows[j] = sample[0]+j*s;
+      moca_halton_generate_sample(ran, rows, s, n,
+				  MOCA_HALTON_RANDOMIZATION_SCRAMBLING, 1);
+      free(rows);
+    }
+    else {
+      MOCA_Halton *h = moca_halton_new(s, MOCA_HALTON_NO_SCRAMBLING);
+
+      moca_halton_sample(h, n, sample[0], s);
+      moca_halton_free(h);
+    }
 
     for (i = 1; i < np; i++) memcpy(sample[i], sample[0], n*s*sizeof(double));
     for (i = 0; i < np; i++) {
@@ -78,9 +97,10 @@ void amlet_sample_generate_01(FILE *f, Random *ran, int np, int method,
       moca_shift_init32(ran, s, shift);
       for (j = 0; j < n; j++)
 	moca_shift_apply(s, &(sample[i][j*s]), shift);
+      /* Shuffle the order of the points, dimension by dimension */
+      if (shuffling)
+	for (j = 0; j < s; j++) ran_shuffle_double(ran, n, sample[i]+j, s);
     }
-
-    moca_halton_free(h);
 
     break;
   }
@@ -101,7 +121,8 @@ void amlet_sample_generate_01(FILE *f, Random *ran, int np, int method,
     else {
       Random *r = ran_random();
       /* Switch to a Monte-Carlo sample. */
-      amlet_sample_generate_01(NULL, ran, np, MOCA_MONTE_CARLO, n, s, sample);
+      amlet_sample_generate_01(NULL, ran, np, MOCA_MONTE_CARLO, n, s, sample,
+			       MOCA_HALTON_RANDOMIZATION_NONE);
       ran_random_free(r);
       break;
     }
@@ -123,6 +144,18 @@ void amlet_sample_generate_01(FILE *f, Random *ran, int np, int method,
       }
     }
     moca_rank1_lattice_free(lattice);
+    break;
+  }
+  case MOCA_MLHS: {
+    /* Modified Latin hypercube sampling (Hess et al.), one per
+       individual; AMLET <= 0.13.1 used Monte Carlo draws instead. */
+    double **rows = _mallocs(n, double *);
+
+    for (i = 0; i < np; i++) {
+      for (j = 0; j < n; j++) rows[j] = sample[i]+j*s;
+      mlhs_generate_sample(ran, rows, n, s);
+    }
+    free(rows);
     break;
   }
   case MOCA_SOBOL: {
@@ -162,7 +195,9 @@ void amlet_sample_generate(FILE *f, Random *ran, AMLET_Driver *dr, int new,
     for (i = 0; i < dr->var[QMCREP].i; i++)
       amlet_sample_generate_01(f, ran, np, dr->var[SAMPLING].i,
 			       dr->var[NREP].i, n_random_coeff,
-			       sample+i*np);
+			       sample+i*np,
+			       dr->var[LEGACY_RNG].i ? MOCA_HALTON_RANDOMIZATION_NONE
+			       : dr->var[RANDOMIZATION].i);
   }
   /* Convert [0-1] draws to the required types. */
   for (i = 0; i < np*dr->var[QMCREP].i; i++)

@@ -223,6 +223,7 @@ double model_amlet_btr_da(double (*f)(double *, int, void *, double *,
   /* Initialization */
   n = btr->n;
   btr->k = 0; /* set the iteration counter */
+  btr->info = 0;
 
   nlast = 0;
 
@@ -274,9 +275,11 @@ double model_amlet_btr_da(double (*f)(double *, int, void *, double *,
 		    nt_vect_print(stdout, "g", btr->grad, n); */
 
   /* Review stopping test? */
-  while (!(btr->info = amlet_btrda_stopping_test(btr, btr->step, nlast,
-						 md, *epsilon, rfct, rho))
-	 && !btr->info) {
+  /* The test must not overwrite the iteration limit set at the end of the
+     previous iteration (AMLET <= 0.13.1 ignored niter here). */
+  while (btr->info != NLP_STOPPING_ITERATIONS
+	 && !(btr->info = amlet_btrda_stopping_test(btr, btr->step, nlast,
+						    md, *epsilon, rfct, rho))) {
 
     /*    nt_vect_print(stdout, "g", btr->grad, n);
     nt_derive_grad_fd(wrapper_simulated,
@@ -595,6 +598,7 @@ double model_amlet_rtr_da(double (*f)(double *, int, void *, double *,
   /* Initialization */
   n = btr->n;
   btr->k = 0; /* set the iteration counter */
+  btr->info = 0;
   btr->retro = 1;
   md->neval = 0;
 
@@ -632,9 +636,11 @@ double model_amlet_rtr_da(double (*f)(double *, int, void *, double *,
   }
 
   /* Review stopping test? */
-  while (!(btr->info = amlet_btrda_stopping_test(btr, btr->step, nlast,
-						 md, *epsilon, rfct, rho))
-	 && !btr->info) {
+  /* The test must not overwrite the iteration limit set at the end of the
+     previous iteration (AMLET <= 0.13.1 ignored niter here). */
+  while (btr->info != NLP_STOPPING_ITERATIONS
+	 && !(btr->info = amlet_btrda_stopping_test(btr, btr->step, nlast,
+						    md, *epsilon, rfct, rho))) {
 
     invert = 0;
     if (btr->verbose) printf("Iteration %d\n", btr->k);

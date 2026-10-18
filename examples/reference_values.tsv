@@ -1,9 +1,20 @@
 # example	driver	output	expected_total_loglik	rel_tol	expected_se	se_rel_tol	source of the expected values (expected_se: standard error of the first parameter)
 australia	driver_mnl	results_mnl	-199.1283687	1e-8	0.978816	1e-5	Greene, Econometric Analysis (conditional logit, TravelMode data): -199.128
+australia	driver_mnl_bfgs	results_mnl_bfgs	-199.1283687	1e-8	0.97881592	1e-5	Same model with the BFGS line-search method: same optimum
+australia	driver_mnl_rtr	results_mnl_rtr	-199.1283687	1e-8	0.97881661	1e-5	Same model with the retrospective trust-region method: same optimum
 australia	driver_mmnl	results_mmnl	-178.9961242	1e-4	1.5878199	0.1	AMLET 0.13.1 rebuilt in 2026 (L'Ecuyer's MRG32k3a, 1000 draws, seed1 = 100; BFGS Hessian, SE within 3% between builds)
 australia	driver_mmnl_legacy	results_mmnl_legacy	-178.491005	1e-4	1.6062496	0.1	AMLET 0.13.1 (legacy_rng = true: draws of ORATIO 0.7.5)
+australia	driver_mmnl_halton	results_mmnl_halton	-178.6251363	1e-4	1.6704694	0.1	Randomly shifted Halton draws, fixed sample size (mcbtr)
+australia	driver_mmnl_sobol	results_mmnl_sobol	-178.6627822	1e-4	1.5873254	0.1	Sobol draws, fixed sample size (mcbtr)
+australia	driver_mmnl_lattice	results_mmnl_lattice	-178.6551847	1e-4	1.6629821	0.1	Randomly shifted rank-1 lattice with 887 points, fixed sample size (mcbtr)
+australia	driver_mmnl_mlhs	results_mmnl_mlhs	-178.6560012	1e-4	1.6674086	0.1	Modified Latin hypercube sampling, fixed sample size (mcbtr)
+australia	driver_mmnl_uniform	results_mmnl_uniform	-179.0727962	1e-4	2.6011854	0.1	Uniform coefficient; classical covariance (robust = false)
+australia	driver_mmnl_spline	results_mmnl_spline	-172.5045331	1e-4	6.3325753	0.1	Cubic B-spline (nonparametric) coefficient, monotonicity constraints (mcbtrc)
+australia	driver_mmnl_ecuyer	results_mmnl_ecuyer	-178.5302781	1e-4	1.6788166	0.1	L'Ecuyer 1988 generator with shuffle (Numerical Recipes ran2)
 simulated	driver_errc	results_errc	-4876.582987	1e-4	0.02404597	1e-3	AMLET 0.13.1 rebuilt in 2026 (synthetic data, true coefficients = 1)
+simulated	driver_errc_import	results_errc_import	-4876.583284	1e-4	0.024045952	1e-3	Data written by driver_errc (Train99, 6 significant digits), read back
 simulated	driver_errc_legacy	results_errc_legacy	-4789.682641	1e-4	0.042104117	1e-3	AMLET 0.13.1 (legacy_rng = true: synthetic data and draws of ORATIO 0.7.5)
 simulated	driver_panel	results_panel	-5791.971891	1e-4	0.025276731	1e-3	AMLET 0.13.1 rebuilt in 2026 (synthetic panel, true N(0.5, 1) coefficients)
+simulated	driver_panel_halton	results_panel_halton	-5781.358341	1e-4	0.038766324	1e-3	Scrambled, randomly shifted Halton draws (200), fixed sample size (mcbtr)
 swissmetro	driver_mnl	results_mnl	-5331.252007	1e-8	0.082562108	1e-5	Biogeme example 01logit: -5331.252; robust standard error of ASC_TRAIN 0.0826
 swissmetro	driver_mmnl	results_mmnl	-5215.962559	1e-4	0.055018263	1e-3	AMLET 0.13.1 rebuilt in 2026 (L'Ecuyer's MRG32k3a, 1000 draws, seed1 = 12345)

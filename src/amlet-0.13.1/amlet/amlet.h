@@ -89,9 +89,13 @@ extern "C" {
    * @param n is the number of vectors to draw.
    * @param s is the size of draws vectors.
    * @param sample contains, on output, the generated sample.
+   * @param randomization adds scrambling or shuffling to the randomly
+   *   shifted Halton sequences (MOCA_HALTON_RANDOMIZATION_*); it is
+   *   ignored by the other methods.
    */
   void amlet_sample_generate_01(FILE *f, Random *ran, int np, int method,
-				int n, int s, double **sample);
+				int n, int s, double **sample,
+				int randomization);
 
   /**
    * @param f is the file where the U(0,1) draws will be saved, if not NULL.

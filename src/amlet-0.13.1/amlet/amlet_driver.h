@@ -197,12 +197,14 @@ extern "C" {
 
   /* optimization methods */
 
+  /* In the order of the enum in dcl.h: io.c prints methods[method].name
+     (AMLET <= 0.13.1 printed mcrtrda for mcbtrda and vice versa). */
   static const c_symbol methods[] = {
     {"none", NO_OPTIMIZATION},
     {"mcbtr", MCBTR},
     {"mcrtr", MCRTR},
-    {"mcbtrda", MCBTRDA},
     {"mcrtrda", MCRTRDA},
+    {"mcbtrda", MCBTRDA},
     {"mcbfgs", MCBFGS},
     {"mcbfgsda", MCBFGSDA},
     {"mcbtrc", MCBTRC}

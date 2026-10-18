@@ -45,32 +45,49 @@ int import_train_1996(char *obsname, double ***obs,
 
   n = (idcensor) ? nvar+2 : nvar + 1;
 
+  /* AMLET <= 0.13.1 read the choice row as one more variable, past the
+     arrays, when iddep was not set. */
+  if (iddep < 1 || iddep > n || iddep == idcensor) {
+    amlet_warning(stderr, 1,
+		  "iddep = %d: with the Train96 format, iddep must give the row of the choice in each record (1 to %d)", iddep, n);
+    fclose(f);
+    return AMLET_ERROR_DATA_READING;
+  }
+
   for (i = 0; i < nobs; i++) {
     k = 0;
     for (l = 0; l < n; l++) {
       if (l == iddep-1) {
 	/* Read the choice */
 	for (j = 0; j < nalt; j++) {
-	  fscanf(f, "%d", &itmp);
+	  if (fscanf(f, "%d", &itmp) != 1) goto Short;
 	  if (itmp) choices[i] = j;
 	}
-	fscanf(f, "\n");
+	if (fscanf(f, "\n")) {}
       }
       else if (l == idcensor-1) {
 	/* Read the alternatives  availability */
-	for (j = 0; j < nalt; j++) fscanf(f, "%d", &availability[i][j]);
-	fscanf(f, "\n");
+	for (j = 0; j < nalt; j++)
+	  if (fscanf(f, "%d", &availability[i][j]) != 1) goto Short;
+	if (fscanf(f, "\n")) {}
       }
       else {
 	for (j = 0; j < nalt; j++)
-	  fscanf(f, "%lg", &(obs[i][j][k]));
+	  if (fscanf(f, "%lg", &(obs[i][j][k])) != 1) goto Short;
 	k++;
       }
 
     }
   }
 
+  fclose(f);
   return 0;
+
+ Short:
+  /* AMLET <= 0.13.1 went on with undefined values. */
+  amlet_warning(stderr, 1, "%s: missing or invalid value in record %d of %d", obsname, i+1, nobs);
+  fclose(f);
+  return AMLET_ERROR_DATA_READING;
 }
 
 /**

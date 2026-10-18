@@ -19,6 +19,7 @@
 
 #include "amlet_data.h"
 #include "nest.h"
+#include "lattice.h"
 
 #include "model.h"
 
@@ -155,6 +156,11 @@ void driver_check_parameters(AMLET_Driver *dr, amlet_config *ac, dcl_data *data)
 {
   int i;
 
+  /* The estimation code has no nests (exec.c sets data.n to NULL); with
+     nnests > 1, AMLET <= 0.13.1 wrote past its arrays. */
+  if (dr->var[NNESTS].i != 1)
+    c_error("nested logit models are not supported: nnests must be 1");
+
   if (!data->n_random_coeff) {
 #ifdef DEBUG
     printf("** Multinomial model **\n");
@@ -189,6 +195,52 @@ void driver_check_parameters(AMLET_Driver *dr, amlet_config *ac, dcl_data *data)
       else {
 	c_error("at least 10 draws per individual must be used");
       }
+    }
+
+    /* mcbtrc constrains the spline coefficients to be monotonic; without
+       any, AMLET <= 0.13.1 crashed. The method is then mcbtr. */
+    if (dr->var[METHOD].i == MCBTRC && ds_list_length(data->np_list) == 0) {
+      amlet_warning(stderr, 1, "mcbtrc constrains spline coefficients, and the model has none; mcbtr is used instead");
+      dr->var[METHOD].i = MCBTR;
+    }
+
+    /* Faure sequences are not implemented in the draws generation:
+       AMLET <= 0.13.1 used Monte Carlo draws instead. */
+    if (dr->var[SAMPLING].i == MOCA_FAURE)
+      c_error("Faure sequences are not available; use sampling = halton, sobol, lattice, mlhs or monte_carlo");
+
+    /* Rank-1 lattices: use the number of points of a tabulated lattice
+       (a prime number), not more than nrep. AMLET <= 0.13.1 kept nrep
+       points with the generating vector of another lattice. */
+    if (dr->var[SAMPLING].i == MOCA_RANK1_LATTICE) {
+      int *l = amlet_get_default_lattice();
+      int inc = amlet_get_default_lattice_max_dimension()+1;
+      int k, size = l[0];
+
+      if (data->n_random_coeff > amlet_get_default_lattice_max_dimension())
+	amlet_warning(stderr, 1, "rank-1 lattices are available up to dimension %d; Monte Carlo draws are used",
+		      amlet_get_default_lattice_max_dimension());
+      else {
+	for (k = 0; k < amlet_get_default_lattice_number(); k++)
+	  if (l[k*inc] <= dr->var[NREP].i) size = l[k*inc];
+	if (size != dr->var[NREP].i) {
+	  amlet_warning(stderr, 1, "rank-1 lattice: nrep set to %d, the number of points of the closest tabulated lattice", size);
+	  dr->var[NREP].i = size;
+	}
+      }
+    }
+
+    /* The variable sample size methods estimate the simulation error as
+       for independent draws: with quasi-Monte Carlo draws, they stall or
+       stop with too few draws. Use the method with a fixed sample size. */
+    if (dr->var[SAMPLING].i != MOCA_MONTE_CARLO
+	&& (dr->var[METHOD].i == MCBTRDA || dr->var[METHOD].i == MCRTRDA)) {
+      int fixed = (dr->var[METHOD].i == MCBTRDA) ? MCBTR : MCRTR;
+
+      amlet_warning(stderr, 1, "%s varies the number of draws, which requires Monte Carlo draws (sampling = monte_carlo); %s is used instead, with %d draws",
+		    methods[dr->var[METHOD].i].name, methods[fixed].name,
+		    dr->var[NREP].i);
+      dr->var[METHOD].i = fixed;
     }
   }
 

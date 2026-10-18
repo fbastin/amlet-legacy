@@ -10,6 +10,21 @@
 #include "oratio/moca.h"
 #include "oratio/cblas.h"
 
+/* If not zero, reproduce ORATIO <= 0.7.5: its padding, 1.0/(4.0*(1 << 31)),
+   overflowed (1 << 31 is INT_MIN with GCC) and was subtracted. */
+static int moca_legacy = 0;
+
+void moca_set_legacy(int legacy)
+{
+  moca_legacy = legacy;
+}
+
+/* Padding of 2^-33 added to 32-bit random numbers. */
+static double padding32(void)
+{
+  return (moca_legacy ? -1.0 : 1.0)/(4.0*2147483648.0);
+}
+
 /**
  * Randomly shift a vector of points, modulo one.
  *
@@ -58,7 +73,7 @@ void moca_shift_init32(Random *r, int s, double *shift)
 {
   int i;
 
-  for (i = 0; i < s; i++) shift[i] = ran_random_get_val(r)+1.0/(4.0*(1 << 31));
+  for (i = 0; i < s; i++) shift[i] = ran_random_get_val(r)+padding32();
 }
 
 /**
@@ -73,7 +88,7 @@ void moca_shift_init32(Random *r, int s, double *shift)
 void moca_shift_uniform_init32(Random *r, int s, double *shift)
 {
   int i;
-  double sh = ran_random_get_val(r)+1.0/(4.0*(1 << 31));
+  double sh = ran_random_get_val(r)+padding32();
 
   for (i = 0; i < s; i++) shift[i] = sh;
 }

@@ -177,12 +177,15 @@ void moca_halton_generate_sample(Random *ran, void *sample,
     ? 1 : 0;
   if (scrambled) {
     if (s > HALTON_BW_MAXDIM) {
-      if (loose)
+      if (loose) {
 	c_warning("scrambled Halton sequences are only available up to dimension 16; no scrambling will be made");
+	/* ORATIO <= 0.7.5 scrambled anyway, reading past the table */
+	scrambled = 0;
+      }
       else
 	c_error("scrambled Halton sequences only available up to dimension 16; stop");
     }
-    scrambling = moca_halton_std_permutations();
+    if (scrambled) scrambling = moca_halton_std_permutations();
   }
 
   /* For each dimension, generate the corresponding Halton sequence */

@@ -187,6 +187,15 @@ extern "C" {
   void moca_shift_init32(Random *r, int s, double *shift);
 
   /**
+   * Reproduce, or not, the random shifts of ORATIO <= 0.7.5, whose
+   * padding of 2^-33 was subtracted instead of added (an integer
+   * overflow).
+   *
+   * @param legacy is 0 (default) or 1 to reproduce ORATIO <= 0.7.5.
+   */
+  void moca_set_legacy(int legacy);
+
+  /**
    * Initialize a random shift vector with a padding for 32-bit random
    * numbers generators; each component is set to the same number.
    *

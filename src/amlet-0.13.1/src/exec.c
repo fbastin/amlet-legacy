@@ -67,8 +67,8 @@ int set_parameters(AMLET_Model *m,
   *nfixed = 0;
 
   if (dr->array[BTYPE].n != nvar)
-    amlet_error(ac, mclog->f, 1, AMLET_ERROR_PARSING,
-		"incorrect number of parameters in btype declaration");
+    return amlet_error(ac, mclog->f, 1, AMLET_ERROR_PARSING,
+		       "incorrect number of parameters in btype declaration");
 
   /* We set the type vector, following the informations of the driver. */
   *btype = _mallocs(nvar, int);
@@ -79,6 +79,13 @@ int set_parameters(AMLET_Model *m,
   for (i = 0; i < nvar; i++) {
     np_object = NULL;
     t = (*btype)[i];
+    /* These distributions can generate synthetic data, but AMLET has
+       neither their draws nor their derivatives for the estimation. */
+    if (t == TRUNCATED_NORMAL || t == TRUNCATED_NORMAL_B || t == BERNOUILLI)
+      return amlet_error(ac, mclog->f, 1, AMLET_ERROR_PARSING,
+			 "the %s distribution can only be used to generate synthetic data (bgentype), not in btype",
+			 c_symbol_get_name(t, (c_symbol *)distributions,
+					   sizeof(distributions)/sizeof(distributions[0])));
     if (t != CONSTANT && t != FIXED) (*n_random_coeff)++;
     /* if nonparametric... we have to register the right object */
     if (amlet_is_nonparametric(t)) {
@@ -328,17 +335,19 @@ int amlet_exec(int argc, char *argv[])
   data.bias = dr.var[BIAS].i;
 
   /* Parameters array initialization */
-  if (set_parameters(m, &ac, &dr, data.nvar, &npar, &n_random_coeff,
-		     &ff, &(data.nfixed), &btype, &x, &(data.fixed)))
-    goto End;
-  /* Check with the driver */
-  driver_check_parameters(&dr, &ac, &data);
-
+  info = set_parameters(m, &ac, &dr, data.nvar, &npar, &n_random_coeff,
+			&ff, &(data.nfixed), &btype, &x, &(data.fixed));
+  if (info) goto End;
+  /* Check with the driver; it needs the number of random coefficients
+     (AMLET <= 0.13.1 set it afterwards, so that every model was checked
+     as a multinomial logit). */
   data.n_random_coeff = n_random_coeff;
+  driver_check_parameters(&dr, &ac, &data);
 
   /* Random generation */
   seed = dr.var[SEED1].i;
   ran_mrg32k3a_set_legacy(dr.var[LEGACY_RNG].i);
+  moca_set_legacy(dr.var[LEGACY_RNG].i);
   ran = ran_random_new(dr.var[RANGEN].i, &seed, 1);
 
   if (m->verbose) {
@@ -365,9 +374,11 @@ int amlet_exec(int argc, char *argv[])
   for (i = 1; i <= data.np; i++) rep[i] = j;
 
   /* Observations */
-  if (dr.generation)
-    amlet_generate_observations(&ac, ran, &dr, data.nvar,
-				choices, obs, availability, rep);
+  if (dr.generation) {
+    info = amlet_generate_observations(&ac, ran, &dr, data.nvar,
+				       choices, obs, availability, rep);
+    if (info) goto End;
+  }
   else {
     /* Read a Gauss file */
     if (m->verbose) printf("Read data.\n");
@@ -860,7 +871,8 @@ int amlet_exec(int argc, char *argv[])
   amlet_nest_free(data.n);
 
   tmp = data.np_list;
-  for (i = 0; i < data.nvar; i++) {  
+  /* btype is NULL if set_parameters() stopped early */
+  for (i = 0; btype && i < data.nvar; i++) {
     j = btype[i];
     if (amlet_is_nonparametric(j)) {
       amlet_nonparametric_free(tmp->data, j);

@@ -81,6 +81,9 @@ parameter $p$ ($0 \leq p \leq 1.0$), that has to be specified.
 The used distributions are specified in the variables
 \verb|btype| and \verb|bgentype|
 as set of identifiers.
+The truncated normal distributions (\verb|truncated_normal| and
+\verb|truncated_normal_b|) and the Bernouilli distribution can only be
+used in \verb|bgentype|, to generate synthetic data.
 
 %\section{Alternatives sampling}
 
@@ -134,7 +137,16 @@ are important. To use more draws, say 10000 per individual, write
 \begin{verbatim}
 nrep = 10000;
 \end{verbatim}
-When lattices are used, a close prime number is automatically chosen by \amlet{}.
+When lattices are used, \amlet{} uses the tabulated rank-1 lattice with
+the largest number of points (a prime number) not greater than
+\verb|nrep|, and sets \verb|nrep| to this number, for instance 887 for
+\verb|nrep = 1000|.
+
+The methods with a variable sample size (\verb|mcbtrda| and
+\verb|mcrtrda|) estimate the simulation error as for independent
+draws. With quasi-Monte Carlo draws, \amlet{} therefore replaces them by
+the same methods with a fixed sample size (\verb|mcbtr| and
+\verb|mcrtr|), with a warning.
 While Halton are the most popular sequences in discrete choice theory, we recommend the use of Sobol sequences of rank-1 lattices.
 However, the advantage of quasi-Monte Carlo sequences is not clear, as shown in \cite{MungLEcuBastCiriTuff12}.
 
@@ -166,8 +178,6 @@ summarized in Table~\ref{tab:halton_randomization}.
 \hline
 \verb|none| & no randomization \\
 \hline
-\verb|owen| & Owen randomization \\
-\hline
 \verb|scrambling| & scramble the Halton sequences \\
 \hline
 \verb|shifting| & randomly shift the Halton sequences \\
@@ -184,6 +194,14 @@ sequences \\
 \label{tab:halton_randomization}
 \end{center}
 \end{table}
+
+In \amlet{}, all individuals use the same Halton points, each with its
+own random shift, so that \verb|none| and \verb|shifting| give the same
+draws. \verb|scrambling| applies the Braaten-Weller permutations (up to
+dimension 16), and \verb|shuffling| shuffles the order of the points of
+each individual, dimension by dimension. Up to the 2026 rebuild,
+\amlet{} ignored the variable \verb|randomization|; it still does with
+\verb|legacy_rng = true|.
 
 \subsection{Sobol sequences}
 

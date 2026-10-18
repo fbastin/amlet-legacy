@@ -45,7 +45,9 @@ double ran_lecuyer88b_get_val(void *r)
   int k;
   int i;
 
-  unsigned long s1, s2;
+  /* signed: the tests s1 < 0 and s2 < 0 below were never true with the
+     unsigned long of ORATIO <= 0.7.5 */
+  long s1, s2;
   int iy;
 
   LEcuyer88b *ecu = (LEcuyer88b *)r;
@@ -57,7 +59,7 @@ double ran_lecuyer88b_get_val(void *r)
   /* Génération d'un nombre sur base d'un algorithme construit sur la
    * méthode congruentielle, et utilisant l'algorithme de Schrage */
   k = s1/IQ1;
-  s1 = IA1*(ecu->s[0]-k*IQ1)-k*IR1;
+  s1 = IA1*(s1-k*IQ1)-k*IR1;
   /* S1=40014*(S1-IQ1*Floor(S1/IQ1))-Floor(S1/IQ1)*12211 */
   if (s1<0) s1 += IM1;
 
@@ -95,16 +97,20 @@ void ran_lecuyer88b_set_state(LEcuyer88b *rng, unsigned long *state)
 {
   int i;
 
-  memcpy(rng->s, state, 2*sizeof(double));
+  long s0;
+
+  memcpy(rng->s, state, 2*sizeof(unsigned long));
 
   /* Generation of an array of 32 numbers in order to allow postponed output */
   for (i = ntab+7; i >= 0; i--) {
     int k;
 
-    k = rng->s[0]/IQ1;
-    rng->s[0] = IA1*(rng->s[0]-k*IQ1)-k*IR1;
-    if (rng->s[0] < 0) rng->s[0] +=IM1;
-    if (i < ntab) rng->iv[i] = rng->s[0];
+    s0 = rng->s[0];
+    k = s0/IQ1;
+    s0 = IA1*(s0-k*IQ1)-k*IR1;
+    if (s0 < 0) s0 += IM1;
+    rng->s[0] = s0;
+    if (i < ntab) rng->iv[i] = s0;
   }
 
   rng->iy = rng->iv[0];
@@ -112,8 +118,13 @@ void ran_lecuyer88b_set_state(LEcuyer88b *rng, unsigned long *state)
 
 void ran_lecuyer88b_init(LEcuyer88b *rng, unsigned long *seed, int n)
 {
-  if (n == 1)
-    rng->s[0] = rng->s[1] = *seed;
+  unsigned long s[2];
+
+  if (n == 1) {
+    /* ORATIO <= 0.7.5 did not fill the shuffle table in this case */
+    s[0] = s[1] = *seed;
+    ran_lecuyer88b_set_state(rng, s);
+  }
   else /* n == 2 */
     ran_lecuyer88b_set_state(rng, seed);
 }

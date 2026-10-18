@@ -61,6 +61,7 @@ int import_train_1999(const char *obsname, double ***obs,
       return AMLET_ERROR_DATA_READING;
     }
   } else {
+    fclose(f);   /* amlet_read_repetitions() opens it again */
     i = amlet_read_repetitions(name, times, np);
     if (i) {
       free(name);
@@ -88,16 +89,18 @@ int import_train_1999(const char *obsname, double ***obs,
     for (l = 0; l < n; l++) {
       if (l == idcensor-1) {
 	/* Read the alternatives  availability */
-	for (j = 0; j < nalt; j++) fscanf(f, "%d", &availability[i][j]);
+	for (j = 0; j < nalt; j++)
+	  if (fscanf(f, "%d", &availability[i][j]) != 1) goto Short;
       }
       else {
 	for (j = 0; j < nalt; j++)
-	  fscanf(f, "%lg", &(obs[i][j][k]));
+	  if (fscanf(f, "%lg", &(obs[i][j][k])) != 1) goto Short;
 	k++;
       }
     }
   }
- 
+  fclose(f);
+
   /* Choice */
   strcat(name, "_y");
   if (!(f = c_fopen(name, "r"))) {
@@ -110,12 +113,20 @@ int import_train_1999(const char *obsname, double ***obs,
   name[strlen(obsname)] = '\0';
 
   for (i = 0; i < nobs; i++) {
-    fscanf(f, "%d\n", choices+i);
+    if (fscanf(f, "%d\n", choices+i) != 1) goto Short;
     choices[i]--;
   }
+  fclose(f);
   free(name);
 
   return 0;
+
+ Short:
+  /* AMLET <= 0.13.1 went on with undefined values. */
+  amlet_warning(stderr, 1, "%s: missing or invalid value in observation %d of %d", name, i+1, nobs);
+  fclose(f);
+  free(name);
+  return AMLET_ERROR_DATA_READING;
 }
 
 /**

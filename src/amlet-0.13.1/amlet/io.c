@@ -423,6 +423,9 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
   int len[10];
   double *t, *tmp;;
   double p;
+  /* Covariance matrix to report: AMLET <= 0.13.1 always reported the
+     robust one, even with robust = false. */
+  double **cov = dr->var[ROBUST].i ? m->RCov : m->WCov;
 
   long sec, ms;
 
@@ -437,7 +440,7 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
   nt_vect_zeros(md->npar, tmp, 1);
 
   /* compute the t-statistics */
-  p = amlet_t_statistics(md->npar, theta, tmp, m->RCov, alpha, t);
+  p = amlet_t_statistics(md->npar, theta, tmp, cov, alpha, t);
 
   free(tmp);
 
@@ -597,7 +600,7 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
     table_cell(f, format, len[1], "%4d.", i);
       table_cell(f, format, len[2], "%10.8g", theta[i]);
     if (!fixed[i]) {
-      table_cell(f, format, len[3], "%10.8g", sqrt(m->RCov[j][j]));
+      table_cell(f, format, len[3], "%10.8g", sqrt(cov[j][j]));
       table_cell(f, format, len[4], "%10g", t[j]);
       /* Test if the parameter is statistically significant */
       if (t[j] >= p && !isnan(t[j]))
@@ -645,9 +648,9 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
 		i+1, j+1, nt_min(j+MAX_COLUMNS, md->npar));
       }
       if (i >= j)
-	fprintf(f, " %12g", m->RCov[j][i]);
+	fprintf(f, " %12g", cov[j][i]);
       else
-	fprintf(f, " %12g", m->RCov[i][j]);
+	fprintf(f, " %12g", cov[i][j]);
       if (((j+1) % MAX_COLUMNS) == 0 && j+1 < md->npar)
 	fprintf(f, "\n");
     }
@@ -666,9 +669,9 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
       if (i == j)
 	fprintf(f, " %12g", 1.0);
       else if (i > j)
-	fprintf(f, " %12g", m->RCov[i][j]);
+	fprintf(f, " %12g", cov[i][j]);
       else
-	fprintf(f, " %12g", m->RCov[j][i]);
+	fprintf(f, " %12g", cov[j][i]);
       if (((j+1) % MAX_COLUMNS) == 0 && j+1 < md->npar)
 	fprintf(f, "\n");
     }
