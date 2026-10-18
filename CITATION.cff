@@ -10,6 +10,8 @@ authors:
     email: fabian.bastin@gmail.com
 version: 0.13.1-4
 date-released: 2026-10-18
+# all the versions archived on Zenodo; v0.13.1-4 is 10.5281/zenodo.23454087
+doi: 10.5281/zenodo.23454086
 license: MIT
 repository-code: "https://github.com/fbastin/amlet-legacy"
 abstract: >-

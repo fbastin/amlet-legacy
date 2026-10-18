@@ -1,6 +1,7 @@
 # AMLET — 2026 rebuild
 
 [![build](https://github.com/fbastin/amlet-legacy/actions/workflows/build.yml/badge.svg)](https://github.com/fbastin/amlet-legacy/actions/workflows/build.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23454086.svg)](https://doi.org/10.5281/zenodo.23454086)
 
 AMLET (*Another Mixed Logit Estimation Tool*) estimates multinomial and
 mixed logit models by maximum simulated likelihood. It includes the adaptive
@@ -288,6 +289,10 @@ their own terms, as stated in their headers:
 ## References
 
 To cite AMLET, see `CITATION.cff` (or "Cite this repository" on GitHub).
+The releases of this repository are archived on Zenodo, from v0.13.1-4:
+[doi:10.5281/zenodo.23454086](https://doi.org/10.5281/zenodo.23454086)
+designates all of them and resolves to the latest one (v0.13.1-4:
+[doi:10.5281/zenodo.23454087](https://doi.org/10.5281/zenodo.23454087)).
 
 - F. Bastin, C. Cirillo, Ph. L. Toint. An adaptive Monte Carlo algorithm for computing mixed logit estimators. *Computational Management Science* 3(1):55–79, 2006. [doi:10.1007/s10287-005-0044-y](https://doi.org/10.1007/s10287-005-0044-y)
 - F. Bastin, C. Cirillo, Ph. L. Toint. Application of an adaptive Monte Carlo algorithm to mixed logit estimation. *Transportation Research Part B* 40(7):577–593, 2006. [doi:10.1016/j.trb.2005.09.002](https://doi.org/10.1016/j.trb.2005.09.002)
