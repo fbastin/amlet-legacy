@@ -100,7 +100,7 @@ HESSIAN_UPDATE = bfgs;
 # check the found solution
 validation = false;
 
-hessian_approx = true;
+hessian_approx = false;
 robust = true;
 
 statistics = true;

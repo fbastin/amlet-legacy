@@ -133,6 +133,12 @@ have to be read from an external file\\
 \hline
 \verb|hessian_update| & & Hessian approximation method \\
 \hline
+\verb|hessian_approx| & \verb|false| & compute the standard errors with
+the approximation of the Hessian built by the optimization, instead of
+the Hessian; not recommended: the approximation depends on the
+optimization path, and gave standard errors 10 to 40\% too small on a
+panel example \\
+\hline
 \verb|level_accuracy| & & significance level used for objective accuracy
 evaluation \\
 \hline

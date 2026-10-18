@@ -49,7 +49,7 @@ method = MCBTR;
 hessian_update = BFGS;
 
 #hessian_approx = false;
-hessian_approx = true;
+hessian_approx = false;
 robust = true;
 
 bias=0;

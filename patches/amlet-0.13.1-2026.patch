@@ -159,7 +159,7 @@ diff -ruN amlet-0.13.1/amlet/Train99.c amlet-0.13.1/amlet/Train99.c
    }
 diff -ruN amlet-0.13.1/amlet/alternative.c amlet-0.13.1/amlet/alternative.c
 --- amlet-0.13.1/amlet/alternative.c
-+++ amlet-0.13.1/amlet/alternative.c	2026-10-18 09:32:39.000000000 -0400
++++ amlet-0.13.1/amlet/alternative.c	2026-10-18 10:03:31.000000000 -0400
 @@ -56,9 +56,17 @@
  
    int *chosen_alternatives;
@@ -490,7 +490,7 @@ diff -ruN amlet-0.13.1/amlet/amlet_data.c amlet-0.13.1/amlet/amlet_data.c
  
 diff -ruN amlet-0.13.1/amlet/amlet_driver.h amlet-0.13.1/amlet/amlet_driver.h
 --- amlet-0.13.1/amlet/amlet_driver.h
-+++ amlet-0.13.1/amlet/amlet_driver.h	2026-10-18 09:32:39.000000000 -0400
++++ amlet-0.13.1/amlet/amlet_driver.h	2026-10-18 10:03:31.000000000 -0400
 @@ -57,6 +57,8 @@
  			computing statistical informations */
  
@@ -578,7 +578,7 @@ diff -ruN amlet-0.13.1/amlet/amlet_driver.h amlet-0.13.1/amlet/amlet_driver.h
  
 diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
 --- amlet-0.13.1/amlet/driver.c	2015-03-29 13:57:37.000000000 -0400
-+++ amlet-0.13.1/amlet/driver.c	2026-10-18 09:32:39.000000000 -0400
++++ amlet-0.13.1/amlet/driver.c	2026-10-18 10:03:31.000000000 -0400
 @@ -19,11 +19,16 @@
  
  #include "amlet_data.h"
@@ -756,7 +756,7 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
        }
      }
    }
-@@ -226,16 +302,33 @@
+@@ -226,16 +302,38 @@
   * Do some checks after the parsing
   */
  void driver_check(AMLET_Driver *dr) {
@@ -787,10 +787,15 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
 +     MRG32k3a state */
 +  if (dr->var[SEED1].i < 0)
 +    c_error("seed1 must be positive (or 0, for a seed taken from the clock)");
++  /* The BFGS approximation of the Hessian gave robust standard errors 10
++     to 40% too small on the panel example, and they depend on the
++     optimization path. */
++  if (dr->var[HESSIAN_APPROX].i)
++    c_warning("hessian_approx = true: the standard errors use the BFGS approximation of the Hessian, which can be far from the exact one (hessian_approx = false, the default)");
    if (dr->var[EPS].d <= 0.0) {
      c_warning("negative or null tolerance; reset to default value of %g\n",
  	      AMLET_DEFAULT_TOL);
-@@ -275,17 +368,31 @@
+@@ -275,17 +373,31 @@
  {
    int i;
  
@@ -823,7 +828,7 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
  }
  
  /**
-@@ -330,7 +437,8 @@
+@@ -330,7 +442,8 @@
    }
  }
  
@@ -833,7 +838,7 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
  {
    /* Could be better designed ? */
    *type = INTEGER;
-@@ -338,9 +446,11 @@
+@@ -338,9 +451,11 @@
    switch (id) {
    case ALTTYPES:
      *type = INTEGER;
@@ -845,7 +850,7 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
      return &(dr->alt_values[pos]);
    default:
      c_warning("invalid array");
-@@ -356,6 +466,111 @@
+@@ -356,6 +471,111 @@
  }
  
  /**
@@ -1646,7 +1651,7 @@ diff -ruN amlet-0.13.1/amlet/info.h amlet-0.13.1/amlet/info.h
    /**
 diff -ruN amlet-0.13.1/amlet/information.c amlet-0.13.1/amlet/information.c
 --- amlet-0.13.1/amlet/information.c
-+++ amlet-0.13.1/amlet/information.c	2026-10-18 09:32:39.000000000 -0400
++++ amlet-0.13.1/amlet/information.c	2026-10-18 10:03:31.000000000 -0400
 @@ -68,7 +68,8 @@
  
    /* We should use a student... */
@@ -1659,7 +1664,7 @@ diff -ruN amlet-0.13.1/amlet/information.c amlet-0.13.1/amlet/information.c
  }
 diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
 --- amlet-0.13.1/amlet/io.c	2015-03-27 07:36:19.000000000 -0400
-+++ amlet-0.13.1/amlet/io.c	2026-10-18 09:32:39.000000000 -0400
++++ amlet-0.13.1/amlet/io.c	2026-10-18 10:03:31.000000000 -0400
 @@ -58,7 +58,7 @@
    }
  
@@ -1958,7 +1963,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
    int i, r;
 diff -ruN amlet-0.13.1/amlet/io.h amlet-0.13.1/amlet/io.h
 --- amlet-0.13.1/amlet/io.h
-+++ amlet-0.13.1/amlet/io.h	2026-10-18 09:32:39.000000000 -0400
++++ amlet-0.13.1/amlet/io.h	2026-10-18 10:03:31.000000000 -0400
 @@ -88,7 +88,7 @@
  		   int n_random_coeff,
  		   double ll, double ll0, double llc,
@@ -1997,7 +2002,7 @@ diff -ruN amlet-0.13.1/amlet/lattice.c amlet-0.13.1/amlet/lattice.c
  }
 diff -ruN amlet-0.13.1/amlet/likelihood.c amlet-0.13.1/amlet/likelihood.c
 --- amlet-0.13.1/amlet/likelihood.c	2015-02-17 05:00:25.000000000 -0500
-+++ amlet-0.13.1/amlet/likelihood.c	2026-10-18 09:32:39.000000000 -0400
++++ amlet-0.13.1/amlet/likelihood.c	2026-10-18 10:03:31.000000000 -0400
 @@ -20,6 +20,7 @@
  #include <oratio/oratio.h>
  
@@ -2620,7 +2625,7 @@ diff -ruN amlet-0.13.1/amlet/utilities.c amlet-0.13.1/amlet/utilities.c
    cblas_dcopy(n, obs[ind][alt], 1, grad, 1);
 diff -ruN amlet-0.13.1/amlet/validation.c amlet-0.13.1/amlet/validation.c
 --- amlet-0.13.1/amlet/validation.c
-+++ amlet-0.13.1/amlet/validation.c	2026-10-18 09:32:39.000000000 -0400
++++ amlet-0.13.1/amlet/validation.c	2026-10-18 10:03:31.000000000 -0400
 @@ -47,7 +47,7 @@
    if (dr->output) {
      f = fopen(dr->output, "a");
@@ -2644,7 +2649,7 @@ diff -ruN amlet-0.13.1/amlet/variable.c amlet-0.13.1/amlet/variable.c
  }
 diff -ruN amlet-0.13.1/src/exec.c amlet-0.13.1/src/exec.c
 --- amlet-0.13.1/src/exec.c	2015-03-27 11:15:39.000000000 -0400
-+++ amlet-0.13.1/src/exec.c	2026-10-18 09:32:39.000000000 -0400
++++ amlet-0.13.1/src/exec.c	2026-10-18 10:03:31.000000000 -0400
 @@ -67,8 +67,8 @@
    *nfixed = 0;
  

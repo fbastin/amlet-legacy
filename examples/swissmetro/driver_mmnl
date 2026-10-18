@@ -30,7 +30,7 @@ load "swissmetro_train96";
 
 method = MCBTRDA;
 hessian_update = BFGS;
-hessian_approx = true;
+hessian_approx = false;
 robust = true;
 bias = 0;
 validation = false;

@@ -101,10 +101,18 @@ maxima.
 Simulated results depend on the pseudo-random draws. They are reproducible
 for a given `seed1` on a given build. A different BLAS or compiler may change
 the last digits, which is why the mixed-logit tolerances in
-`examples/reference_values.tsv` are looser. The standard errors of
-`australia/driver_mmnl` come from the BFGS approximation of the Hessian
-(`hessian_approx = true`), which depends on the optimisation path: they vary
-by about 3% between builds, and are checked to within 10%.
+`examples/reference_values.tsv` are looser.
+
+The examples compute the standard errors with the exact Hessian
+(`hessian_approx = false`, the default). Until v0.13.1-3, most of the mixed
+logit examples used `hessian_approx = true`: the BFGS approximation of the
+Hessian that the optimization builds. It depends on the optimisation path,
+so the standard errors changed between builds, and it can be far from the
+Hessian: on `simulated/driver_panel`, the robust standard errors were 10 to
+40% too small (0.0253 instead of 0.0425 for the first parameter; 0.0550
+instead of 0.0661 on `swissmetro/driver_mmnl`). AMLET now warns when
+`hessian_approx = true`. The two `_legacy` examples keep it, to reproduce
+AMLET 0.13.1.
 
 The rebuilt executable was also checked against output files written by
 historical AMLET versions on the original (non-redistributable) research
@@ -169,9 +177,10 @@ random draws (mixed logit, synthetic data) therefore differ from AMLET
 legacy_rng = true;
 ```
 
-to the driver file: the six examples then give the same output as
-AMLET 0.13.1, to all printed digits, and the results file says "Random
-draws: legacy MRG32k3a streams". The driver also accepts
+to the driver file: `australia/driver_mmnl_legacy` and
+`simulated/driver_errc_legacy` give the numbers of AMLET 0.13.1, to all
+printed digits, and the results file says "Random draws: legacy MRG32k3a
+streams". The driver also accepts
 `rangen = mrg32k3a;`, which was missing.
 
 Also in ORATIO, two functions that AMLET does not use called themselves
@@ -214,6 +223,7 @@ data readers did not check what they read:
 - **Options that did nothing.** `level_accuracy`, documented in the manual and used by the methods with a variable sample size, was not known to the parser: it was ignored. It is now read. `rescale`, `rescalidx`, `rescalval`, `ignore`, `synthetic` and `varrep` are read, but not implemented in AMLET 0.13.1; they now give a warning.
 - **Results file.** A list of the estimates, without a title and left from debugging, preceded the table of estimates; the header "Standard deviation" ran into the next one. The t-statistics are absolute values, and the header now says `|t-statistic|`.
 - **`alternatives_sampling`** (experimental and not documented: it writes the data with sampled alternatives to `intermediaire`, then stops) swapped the arguments of the integer generator, which read past a variable on the stack and drew integers in [0, 1); with 3 alternatives or more it crashed or looped forever, and it freed memory twice. It now draws from `seed1`.
+- **Standard errors with `hessian_approx = true`.** The BFGS approximation of the Hessian gave robust standard errors 10 to 40% too small on `simulated/driver_panel`, and they depended on the build (see "Examples and validation"). AMLET now warns, and the examples use the exact Hessian; their reference standard errors change.
 - `draws = old;` with `qmcrep` > 1 read only the draws of the first replication; a warning of `validation = true` lacked its argument.
 
 In OPHELIA 0.7.4, `ophelia/btr.h` now declares `nlp_set_derivatives_type()`,

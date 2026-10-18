@@ -329,6 +329,11 @@ void driver_check(AMLET_Driver *dr) {
      MRG32k3a state */
   if (dr->var[SEED1].i < 0)
     c_error("seed1 must be positive (or 0, for a seed taken from the clock)");
+  /* The BFGS approximation of the Hessian gave robust standard errors 10
+     to 40% too small on the panel example, and they depend on the
+     optimization path. */
+  if (dr->var[HESSIAN_APPROX].i)
+    c_warning("hessian_approx = true: the standard errors use the BFGS approximation of the Hessian, which can be far from the exact one (hessian_approx = false, the default)");
   if (dr->var[EPS].d <= 0.0) {
     c_warning("negative or null tolerance; reset to default value of %g\n",
 	      AMLET_DEFAULT_TOL);
