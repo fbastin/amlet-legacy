@@ -306,8 +306,9 @@ their own terms, as stated in their headers:
 To cite AMLET, see `CITATION.cff` (or "Cite this repository" on GitHub).
 The releases of this repository are archived on Zenodo, from v0.13.1-4:
 [doi:10.5281/zenodo.23454086](https://doi.org/10.5281/zenodo.23454086)
-designates all of them and resolves to the latest one (v0.13.1-4:
-[doi:10.5281/zenodo.23454087](https://doi.org/10.5281/zenodo.23454087)).
+designates all of them and resolves to the latest one; the DOI of each
+version is in `CHANGELOG.md` (v0.13.1-5:
+[doi:10.5281/zenodo.23458742](https://doi.org/10.5281/zenodo.23458742)).
 
 - F. Bastin, C. Cirillo, Ph. L. Toint. An adaptive Monte Carlo algorithm for computing mixed logit estimators. *Computational Management Science* 3(1):55–79, 2006. [doi:10.1007/s10287-005-0044-y](https://doi.org/10.1007/s10287-005-0044-y)
 - F. Bastin, C. Cirillo, Ph. L. Toint. Application of an adaptive Monte Carlo algorithm to mixed logit estimation. *Transportation Research Part B* 40(7):577–593, 2006. [doi:10.1016/j.trb.2005.09.002](https://doi.org/10.1016/j.trb.2005.09.002)

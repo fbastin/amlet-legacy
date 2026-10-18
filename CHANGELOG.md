@@ -9,6 +9,8 @@ designates all of them.
 
 ## v0.13.1-5 — 2026-10-18
 
+Archived on Zenodo: [doi:10.5281/zenodo.23458742](https://doi.org/10.5281/zenodo.23458742).
+
 AMLET 0.13.1 (2026 rebuild), sixth release. It fixes `draws = old;` in batch jobs, computes the log-likelihood at constants, gives the p-value of the likelihood ratio test, and adds a script that recomputes the log-likelihoods and standard errors with numpy and scipy. **The estimates, log-likelihoods and standard errors of the 19 examples do not change.**
 
 ### Changes
