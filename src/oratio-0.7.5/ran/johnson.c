@@ -254,7 +254,7 @@ void ran_johnsonSB_set_parameters(Random *random,
 				  double xi, double lambda, 
 				  double gamma, double delta)
 {
-  ran_johnsonSB_set_parameters(random, xi, lambda, gamma, delta);
+  ran_johnson_set_parameters(random, xi, lambda, gamma, delta);
 }
 
 /**

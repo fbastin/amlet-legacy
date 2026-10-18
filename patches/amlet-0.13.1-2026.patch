@@ -344,7 +344,7 @@ diff -ruN amlet-0.13.1/amlet/info.c amlet-0.13.1/amlet/info.c
    printf("\nPlease signal any bugs to <%s>\n", EMAIL);
 diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
 --- amlet-0.13.1/amlet/io.c	2015-03-27 07:36:19.000000000 -0400
-+++ amlet-0.13.1/amlet/io.c	2026-10-17 16:20:06.000000000 -0400
++++ amlet-0.13.1/amlet/io.c	2026-10-17 20:46:18.000000000 -0400
 @@ -58,7 +58,7 @@
    }
  
@@ -363,7 +363,61 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
    strcpy(*buff, AMLET_DEFAULT_LOG);
  
    return *buff;
-@@ -135,7 +135,7 @@
+@@ -95,14 +95,22 @@
+ int amlet_print_msg(FILE *f, const char *msg, va_list ap)
+ {
+   char *buff;
+-  int n = 1024;
++  int n = 1024, len;
++  va_list aq;
+ 
+-  /* Create the message */
++  /* Create the message. vsnprintf returns the length it needs (C99), not
++     -1, when the buffer is too short. */
+   buff = _mallocs(n, char);
+-  while (vsnprintf(buff, n, msg, ap) == -1) {
+-    n <<= 1;
++  va_copy(aq, ap);
++  len = vsnprintf(buff, n, msg, aq);
++  va_end(aq);
++  if (len >= n) {
++    n = len+1;
+     buff = _reallocs(buff, n, char);
++    vsnprintf(buff, n, msg, ap);
+   }
++  else if (len < 0)
++    buff[0] = 0;
+ 
+   fprintf(f, "%s", buff);
+   //  if (verbose && f != stdout && f != stderr) printf("%s", buff);
+@@ -117,14 +125,22 @@
+ int print_msg(FILE *f, const char *msg, va_list ap)
+ {
+   char *buff;
+-  int n = 1024;
++  int n = 1024, len;
++  va_list aq;
+ 
+-  /* Create the message */
++  /* Create the message. vsnprintf returns the length it needs (C99), not
++     -1, when the buffer is too short. */
+   buff = _mallocs(n, char);
+-  while (vsnprintf(buff, n, msg, ap) == -1) {
+-    n <<= 1;
++  va_copy(aq, ap);
++  len = vsnprintf(buff, n, msg, aq);
++  va_end(aq);
++  if (len >= n) {
++    n = len+1;
+     buff = _reallocs(buff, n, char);
++    vsnprintf(buff, n, msg, ap);
+   }
++  else if (len < 0)
++    buff[0] = 0;
+ 
+   fprintf(f, "%s", buff);
+ 
+@@ -135,7 +151,7 @@
    return n;
  }
  
@@ -372,7 +426,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
  {
    int i;
  
-@@ -143,7 +143,7 @@
+@@ -143,7 +159,7 @@
    fprintf(output, "\n");
  }
  
@@ -381,7 +435,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
  {
    int i;
  
-@@ -153,7 +153,7 @@
+@@ -153,7 +169,7 @@
    fprintf(output, "\n\n");
  }
  
@@ -390,7 +444,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
  {
    int i;
  
-@@ -410,6 +410,12 @@
+@@ -410,6 +426,12 @@
  
    long sec, ms;
  
@@ -403,7 +457,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
    t = _mallocs(md->npar, double);
    tmp = _mallocs(md->npar, double);
    nt_vect_zeros(md->npar, tmp, 1);
-@@ -494,6 +500,8 @@
+@@ -494,6 +516,8 @@
      fprintf(f, "Draws generation method: %s\n",
  	    moca_get_method_name(amlet_get_sampling_id(m)));
      fprintf(f, "Final number of random draws: %d\n", ndraws);
@@ -412,7 +466,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
    }
  
    fprintf(f, "\n");
-@@ -517,19 +525,19 @@
+@@ -517,19 +541,19 @@
    fprintf(f, "\n");
    line(f, len[0]);
    table_cell(f, format, len[1], "Optimal");
@@ -440,7 +494,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
    table_line_end(f, format);
    line(f, len[0]);
  
-@@ -588,7 +596,7 @@
+@@ -588,7 +612,7 @@
  
    subsection(f, "Statistics");
  
@@ -449,7 +503,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
    ll0 *= md->nobs;
  
    fprintf(f, "\n");
-@@ -618,7 +626,7 @@
+@@ -618,7 +642,7 @@
      for (j = 0; j < md->npar; j++) {
        if ((j % MAX_COLUMNS) == 0 && md->npar > MAX_COLUMNS) {
  	fprintf(f, "Line %d (columns %d to %d):\n",
@@ -458,7 +512,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
        }
        if (i >= j)
  	fprintf(f, " %12g", m->RCov[j][i]);
-@@ -638,7 +646,7 @@
+@@ -638,7 +662,7 @@
      for (j = 0; j < md->npar; j++) {
        if ((j % MAX_COLUMNS) == 0 && md->npar > MAX_COLUMNS)
  	fprintf(f, "Line %d (columns %d to %d):\n",
@@ -467,7 +521,7 @@ diff -ruN amlet-0.13.1/amlet/io.c amlet-0.13.1/amlet/io.c
        if (i == j)
  	fprintf(f, " %12g", 1.0);
        else if (i > j)
-@@ -708,7 +716,7 @@
+@@ -708,7 +732,7 @@
   * @return 0 is the lecture has encountered no difficulties, else an
   *   error identifier.
   */

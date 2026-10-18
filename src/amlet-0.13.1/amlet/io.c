@@ -95,14 +95,22 @@ int amlet_error(amlet_config *ac,
 int amlet_print_msg(FILE *f, const char *msg, va_list ap)
 {
   char *buff;
-  int n = 1024;
+  int n = 1024, len;
+  va_list aq;
 
-  /* Create the message */
+  /* Create the message. vsnprintf returns the length it needs (C99), not
+     -1, when the buffer is too short. */
   buff = _mallocs(n, char);
-  while (vsnprintf(buff, n, msg, ap) == -1) {
-    n <<= 1;
+  va_copy(aq, ap);
+  len = vsnprintf(buff, n, msg, aq);
+  va_end(aq);
+  if (len >= n) {
+    n = len+1;
     buff = _reallocs(buff, n, char);
+    vsnprintf(buff, n, msg, ap);
   }
+  else if (len < 0)
+    buff[0] = 0;
 
   fprintf(f, "%s", buff);
   //  if (verbose && f != stdout && f != stderr) printf("%s", buff);
@@ -117,14 +125,22 @@ int amlet_print_msg(FILE *f, const char *msg, va_list ap)
 int print_msg(FILE *f, const char *msg, va_list ap)
 {
   char *buff;
-  int n = 1024;
+  int n = 1024, len;
+  va_list aq;
 
-  /* Create the message */
+  /* Create the message. vsnprintf returns the length it needs (C99), not
+     -1, when the buffer is too short. */
   buff = _mallocs(n, char);
-  while (vsnprintf(buff, n, msg, ap) == -1) {
-    n <<= 1;
+  va_copy(aq, ap);
+  len = vsnprintf(buff, n, msg, aq);
+  va_end(aq);
+  if (len >= n) {
+    n = len+1;
     buff = _reallocs(buff, n, char);
+    vsnprintf(buff, n, msg, ap);
   }
+  else if (len < 0)
+    buff[0] = 0;
 
   fprintf(f, "%s", buff);
 

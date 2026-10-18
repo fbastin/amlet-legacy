@@ -112,7 +112,8 @@ below, compilation needs no special flags.
    - `simulation_bias()` returns a `double` but was implicitly declared as `int`. **In builds of the 0.13.x tarballs, the bias correction (`bias = 1`) therefore used a garbage value.** This is fixed. Earlier versions (≤ 0.12) are not affected.
 6. **Log-likelihood totals for panel data** (`np < nobs`): the "Total" column, ρ² and the likelihood-ratio statistic multiplied per-observation averages by the number of individuals. They now use the correct count, consistent with AMLET 0.10.x. Parameter estimates were never affected.
 7. **Out-of-bounds accesses**, found with AddressSanitizer: two file-name buffers in `amlet/io.c` were one byte too short, and at the last draw `sll_derivate_utilities()` (`amlet/likelihood.c`) read one element past the array of draws for a constant coefficient. The value read was not used, so the results do not change.
-8. **Cosmetics**: a leftover debug message ("Coucou 1") is removed, and `--help` no longer lists the options `-s`, `-l` and `-f`, which 0.13 no longer accepts.
+8. **Long messages**: `print_msg()` and `amlet_print_msg()` (`amlet/io.c`) expected `vsnprintf()` to return −1 when the buffer was too short, as before C99; messages longer than 1023 characters were silently truncated.
+9. **Cosmetics**: a leftover debug message ("Coucou 1") is removed, and `--help` no longer lists the options `-s`, `-l` and `-f`, which 0.13 no longer accepts.
 
 **Standard errors (ORATIO `f2c.h`).** The C code declared Fortran integers
 as `long` (8 bytes), while gfortran's `INTEGER` has 4. In
@@ -149,6 +150,11 @@ to the driver file: the six examples then give the same output as
 AMLET 0.13.1, to all printed digits, and the results file says "Random
 draws: legacy MRG32k3a streams". The driver also accepts
 `rangen = mrg32k3a;`, which was missing.
+
+Also in ORATIO, two functions that AMLET does not use called themselves
+forever, `ran_johnsonSB_set_parameters()` and `ran_mgbm_generate_pathx()`,
+and `ran_geometricbrownian_generate_pathx()` ignored `incx` when taking the
+exponential of the path. They are fixed.
 
 In OPHELIA 0.7.4, `ophelia/btr.h` now declares `nlp_set_derivatives_type()`,
 which `rtr.c` calls; without it, GCC ≥ 14 stops with an error. The code

@@ -83,7 +83,7 @@ void ran_geometricbrownian_generate_pathx(const Random *r,
   }
 
   x[0] = x0;
-  for (i = 1; i <= n; i++) x[i] = exp(x[i]);
+  for (i = 1; i <= n; i++) x[i*incx] = exp(x[i*incx]);
 }
 
 /**
@@ -249,7 +249,8 @@ void ran_mgbm_generate_pathx(const Random *r,
   int i, j;
 
   for (i = 0; i < d; i++) x[0][i] = log(x0[i]);
-  ran_mgbm_generate_pathx(r, n, d, x, x0, mu, uplo, B, ldB, obs_times);
+  /* Brownian path of the logarithms, starting from x[0] = log(x0). */
+  ran_mbm_generate_pathx(r, n, d, x, x[0], mu, uplo, B, ldB, obs_times);
 
   for (i = 0; i < d; i++) x[0][i] = x0[i];
   for (i = 1; i <= n; i++)
