@@ -24,6 +24,7 @@ The directory contains:
 | `patches/` | All code changes to the original `amlet-0.13.1.tar.gz`, `ophelia-0.7.4.tar.gz` and `oratio-0.7.5.tar.gz` (the license change is not included). |
 | `build.sh` | Builds the three packages into a local prefix. Needs no root access. |
 | `run_examples.sh` | Runs the examples and checks the results against reference values. |
+| `run_checks.py` | Checks that errors in driver and data files are reported (19 checks, a few seconds). |
 | `examples/` | Redistributable examples (see below). |
 | `doc/` | User manuals (AMLET, OPHELIA, ORATIO), rebuilt in 2026 from the LaTeX sources in `src/*/doc`. The previous PDFs dated from 2011 and described AMLET 0.10.6. |
 
@@ -37,6 +38,7 @@ git clone https://github.com/fbastin/amlet-legacy.git
 cd amlet-legacy
 bash build.sh                 # installs into ./local  (about 1 minute)
 bash run_examples.sh          # 19 examples, about 1.5 minutes
+python3 run_checks.py         # errors in driver and data files
 ./local/bin/amlet my_driver   # estimate your own model
 ```
 
@@ -78,7 +80,10 @@ manual.
 | `swissmetro/driver_mmnl` | same | Normal mixture on the time coefficient, 1000 draws: LL = −5215.963 |
 
 `run_examples.sh` compares the log-likelihood and the standard error of the
-first parameter with `examples/reference_values.tsv`.
+first parameter with `examples/reference_values.tsv`. `run_checks.py` changes
+the drivers or the data of the examples, and checks that AMLET reports each
+error (see "Values in the driver file" below) with a message and a non-zero
+exit code, and that `draws = old;` reproduces an estimation.
 
 Simulated results depend on the pseudo-random draws. They are reproducible
 for a given `seed1` on a given build. A different BLAS or compiler may change

@@ -36,6 +36,9 @@ jobs:
       - name: Run examples
         run: bash run_examples.sh
 
+      - name: Check error handling
+        run: python3 run_checks.py
+
       - name: Upload logs
         if: failure()
         uses: actions/upload-artifact@v7
@@ -71,6 +74,12 @@ jobs:
           ASAN_OPTIONS: detect_leaks=0
           UBSAN_OPTIONS: print_stacktrace=1
         run: bash run_examples.sh
+
+      - name: Check error handling
+        env:
+          ASAN_OPTIONS: detect_leaks=0
+          UBSAN_OPTIONS: print_stacktrace=1
+        run: python3 run_checks.py
 
       - name: Upload logs
         if: failure()
