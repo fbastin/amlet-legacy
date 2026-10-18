@@ -105,7 +105,10 @@ the last digits, which is why the mixed-logit tolerances in
 `examples/reference_values.tsv` are looser. On the Australia mixed logit
 examples, the optimization stops at slightly different points depending on
 the BLAS and the compiler (the log-likelihood differs in the 8th digit), and
-the standard errors vary by up to about 1%: they are checked to within 3%.
+the standard errors vary by up to about 1%: they are checked to within 3%,
+and to within 10% for `driver_mmnl_spline`, whose spline coefficients are
+poorly determined (its standard error has varied by 3% between two runs
+with OpenBLAS).
 
 The examples compute the standard errors with the exact Hessian
 (`hessian_approx = false`, the default). Until v0.13.1-3, most of the mixed

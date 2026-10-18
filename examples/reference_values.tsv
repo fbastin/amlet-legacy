@@ -9,7 +9,7 @@ australia	driver_mmnl_sobol	results_mmnl_sobol	-178.6627822	1e-4	1.6747086	0.03	
 australia	driver_mmnl_lattice	results_mmnl_lattice	-178.6551847	1e-4	1.6664545	0.03	Randomly shifted rank-1 lattice with 887 points, fixed sample size (mcbtr)
 australia	driver_mmnl_mlhs	results_mmnl_mlhs	-178.6560012	1e-4	1.6670717	0.03	Modified Latin hypercube sampling, fixed sample size (mcbtr)
 australia	driver_mmnl_uniform	results_mmnl_uniform	-179.0727962	1e-4	2.6174573	0.03	Uniform coefficient; classical covariance (robust = false)
-australia	driver_mmnl_spline	results_mmnl_spline	-172.5045331	1e-4	8.0294596	0.03	Cubic B-spline (nonparametric) coefficient, monotonicity constraints (mcbtrc)
+australia	driver_mmnl_spline	results_mmnl_spline	-172.5045331	1e-4	8.0294596	0.1	Cubic B-spline (nonparametric) coefficient, monotonicity constraints (mcbtrc)
 australia	driver_mmnl_ecuyer	results_mmnl_ecuyer	-178.5302781	1e-4	1.6998292	0.03	L'Ecuyer 1988 generator with shuffle (Numerical Recipes ran2)
 simulated	driver_errc	results_errc	-4876.582987	1e-4	0.0237499	1e-3	AMLET 0.13.1 rebuilt in 2026 (synthetic data, true coefficients = 1)
 simulated	driver_errc_import	results_errc_import	-4876.582987	1e-4	0.0237499	1e-3	Data written by driver_errc (Train99), read back: same results as driver_errc
