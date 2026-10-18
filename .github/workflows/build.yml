@@ -25,7 +25,7 @@ jobs:
             *)        blas="libblas-dev liblapack-dev" ;;
           esac
           sudo apt-get update
-          sudo apt-get install -y build-essential $blas python3 curl
+          sudo apt-get install -y build-essential $blas python3 curl python3-numpy python3-scipy
 
       - name: Build
         run: |
@@ -38,6 +38,9 @@ jobs:
 
       - name: Check error handling
         run: python3 run_checks.py
+
+      - name: Recompute the likelihood with numpy and scipy
+        run: python3 verify_likelihood.py
 
       - name: Upload logs
         if: failure()

@@ -574,30 +574,33 @@ int amlet_exec(int argc, char *argv[])
 
       np = data.np;
       if (!dr.var[DRAWS].i) {
+	double extra;
+
 	/* Read external draws */
+	if (!dr.var[DRAWSNAME].s)
+	  c_error("draws = old: drawsname must give the file of the draws");
 	f = c_fopen(dr.var[DRAWSNAME].s, "r");
 	if (!f) {
-	  c_warning("%s\n", amlet_info_message(AMLET_ERROR_DRAWS_FILE_OPENING));
+	  /* The new draws are saved in this file. */
+	  c_warning("%s %s: new draws are generated, and saved in it",
+		    amlet_info_message(AMLET_ERROR_DRAWS_FILE_OPENING),
+		    dr.var[DRAWSNAME].s);
 	  dr.var[DRAWS].i = 1;
 	}
 	else {
 	  /* the draws of the qmcrep replications; AMLET <= 0.13.1 read
-	     only the first one */
+	     only the first one. When the file did not have them, it asked
+	     on the standard input whether to overwrite it, and overwrote
+	     it when there was no answer, as in a batch job. */
 	  if (ran_import_sample(f, dr.var[QMCREP].i*np,
 				dr.var[NREP].i*n_random_coeff,
-				data.sampling)) {
-	    c_warning("%s\n", amlet_info_message(AMLET_ERROR_DRAWS_FILE_READING));
-	    dr.var[DRAWS].i = 1;
-	  }
+				data.sampling)
+	      || fscanf(f, "%lg", &extra) == 1)
+	    c_error("draws = old: %s does not have the draws of this model, %d values (%d individuals, %d draws of %d random coefficients, %d replications); remove it, or use draws = new",
+		    dr.var[DRAWSNAME].s,
+		    dr.var[QMCREP].i*np*dr.var[NREP].i*n_random_coeff,
+		    np, dr.var[NREP].i, n_random_coeff, dr.var[QMCREP].i);
 	  fclose(f);
-	}
-	if (dr.var[DRAWS].i > 0) {
-	  printf("Overwrite %s with news draws? ([Y]/N)", dr.var[DRAWSNAME].s);
-	  i = getchar();
-	  if (i == 'N' || i == 'n') {
-	    free(dr.var[DRAWSNAME].s);
-	    dr.var[DRAWSNAME].s = 0;
-	  }
 	}
       }
 

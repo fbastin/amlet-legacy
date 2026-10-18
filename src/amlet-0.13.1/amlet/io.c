@@ -423,6 +423,7 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
   int len[10];
   double *t, *tmp;;
   double p;
+  double chi2, pvalue;   /* likelihood ratio test */
   /* Covariance matrix to report: AMLET <= 0.13.1 always reported the
      robust one, even with robust = false. */
   double **cov = dr->var[ROBUST].i ? m->RCov : m->WCov;
@@ -557,9 +558,17 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
   table_cell(f, format, len[4], "%12.10g", ll0);
   table_line_end(f, format);
   table_cell(f, format, len[1], "At constants");
-  table_cell(f, format, len[2], "%12.10g", llc*md->nobs);
-  table_cell(f, format, len[3], "%12.10g", (llc*md->nobs)/nll);
-  table_cell(f, format, len[4], "%12.10g", llc);
+  /* only when every alternative is available to every observation */
+  if (isnan(llc)) {
+    table_cell(f, format, len[2], "not computed");
+    table_cell(f, format, len[3], "");
+    table_cell(f, format, len[4], "");
+  }
+  else {
+    table_cell(f, format, len[2], "%12.10g", llc*md->nobs);
+    table_cell(f, format, len[3], "%12.10g", (llc*md->nobs)/nll);
+    table_cell(f, format, len[4], "%12.10g", llc);
+  }
   table_line_end(f, format);
   line(f, len[0]);
 
@@ -632,9 +641,16 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
 
   subsection(f, "Likelihood ratio test");
 
-  fprintf(f, "Chi-square value for l(0): %g\n", st_likelihood_chi2(ll, ll0));
-  fprintf(f, "Level of rejection: %g\n",
-	  st_likelihood_chi2_level(md->npar, ll, ll0));
+  /* AMLET <= 0.13.1 printed the "level of rejection", 1 - p-value, which
+     was 1 for any well-fitted model */
+  chi2 = st_likelihood_chi2(ll, ll0);
+  pvalue = (chi2 > 0.0) ? st_gamma_q(0.5*md->npar, 0.5*chi2) : 1.0;
+  fprintf(f, "Chi-square value for l(0): %g, with %d degrees of freedom\n",
+	  chi2, md->npar);
+  if (pvalue < 1e-16)
+    fprintf(f, "p-value: < 1e-16\n");
+  else
+    fprintf(f, "p-value: %g\n", pvalue);
 
   /* Print the variance-covariance matrix, which corresponds to the
      upper part of the matrix I. */

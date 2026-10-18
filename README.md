@@ -25,7 +25,9 @@ The directory contains:
 | `patches/` | All code changes to the original `amlet-0.13.1.tar.gz`, `ophelia-0.7.4.tar.gz` and `oratio-0.7.5.tar.gz` (the license change is not included). |
 | `build.sh` | Builds the three packages into a local prefix. Needs no root access. |
 | `run_examples.sh` | Runs the examples and checks the results against reference values. |
-| `run_checks.py` | Checks that errors in driver and data files are reported, and some options (26 checks, a few seconds). |
+| `run_checks.py` | Checks that errors in driver and data files are reported, and some options (33 checks, a few seconds). |
+| `verify_likelihood.py` | Recomputes the log-likelihoods and standard errors of three models with numpy and scipy (about 1 minute). |
+| `CHANGELOG.md` | The changes of each release. |
 | `examples/` | Redistributable examples (see below). |
 | `doc/` | User manuals (AMLET, OPHELIA, ORATIO), rebuilt in 2026 from the LaTeX sources in `src/*/doc`. The previous PDFs dated from 2011 and described AMLET 0.10.6. |
 
@@ -40,6 +42,7 @@ cd amlet-legacy
 bash build.sh                 # installs into ./local  (about 1 minute)
 bash run_examples.sh          # 19 examples, about 1.5 minutes
 python3 run_checks.py         # errors in driver and data files
+python3 verify_likelihood.py  # independent computation (needs numpy and scipy)
 ./local/bin/amlet my_driver   # estimate your own model
 ```
 
@@ -86,14 +89,17 @@ the drivers or the data of the examples, and checks that AMLET reports each
 error (see "Values in the driver file" below) with a message and a non-zero
 exit code, and that `draws = old;` reproduces an estimation.
 
-The simulated log-likelihood and the robust standard errors of
-`australia/driver_mmnl` were recomputed independently, in Python (numpy and
-scipy), from the data and the draws that AMLET saves (`drawsname`): the
-log-likelihood is identical to all printed digits, and the standard errors
-(sandwich H⁻¹BH⁻¹ with the exact Hessian, `hessian_approx = false`) to 5
-digits; with `robust = false`, AMLET gives H⁻¹. The same holds for the panel
-model of `simulated/driver_panel` (five random coefficients, one of them
-lognormal), with 200 draws. On the Australia model, `mcbfgsda` reaches
+`verify_likelihood.py` recomputes independently, in Python (numpy and
+scipy), from the data and the draws that AMLET saves (`drawsname`), the
+simulated log-likelihood and the robust standard errors of
+`australia/driver_mmnl`: the log-likelihood is identical to all printed
+digits, and the standard errors (sandwich H⁻¹BH⁻¹ with the exact Hessian,
+`hessian_approx = false`) to 5 digits; with `robust = false`, AMLET gives
+H⁻¹. It does the same for the panel model of `simulated/driver_panel` (five
+random coefficients, one of them lognormal) with 200 draws, including the
+simulated log-likelihood without the bias correction that the results give
+with `bias = 1`, and for a multinomial logit with a fixed coefficient. The
+CI runs it. On the Australia model, `mcbfgsda` reaches
 another local maximum of the same simulated likelihood (LL = −177.978,
 against −178.996 for `mcbtrda`): the sign of the standard deviation is not
 identified, and with a finite number of draws the two signs give two
@@ -233,6 +239,12 @@ data readers did not check what they read:
 - **Standard errors with `hessian_approx = true`.** The BFGS approximation of the Hessian gave robust standard errors 10 to 40% too small on `simulated/driver_panel`, and they depended on the build (see "Examples and validation"). AMLET now warns, and the examples use the exact Hessian; their reference standard errors change.
 - `draws = old;` with `qmcrep` > 1 read only the draws of the first replication; a warning of `validation = true` lacked its argument.
 
+**Since v0.13.1-4** (see `CHANGELOG.md`):
+
+- **`draws = old;`**. When the file of the draws did not hold the draws of the model, AMLET asked on the standard input whether to overwrite it, and overwrote it when there was no answer, as in a batch job. It now stops with a message. Without `drawsname`, `draws = old;` is an error; a missing file is still created, with new draws.
+- **Log-likelihood at constants.** It was printed as 0. When every alternative is available to every observation, it is now computed from the shares of the alternatives in the choices (−283.7588 for the Australia data); otherwise, the results say "not computed".
+- **Likelihood ratio test.** The results gave a "level of rejection", 1 − p-value, which was 1 for any well-fitted model. They now give the p-value and the degrees of freedom.
+
 In OPHELIA 0.7.4, `ophelia/btr.h` now declares `nlp_set_derivatives_type()`,
 which `rtr.c` calls; without it, GCC ≥ 14 stops with an error. In the active
 sets of the monotonicity constraints (`mcbtrc`, `ophelia/activesets.c`), a
@@ -252,7 +264,7 @@ from uutils coreutils, `make install` runs `install-sh`.
 
 ## Known limitations (not changed)
 
-- The log-likelihood "at constants" is not computed in 0.13.1 (printed as 0).
+- The log-likelihood "at constants" is not computed when some alternatives are not available to some observations (the model would have to be estimated).
 - `seed2` is not implemented (see `src/amlet-0.13.1/TODO`).
 - With `legacy_rng = true`, the generator is not MRG32k3a: its statistical properties are unknown, so use it only to reproduce earlier results. Its states are not reduced modulo m, and some products exceed 2^53: the draws then depend on floating-point rounding, and fused multiply-add instructions (FMA, as on Ubuntu 26.04 or with `-march=x86-64-v3`) change them completely. `build.sh` therefore always compiles with `-ffp-contract=off`, which gives the same legacy draws everywhere.
 - In `set_beta()` (`amlet/likelihood.c`), the antithetic transformation is also applied to the (unused) draw of constant coefficients. The code is misleadingly indented, but the result is harmless. `sll_derivate_utilities_mvn()` is never called and uses an uninitialised variable.

@@ -65,6 +65,14 @@ extern "C" {
    */
   double amlet_mnl_null(int nalt, int nobs, int **availability);
 
+  /**
+   * Compute the mean log-likelihood of the multinomial logit model with
+   * alternative specific constants only, or NAN when some alternatives
+   * are not available to some observations.
+   */
+  double amlet_mnl_constants(int nalt, int nobs, const int *choices,
+			     int **availability);
+
 #ifdef __cplusplus
 extern "C" {
 #endif

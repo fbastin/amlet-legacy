@@ -53,6 +53,25 @@ def no_choice(d):
     open(path, "w").write("\n".join(lines))
 
 
+def availability_rows(restricted):
+    """Train96: an 8th row in each record of the Australia data, with the
+    availability of the alternatives; with restricted, the 3rd alternative
+    is not available to the first record, which chose the 4th."""
+    def data(d):
+        path = os.path.join(d, "model_australia")
+        lines = open(path).read().split("\n")
+        out = []
+        for i in range(210):
+            out += lines[7*i:7*i+7] + ["1 1 0 1" if restricted and i == 0 else "1 1 1 1"]
+        open(path, "w").write("\n".join(out) + "\n")
+    return data
+
+
+def censored(text):
+    return both(sub("nvar = 7;", "nvar = 8;"),
+                sub("censor = 0;", "censor = 1; idcensor = 8;"))(text)
+
+
 def tiny_train99(d):
     """Train99 data, 2 individuals and 2 alternatives, with a choice of 3."""
     open(os.path.join(d, "tiny_x"), "w").write("1 2\n2 1\n")
@@ -66,8 +85,8 @@ def tiny_train99(d):
 
 # name, example, driver, edit of the driver, edit of the data,
 # expected exit ("ok" or "error"), message expected in the output (or, after
-# "!", a message that must not be there), log-likelihood expected in the
-# results file (or None)
+# "!", a message that must not be there; after "results:", a text expected
+# in the results file), log-likelihood expected in the results file (or None)
 CHECKS = [
     ("integral_real", "australia", "driver_mnl",
      sub("niter = 100;", "niter = 100.0;"), None,
@@ -144,6 +163,29 @@ CHECKS = [
     ("too_many_alternatives", "australia", "driver_mnl",
      sub("niter = 100;", "niter = 100; alternatives_sampling = 5;"), None,
      "error", "from 2 to nalt = 4 alternatives can be sampled", None),
+    ("constants", "australia", "driver_mnl",
+     None, None,
+     "ok", "results:At constants    -283.7587684", MNL_LL),
+    ("p_value", "australia", "driver_mnl",
+     None, None,
+     "ok", "results:p-value: < 1e-16", MNL_LL),
+    ("availability_rows", "australia", "driver_mnl",
+     censored, availability_rows(False),
+     "ok", "results:At constants    -283.7587684", MNL_LL),
+    ("restricted_availability", "australia", "driver_mnl",
+     censored, availability_rows(True),
+     "ok", "results:At constants    not computed", "-198.9430279"),
+    ("draws_old_no_file", "australia", "driver_mmnl",
+     both(sub("#draws = old;", "draws = old;"), sub("nrep = 1000;", "nrep = 100;"),
+          sub("niter = 500;", "niter = 2;")), None,
+     "ok", "new draws are generated, and saved in it", None),
+    ("draws_old_bad_file", "australia", "driver_mmnl",
+     both(sub("#draws = old;", "draws = old;"), sub("nrep = 1000;", "nrep = 100;")),
+     lambda d: open(os.path.join(d, "draws"), "w").write("0.5\n0.25\n"),
+     "error", "does not have the draws of this model, 21000 values", None),
+    ("draws_old_no_name", "australia", "driver_mmnl",
+     both(sub("#draws = old;", "draws = old;"), sub('drawsname = "draws";', "")), None,
+     "error", "drawsname must give the file of the draws", None),
     ("generate_before_nalt", "simulated", "driver_errc",
      both(sub("nalt = 5;", ""),
           sub('generate "errc_data";', 'generate "errc_data"; nalt = 5;')), None,
@@ -162,13 +204,20 @@ def run(d, driver):
     return p.returncode, out
 
 
-def results(d, driver):
-    """The 'Optimal' line and the number of iterations of the results file."""
+def results_text(d, driver):
+    """The results file of a driver, or an empty string."""
     text = open(os.path.join(d, driver), encoding="latin-1").read()
     m = re.search(r'^output\s+"([^"]+)"', text, re.M)
     try:
-        res = open(os.path.join(d, m.group(1)), encoding="latin-1").read()
+        return open(os.path.join(d, m.group(1)), encoding="latin-1").read()
     except (AttributeError, OSError):
+        return ""
+
+
+def results(d, driver):
+    """The 'Optimal' line and the number of iterations of the results file."""
+    res = results_text(d, driver)
+    if not res:
         return None, None
     opt = re.search(r"^Optimal\s+(\S+)", res, re.M)
     it = re.search(r"^Number of iterations: (\d+)", res, re.M)
@@ -201,6 +250,9 @@ def check(name, example, driver, edit, data, expect, message, ll):
     if message and message.startswith("!"):
         if message[1:] in out:
             problems.append("unexpected message")
+    elif message and message.startswith("results:"):
+        if message[len("results:"):] not in results_text(d, driver):
+            problems.append("text not found in the results")
     elif message and message not in out:
         problems.append("message not found")
     if ll and results(d, driver)[0] != ll:

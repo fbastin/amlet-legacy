@@ -195,5 +195,7 @@ void special_likelihood_functions(int ismixed, double *ll0, double *llc,
   /* Compute the likelihood function at 0 */
   *ll0 = -amlet_mnl_null(md->nalt, md->nobs, md->availability);
 
-  //  *llc = likelihood_constant(dr, work, md);
+  /* AMLET <= 0.13.1 left it to 0 */
+  *llc = -amlet_mnl_constants(md->nalt, md->nobs, md->choices,
+			      md->availability);
 }

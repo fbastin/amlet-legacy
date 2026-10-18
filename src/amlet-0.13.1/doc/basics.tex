@@ -122,10 +122,13 @@ otherwise \\
 \verb|idcensor| & & variable index corresponding to the alternatives
 availability \\
 \hline
-\verb|draws| & & indicates if new draws are to be generated or if they
-have to be read from an external file\\
+\verb|draws| & \verb|new| & \verb|new| to generate new draws, \verb|old|
+to read the draws saved in \verb|drawsname| by an earlier run; if this
+file does not exist, new draws are generated and saved in it, and if it
+does not hold the draws of the model, \amlet{} stops\\
 \hline
-\verb|drawsname| & & name of the file containing the draws\\
+\verb|drawsname| & & name of the file where the draws are saved, or
+read with \verb|draws = old|\\
 \hline
 \verb|eps| & & tolerance used for optimization \\
 \hline

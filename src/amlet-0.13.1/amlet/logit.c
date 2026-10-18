@@ -146,3 +146,39 @@ double amlet_mnl_null(int nalt, int nobs, int **availability)
 
   return ll0;
 }
+
+/**
+ * Compute the mean log-likelihood of the multinomial logit model with
+ * alternative specific constants only. When every alternative is
+ * available to every observation, its probabilities are the shares of
+ * the alternatives in the choices.
+ *
+ * @param choices is the array of the chosen alternatives.
+ * @param availability is the alternatives availability array, or NULL.
+ *
+ * @return the log-likelihood, averaged over the observations, or NAN
+ *   when some alternatives are not available to some observations (the
+ *   model would then have to be estimated).
+ */
+double amlet_mnl_constants(int nalt, int nobs, const int *choices,
+			   int **availability)
+{
+  int i, k;
+  double llc = 0.0;
+  int *count = _mallocs(nalt, int);
+
+  for (k = 0; k < nalt; k++) count[k] = 0;
+  for (i = 0; i < nobs; i++) {
+    for (k = 0; availability && k < nalt; k++)
+      if (!availability[i][k]) {
+	free(count);
+	return NAN;
+      }
+    count[choices[i]]++;
+  }
+  for (k = 0; k < nalt; k++)
+    if (count[k]) llc += count[k]*log((double)count[k]/nobs);
+  free(count);
+
+  return llc/nobs;
+}

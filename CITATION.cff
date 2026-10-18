@@ -7,6 +7,7 @@ type: software
 authors:
   - family-names: Bastin
     given-names: Fabian
+    orcid: "https://orcid.org/0000-0003-1323-6787"
     email: fabian.bastin@gmail.com
 version: 0.13.1-4
 date-released: 2026-10-18
@@ -32,6 +33,7 @@ preferred-citation:
   authors:
     - family-names: Bastin
       given-names: Fabian
+      orcid: "https://orcid.org/0000-0003-1323-6787"
     - family-names: Cirillo
       given-names: Cinzia
     - family-names: Toint
@@ -49,6 +51,7 @@ references:
     authors:
       - family-names: Bastin
         given-names: Fabian
+        orcid: "https://orcid.org/0000-0003-1323-6787"
       - family-names: Cirillo
         given-names: Cinzia
       - family-names: Toint
@@ -65,6 +68,7 @@ references:
     authors:
       - family-names: Bastin
         given-names: Fabian
+        orcid: "https://orcid.org/0000-0003-1323-6787"
       - family-names: Cirillo
         given-names: Cinzia
       - family-names: Toint
@@ -81,6 +85,7 @@ references:
     authors:
       - family-names: Bastin
         given-names: Fabian
+        orcid: "https://orcid.org/0000-0003-1323-6787"
       - family-names: Cirillo
         given-names: Cinzia
       - family-names: Hess
@@ -96,6 +101,7 @@ references:
     authors:
       - family-names: Bastin
         given-names: Fabian
+        orcid: "https://orcid.org/0000-0003-1323-6787"
       - family-names: Cirillo
         given-names: Cinzia
       - family-names: Toint
