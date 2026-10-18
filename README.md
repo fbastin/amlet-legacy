@@ -239,7 +239,7 @@ data readers did not check what they read:
 - **Standard errors with `hessian_approx = true`.** The BFGS approximation of the Hessian gave robust standard errors 10 to 40% too small on `simulated/driver_panel`, and they depended on the build (see "Examples and validation"). AMLET now warns, and the examples use the exact Hessian; their reference standard errors change.
 - `draws = old;` with `qmcrep` > 1 read only the draws of the first replication; a warning of `validation = true` lacked its argument.
 
-**Since v0.13.1-4** (see `CHANGELOG.md`):
+**`draws = old`, log-likelihood at constants and p-value** (v0.13.1-5, see `CHANGELOG.md`):
 
 - **`draws = old;`**. When the file of the draws did not hold the draws of the model, AMLET asked on the standard input whether to overwrite it, and overwrote it when there was no answer, as in a batch job. It now stops with a message. Without `drawsname`, `draws = old;` is an error; a missing file is still created, with new draws.
 - **Log-likelihood at constants.** It was printed as 0. When every alternative is available to every observation, it is now computed from the shares of the alternatives in the choices (−283.7588 for the Australia data); otherwise, the results say "not computed".

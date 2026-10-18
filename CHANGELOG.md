@@ -7,14 +7,28 @@ The releases are archived on Zenodo from v0.13.1-4:
 [doi:10.5281/zenodo.23454086](https://doi.org/10.5281/zenodo.23454086)
 designates all of them.
 
-## Unreleased
+## v0.13.1-5 — 2026-10-18
+
+AMLET 0.13.1 (2026 rebuild), sixth release. It fixes `draws = old;` in batch jobs, computes the log-likelihood at constants, gives the p-value of the likelihood ratio test, and adds a script that recomputes the log-likelihoods and standard errors with numpy and scipy. **The estimates, log-likelihoods and standard errors of the 19 examples do not change.**
+
+### Changes
 
 - **`draws = old;`** When the file of the draws exists but does not hold the draws of the model (fewer or more values), AMLET now stops with a message. It used to ask on the standard input whether to overwrite the file, and overwrote it when there was no answer, as in a batch job. Without `drawsname`, `draws = old;` is an error; when the file does not exist, new draws are generated and saved in it, with a warning, as before.
-- **Log-likelihood at constants.** It was printed as 0 (never computed). When every alternative is available to every observation, it is now computed: the probabilities of the model with alternative specific constants only are the shares of the alternatives in the choices. Otherwise, the results say "not computed".
-- **Likelihood ratio test.** The results gave a "level of rejection", 1 − p-value, which was 1 for any well-fitted model. They now give the p-value (from the upper incomplete gamma function) and the degrees of freedom.
-- **Checks.** `run_checks.py` has 33 checks (log-likelihood at constants, p-value, availability rows in the Train96 format, `draws = old;`). `verify_likelihood.py` recomputes, with numpy and scipy, the simulated log-likelihoods and the standard errors of three models of the examples, and the CI runs it.
+- **Log-likelihood at constants.** It was printed as 0 (it was never computed). When every alternative is available to every observation, it is now computed: the probabilities of the model with alternative specific constants only are the shares of the alternatives in the choices (−283.7588 for the Australia data). Otherwise, the results say "not computed".
+- **Likelihood ratio test.** The results gave a "level of rejection", 1 − p-value, which was 1 for any well-fitted model. They now give the p-value (from the upper incomplete gamma function, checked against scipy) and the degrees of freedom.
+
+### Checks
+
+- **`verify_likelihood.py`** runs AMLET, then recomputes with numpy and scipy, from the data and the draws that AMLET saves, the simulated log-likelihoods and the standard errors of three models: the Australia mixed logit (robust and classical standard errors), the panel model of `driver_panel` with 200 draws (five random coefficients, one of them lognormal; also the log-likelihood without the bias correction that the results give with `bias = 1`), and a multinomial logit with a fixed coefficient. Everything agrees, to 10⁻⁸ for the log-likelihoods and 3·10⁻⁶ for the standard errors. The CI runs it in the four build jobs.
+- **`run_checks.py`** has 33 checks (log-likelihood at constants, p-value, availability rows in the Train96 format, `draws = old;`); v0.13.1-4 fails 7 of them. The availability of the alternatives (`censor = 1`), which no example used, was checked against an independent estimation.
 - The standard errors of the Australia mixed logit examples are checked to within 3% (10% for `driver_mmnl_spline`): the point where the optimization stops varies slightly with the BLAS and the compiler.
-- `CITATION.cff` gives the Zenodo DOI and the ORCID of the author.
+
+### Other changes
+
+- `CHANGELOG.md` gathers the notes of all the releases.
+- `CITATION.cff` gives the Zenodo DOI and the ORCID of the author; the manual documents `draws` and `drawsname`.
+
+The releases are archived on Zenodo: [doi:10.5281/zenodo.23454086](https://doi.org/10.5281/zenodo.23454086) designates all of them. See the [README](https://github.com/fbastin/amlet-legacy/blob/v0.13.1-5/README.md) for details and known limitations.
 
 ## v0.13.1-4 — 2026-10-18
 
