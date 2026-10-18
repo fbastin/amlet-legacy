@@ -49,7 +49,7 @@ void derive_logit(int i, int n, double ***obs, int choice,
 			 dcl_data *md, double *utility, int shift)
 {
   double prob = 0.0;
-  int j;
+  int j, k;
 
   for (j = 0; j < n; j++) tgrad[j] = 0.0;
   /* Compute the gradient contribution from user's choice. */
@@ -65,10 +65,32 @@ void derive_logit(int i, int n, double ***obs, int choice,
     }
   }
 
-  for (j = 0; j < n; j++) {
-    md->sgrad[i][j] = tgrad[j];
-    grad[j] += (tgrad[j]-grad[j]) / (i+1-shift);
+  /* grad and md->sgrad[i] only have the components of the estimated
+     coefficients: skip the fixed ones (FIXED in btype) */
+  for (j = k = 0; j < n; j++) {
+    if (md->nfixed && md->btype[j] == FIXED) continue;
+    md->sgrad[i][k] = tgrad[j];
+    grad[k] += (tgrad[j]-grad[k]) / (i+1-shift);
+    k++;
   }
+}
+
+/**
+ * Coefficients of a multinomial logit model: the estimated parameters
+ * theta, and the values of the fixed coefficients (FIXED in btype). AMLET
+ * <= 0.13.1 used theta, and wrote past its arrays when some coefficients
+ * were fixed.
+ *
+ * @return theta when no coefficient is fixed, md->beta otherwise.
+ */
+static double *mnl_beta(double *theta, dcl_data *md)
+{
+  int i, j = 0, k = 0;
+
+  if (!md->nfixed) return theta;
+  for (i = 0; i < md->nvar; i++)
+    md->beta[i] = (md->btype[i] == FIXED) ? md->fixed[j++] : theta[k++];
+  return md->beta;
 }
 
 /**
@@ -432,9 +454,10 @@ double likelihood_gradient(double *theta, int n, void *data, double *grad)
   double *utility, *tgrad;
 
   utility = _mallocs(md->nalt, double);
-  tgrad = _mallocs(3*n, double);
+  tgrad = _mallocs(3*md->nvar, double);
 
   for (i = 0; i < n; i++) grad[i] = 0.0;
+  theta = mnl_beta(theta, md);
 
   for (i = 0; i < md->nobs; i++) {
     for (j = 0; j < md->nalt; j++) utility[j] = 0.0;
@@ -442,8 +465,8 @@ double likelihood_gradient(double *theta, int n, void *data, double *grad)
     /* compute the utility of each alternative */
     compute_utilities(theta, md->obs, md, i, 0, utility, &den);
 
-    derive_logit(i, n, md->obs, md->choices[i], den, md->availability[i],
-		 tgrad, grad, md, utility, 0);
+    derive_logit(i, md->nvar, md->obs, md->choices[i], den,
+		 md->availability[i], tgrad, grad, md, utility, 0);
   }
 
   free(utility);
@@ -481,6 +504,7 @@ double likelihood(double *theta, int np,
   double *utility;
 
   utility = _mallocs(md->nalt, double);
+  theta = mnl_beta(theta, md);
 
   ll = 0.0;
 
@@ -528,7 +552,8 @@ double lg(double *theta, int np,
 
   ll = 0.0;
 
-  for (i = 0; i < nvar; i++) grad[i] = 0.0;
+  for (i = 0; i < md->npar; i++) grad[i] = 0.0;
+  theta = mnl_beta(theta, md);
 
   for (i = shift; i < np+shift; i++) {
     for (j = 0; j < md->nalt; j++) utility[j] = 0.0;

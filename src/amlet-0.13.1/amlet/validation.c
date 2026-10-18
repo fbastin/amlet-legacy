@@ -47,7 +47,7 @@ void amlet_validate_results(AMLET_Driver *dr, int n, double *x, dcl_data *md,
   if (dr->output) {
     f = fopen(dr->output, "a");
     if (!f) {
-      c_warning("Unable to open %s to write validation results;\nscreen output will be used\n");
+      c_warning("Unable to open %s to write validation results;\nscreen output will be used\n", dr->output);
       f = stdout;
     }
   }

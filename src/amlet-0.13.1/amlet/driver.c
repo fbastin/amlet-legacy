@@ -246,6 +246,13 @@ void driver_check_parameters(AMLET_Driver *dr, amlet_config *ac, dcl_data *data)
 		    dr->var[NREP].i);
       dr->var[METHOD].i = fixed;
     }
+
+    /* The correction of the simulation bias also estimates the error
+       of the simulated probabilities as for independent draws. */
+    if (dr->var[SAMPLING].i != MOCA_MONTE_CARLO && dr->var[BIAS].i) {
+      amlet_warning(stderr, 1, "the correction of the simulation bias requires Monte Carlo draws (sampling = monte_carlo); bias is set to 0");
+      dr->var[BIAS].i = data->bias = 0;
+    }
   }
 
   if (dr->generation) {
@@ -526,6 +533,12 @@ void driver_assign_value(AMLET_Driver *dr, int word, int type,
     /* the arrays of the generation process have nalt elements */
     if (id == NALT && dr->alt_types && value.i != dr->var[NALT].i)
       c_error("line %d: nalt must be given before generate", lineno);
+    /* parsed, but no code uses them */
+    if ((id == RESCALE || id == VARREP || id == SYNTHETIC) && value.i) {
+      c_warning("line %d: %s is not implemented in AMLET 0.13.1; it is ignored",
+		lineno, name);
+      value.i = 0;
+    }
     dr->var[id].i = value.i;
   }
 }
@@ -539,12 +552,17 @@ void driver_assign_array(AMLET_Driver *dr, int word,
 			 const driver_var *values, int n)
 {
   int nwords = sizeof(reserved_words)/sizeof(reserved_words[0]);
-  driver_array *a = dr->array + reserved_words[word].token;
+  int id = reserved_words[word].token;
+  driver_array *a = dr->array + id;
 
   if (word < nwords - END_ARRAY_WORDS - END_OTHERS
       || word >= nwords - END_OTHERS)
     c_error("line %d: %s expects a single value, not a list",
 	    lineno, reserved_words[word].name);
+  /* parsed, but no code uses them */
+  if ((id == IGNORE || id == RESCALEIDX || id == RESCALEVAL) && n)
+    c_warning("line %d: %s is not implemented in AMLET 0.13.1; it is ignored",
+	      lineno, reserved_words[word].name);
 
   free(a->array);
   a->n = n;

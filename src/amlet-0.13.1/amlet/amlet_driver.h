@@ -141,6 +141,7 @@ extern "C" {
     {"nrep", NREP},
     {"varrep", VARREP},
     {"level", LEVEL},
+    {"level_accuracy", LEVEL_ACCURACY},
 
     {"format", FORMAT},
 

@@ -24,7 +24,7 @@ The directory contains:
 | `patches/` | All code changes to the original `amlet-0.13.1.tar.gz`, `ophelia-0.7.4.tar.gz` and `oratio-0.7.5.tar.gz` (the license change is not included). |
 | `build.sh` | Builds the three packages into a local prefix. Needs no root access. |
 | `run_examples.sh` | Runs the examples and checks the results against reference values. |
-| `run_checks.py` | Checks that errors in driver and data files are reported (19 checks, a few seconds). |
+| `run_checks.py` | Checks that errors in driver and data files are reported, and some options (26 checks, a few seconds). |
 | `examples/` | Redistributable examples (see below). |
 | `doc/` | User manuals (AMLET, OPHELIA, ORATIO), rebuilt in 2026 from the LaTeX sources in `src/*/doc`. The previous PDFs dated from 2011 and described AMLET 0.10.6. |
 
@@ -84,6 +84,19 @@ first parameter with `examples/reference_values.tsv`. `run_checks.py` changes
 the drivers or the data of the examples, and checks that AMLET reports each
 error (see "Values in the driver file" below) with a message and a non-zero
 exit code, and that `draws = old;` reproduces an estimation.
+
+The simulated log-likelihood and the robust standard errors of
+`australia/driver_mmnl` were recomputed independently, in Python (numpy and
+scipy), from the data and the draws that AMLET saves (`drawsname`): the
+log-likelihood is identical to all printed digits, and the standard errors
+(sandwich H⁻¹BH⁻¹ with the exact Hessian, `hessian_approx = false`) to 5
+digits; with `robust = false`, AMLET gives H⁻¹. The same holds for the panel
+model of `simulated/driver_panel` (five random coefficients, one of them
+lognormal), with 200 draws. On the Australia model, `mcbfgsda` reaches
+another local maximum of the same simulated likelihood (LL = −177.978,
+against −178.996 for `mcbtrda`): the sign of the standard deviation is not
+identified, and with a finite number of draws the two signs give two
+maxima.
 
 Simulated results depend on the pseudo-random draws. They are reproducible
 for a given `seed1` on a given build. A different BLAS or compiler may change
@@ -194,6 +207,15 @@ data readers did not check what they read:
 - **Bias of simulation.** When the accuracy was not estimated (methods with a fixed sample size, without `statistics`), the results printed "Bias of simulation" with whatever value was on the stack, if it was negative: e.g., −5.3e+303 with GCC's `-ftrivial-auto-var-init=pattern`.
 - `mcrtrda` writes the sample size of each iteration to `sizes.txt`, in the current directory; it crashed when the file could not be created.
 
+**Fixed coefficients, bias correction, and options that did nothing.**
+
+- **Fixed coefficients** (`FIXED` in `btype`). In a multinomial logit, the gradient was written past its arrays, and AMLET crashed; fixed coefficients are now supported (log-likelihood, estimates and robust standard errors checked against an independent computation). In a mixed logit, the t-statistic of the j-th estimated parameter divided the j-th value of the vector of all parameters, fixed ones included: every t-statistic after a fixed coefficient was wrong (276.4 instead of 3.54 on the Australia model). Without `b`, the fixed values were undefined; this is now an error.
+- **Correction of the simulation bias** (`bias = 1`, the default). The optimization uses the simulated log-likelihood corrected for the simulation bias, and the results gave the corrected value without saying so. They now say it, and give the simulated log-likelihood without the correction (−5796.274 for `simulated/driver_panel`, whose results give −5791.972). The correction estimates the error of the simulated probabilities as for independent draws: with quasi-Monte Carlo draws it is now turned off, with a warning. `simulated/driver_panel_halton` (200 Halton points) therefore changes: LL = −5802.493, and the standard error of the first parameter is 0.0252 instead of 0.0388 (0.0253 for `driver_panel`, with 1000 Monte Carlo draws).
+- **Options that did nothing.** `level_accuracy`, documented in the manual and used by the methods with a variable sample size, was not known to the parser: it was ignored. It is now read. `rescale`, `rescalidx`, `rescalval`, `ignore`, `synthetic` and `varrep` are read, but not implemented in AMLET 0.13.1; they now give a warning.
+- **Results file.** A list of the estimates, without a title and left from debugging, preceded the table of estimates; the header "Standard deviation" ran into the next one. The t-statistics are absolute values, and the header now says `|t-statistic|`.
+- **`alternatives_sampling`** (experimental and not documented: it writes the data with sampled alternatives to `intermediaire`, then stops) swapped the arguments of the integer generator, which read past a variable on the stack and drew integers in [0, 1); with 3 alternatives or more it crashed or looped forever, and it freed memory twice. It now draws from `seed1`.
+- `draws = old;` with `qmcrep` > 1 read only the draws of the first replication; a warning of `validation = true` lacked its argument.
+
 In OPHELIA 0.7.4, `ophelia/btr.h` now declares `nlp_set_derivatives_type()`,
 which `rtr.c` calls; without it, GCC ≥ 14 stops with an error. In the active
 sets of the monotonicity constraints (`mcbtrc`, `ophelia/activesets.c`), a
@@ -218,6 +240,7 @@ from uutils coreutils, `make install` runs `install-sh`.
 - With `legacy_rng = true`, the generator is not MRG32k3a: its statistical properties are unknown, so use it only to reproduce earlier results. Its states are not reduced modulo m, and some products exceed 2^53: the draws then depend on floating-point rounding, and fused multiply-add instructions (FMA, as on Ubuntu 26.04 or with `-march=x86-64-v3`) change them completely. `build.sh` therefore always compiles with `-ffp-contract=off`, which gives the same legacy draws everywhere.
 - In `set_beta()` (`amlet/likelihood.c`), the antithetic transformation is also applied to the (unused) draw of constant coefficients. The code is misleadingly indented, but the result is harmless. `sll_derivate_utilities_mvn()` is never called and uses an uninitialised variable.
 - `method = none` is not supported: AMLET stops with "unsupported method". The bootstrap code cannot be reached (`nsim` is always 1).
+- `rescale`, `rescalidx`, `rescalval`, `ignore`, `synthetic` and `varrep` are not implemented (AMLET warns), and `alternatives_sampling` is experimental.
 - Only the `amlet` and `src` subdirectories of AMLET are built. The original `test/` program and the LaTeX manual sources are kept but not built.
 
 ## Data used in the published papers

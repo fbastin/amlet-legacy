@@ -56,9 +56,17 @@ int amlet_alternatives_sampling(AMLET_Driver *dr, double ***obs,
 
   int *chosen_alternatives;
 
+  /* AMLET <= 0.13.1 looped forever */
+  if (n < 2 || n > nalt)
+    c_error("alternatives_sampling = %d: from 2 to nalt = %d alternatives can be sampled", n, nalt);
+
   chosen_alternatives = _mallocs(n, int);
 
-  r = ran_intrandom_new(&seed, nalt, 1);
+  /* integers in [0, nalt), from seed1; AMLET <= 0.13.1 swapped the
+     arguments (nalt seeds, read past seed, and integers in [0, 1)) and
+     took a seed from the clock */
+  seed = dr->var[SEED1].i;
+  r = ran_intrandom_new(&seed, 1, nalt);
 
   /* New observations table */
   new_obs = _mallocs(nobs, double **);
@@ -100,7 +108,7 @@ int amlet_alternatives_sampling(AMLET_Driver *dr, double ***obs,
     for (j = 0; j < n; j++) free(new_obs[i][j]);
     free(new_obs[i]);
   }
-  free(*new_obs);
+  free(new_obs);   /* AMLET <= 0.13.1 freed new_obs[0] twice */
 
   ran_random_free(r);
 

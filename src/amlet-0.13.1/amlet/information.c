@@ -68,7 +68,8 @@ double amlet_t_statistics(int n, double *theta, double *hypothetical,
 
   /* We should use a student... */
   for (i = 0; i < n; i++)
-    t[i] = fabs((theta[i]-hypothetical[i])/sqrt(fabs(I[i][i])));
+    t[i] = fabs((theta[i]-(hypothetical ? hypothetical[i] : 0.0))
+		/sqrt(fabs(I[i][i])));
 
   return p;
 }

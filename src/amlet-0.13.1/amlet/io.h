@@ -88,7 +88,7 @@ extern "C" {
 		   int n_random_coeff,
 		   double ll, double ll0, double llc,
 		   double gnorm, long seed, int ndraws,
-		   double accuracy, double bias,
+		   double accuracy, double bias, double sll,
 		   int elapsed_time, int niter, int method);
 
 #ifdef __cplusplus

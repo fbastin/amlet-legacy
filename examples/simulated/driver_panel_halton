@@ -120,5 +120,6 @@ robust = true;
 
 statistics = true;
 
-bias=1;
+# the correction of the simulation bias requires Monte Carlo draws
+bias=0;
 randomization = scrambling;

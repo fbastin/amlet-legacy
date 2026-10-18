@@ -108,23 +108,29 @@ int set_parameters(AMLET_Model *m,
   /* We make a second screening to affect the initial parameters
      values. */
   *npar = s;
-  data.beta = _mallocs(*npar, double);
+  /* the coefficients of a multinomial logit (mnl_beta() in likelihood.c) */
+  data.beta = _mallocs(nvar, double);
   *x = _mallocs(s, double);
   *fixed = _mallocs(*nfixed, double);
   *ff = _mallocs((*npar+*nfixed), int);
+  /* AMLET <= 0.13.1 left ff undefined when b was not given: the results
+     could then take some parameters for fixed ones */
+  for (i = 0; i < (s+*nfixed); i++) (*ff)[i] = 0;
 
-  /* WE SHOULD ALSO TEST IF NFIXED IS EQUAL TO 0. */
   if (!dr->array[B].array) {
+    /* AMLET <= 0.13.1 left the fixed values undefined */
+    if (*nfixed)
+      return amlet_error(ac, mclog->f, 1, AMLET_ERROR_STARTING_POINT,
+			 "b must be given, with the values of the fixed coefficients");
     amlet_ml_starting_point(*npar, *x, 1);
     return 0;
   }
 
   if (dr->array[B].n != *npar + *nfixed)
     return amlet_error(ac, mclog->f, 1, AMLET_ERROR_STARTING_POINT,
-		       "incorrect number of parameters in b declaration %d; should be %d", dr->array[B].n, *npar);
+		       "incorrect number of parameters in b declaration %d; should be %d", dr->array[B].n, *npar + *nfixed);
   
   j = k = l = t = 0;
-  for (i = 0; i < (s+*nfixed); i++) (*ff)[i] = 0;
 
   for (i = 0; i < nvar; i++) {
     switch ((*btype)[i]) {
@@ -269,6 +275,7 @@ int amlet_exec(int argc, char *argv[])
      accuracy was not estimated, AMLET <= 0.13.1 could print an undefined
      bias */
   double bias = 0.0, accuracy = -1.0;
+  double sll;          /* simulated log-likelihood, without the bias correction */
   double elapsed_time;   /* time consumed by the optimization process */
 
   long sec, ms;
@@ -574,7 +581,10 @@ int amlet_exec(int argc, char *argv[])
 	  dr.var[DRAWS].i = 1;
 	}
 	else {
-	  if (ran_import_sample(f, np, dr.var[NREP].i*n_random_coeff,
+	  /* the draws of the qmcrep replications; AMLET <= 0.13.1 read
+	     only the first one */
+	  if (ran_import_sample(f, dr.var[QMCREP].i*np,
+				dr.var[NREP].i*n_random_coeff,
 				data.sampling)) {
 	    c_warning("%s\n", amlet_info_message(AMLET_ERROR_DRAWS_FILE_READING));
 	    dr.var[DRAWS].i = 1;
@@ -822,6 +832,15 @@ int amlet_exec(int argc, char *argv[])
 			   data.fixed, ff, work);
 
     if (solutions) op_solutions_add(solutions, ll, x);
+
+    /* The simulated log-likelihood, without the correction of the
+       simulation bias that the optimization used */
+    sll = ll;
+    if (n_random_coeff && data.bias) {
+      data.bias = 0;
+      sll = wrapper_simulated(x, npar, &data);
+      data.bias = 1;
+    }
  
     /* Print results */
     amlet_output(m, &dr, &ac, buff,
@@ -829,7 +848,7 @@ int amlet_exec(int argc, char *argv[])
 		 dr.var[LEVEL].d, n_random_coeff,
 		 ll, ll0, llc, cblas_dnrm2(npar, grad, 1),
 		 seed, data.size_sampling,
-		 accuracy, bias, elapsed_time, niter,
+		 accuracy, bias, -sll, elapsed_time, niter,
 		 dr.var[METHOD].i);
 
     /* Results validation */

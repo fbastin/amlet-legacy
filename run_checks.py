@@ -12,7 +12,7 @@ AddressSanitizer or UndefinedBehaviorSanitizer is a failure too.
 import os, re, shutil, subprocess, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-AMLET = os.environ.get("AMLET", os.path.join(ROOT, "local", "bin", "amlet"))
+AMLET = os.path.abspath(os.environ.get("AMLET", os.path.join(ROOT, "local", "bin", "amlet")))
 RUN = os.path.abspath(os.environ.get("RUN", os.path.join(ROOT, "run", "checks")))
 MNL_LL = "-199.1283687"   # examples/reference_values.tsv, australia/driver_mnl
 
@@ -65,8 +65,9 @@ def tiny_train99(d):
 
 
 # name, example, driver, edit of the driver, edit of the data,
-# expected exit ("ok" or "error"), message expected in the output,
-# log-likelihood expected in the results file (or None)
+# expected exit ("ok" or "error"), message expected in the output (or, after
+# "!", a message that must not be there), log-likelihood expected in the
+# results file (or None)
 CHECKS = [
     ("integral_real", "australia", "driver_mnl",
      sub("niter = 100;", "niter = 100.0;"), None,
@@ -119,6 +120,30 @@ CHECKS = [
     ("missing_alternative", "simulated", "driver_errc",
      both(statement("alttypes[4]"), statement("altvalues[4]")), None,
      "error", "missing definition for alternative 4", None),
+    ("fixed_mnl", "australia", "driver_mnl",
+     both(sub("btype = { CONSTANT,", "btype = { FIXED,"),
+          sub("b = { 0.0,", "b = { 4.0,")), None,
+     "ok", None, "-200.4075665"),
+    ("fixed_without_b", "australia", "driver_mnl",
+     both(sub("btype = { CONSTANT,", "btype = { FIXED,"),
+          sub("b = { 0.0, 0., 0., 0., 0., 0. };", "")), None,
+     "error", "b must be given, with the values of the fixed coefficients", None),
+    ("level_accuracy", "australia", "driver_mnl",
+     sub("niter = 100;", "niter = 100; level_accuracy = 0.05;"), None,
+     "ok", "!unknown parameter", MNL_LL),
+    ("not_implemented", "australia", "driver_mnl",
+     sub("niter = 100;", "niter = 100; ignore = {2};"), None,
+     "ok", "ignore is not implemented", MNL_LL),
+    ("qmc_bias", "australia", "driver_mmnl_halton",
+     both(sub("bias=0;", "bias=1;"), sub("nrep = 1000;", "nrep = 100;"),
+          sub("niter = 500;", "niter = 3;")), None,
+     "ok", "the correction of the simulation bias requires Monte Carlo draws", None),
+    ("alternatives_sampling", "australia", "driver_mnl",
+     sub("niter = 100;", "niter = 100; alternatives_sampling = 3;"), None,
+     "ok", "Alternatives sampling completed", None),
+    ("too_many_alternatives", "australia", "driver_mnl",
+     sub("niter = 100;", "niter = 100; alternatives_sampling = 5;"), None,
+     "error", "from 2 to nalt = 4 alternatives can be sampled", None),
     ("generate_before_nalt", "simulated", "driver_errc",
      both(sub("nalt = 5;", ""),
           sub('generate "errc_data";', 'generate "errc_data"; nalt = 5;')), None,
@@ -173,7 +198,10 @@ def check(name, example, driver, edit, data, expect, message, ll):
         problems.append("exit code %d" % rc)
     if expect == "error" and rc == 0:
         problems.append("exit code 0")
-    if message and message not in out:
+    if message and message.startswith("!"):
+        if message[1:] in out:
+            problems.append("unexpected message")
+    elif message and message not in out:
         problems.append("message not found")
     if ll and results(d, driver)[0] != ll:
         problems.append("LL %s, expected %s" % (results(d, driver)[0], ll))

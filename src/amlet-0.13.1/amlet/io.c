@@ -413,7 +413,7 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
 			  int n_random_coeff,
 			  double ll, double ll0, double llc,
 			  double gnorm, long seed, int ndraws,
-			  double accuracy, double bias,
+			  double accuracy, double bias, double sll,
 			  int elapsed_time, int niter, int method,
 			  int format)
 {
@@ -437,10 +437,13 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
 
   t = _mallocs(md->npar, double);
   tmp = _mallocs(md->npar, double);
-  nt_vect_zeros(md->npar, tmp, 1);
 
-  /* compute the t-statistics */
-  p = amlet_t_statistics(md->npar, theta, tmp, cov, alpha, t);
+  /* compute the t-statistics, of the estimated parameters: theta also
+     has the fixed ones, and AMLET <= 0.13.1 divided the j-th value of
+     theta by the standard error of the j-th estimated parameter */
+  for (i = j = 0; i < md->npar+md->nfixed; i++)
+    if (!fixed[i]) tmp[j++] = theta[i];
+  p = amlet_t_statistics(md->npar, tmp, NULL, cov, alpha, t);
 
   free(tmp);
 
@@ -563,34 +566,36 @@ void amlet_output_results(AMLET_Model *m, AMLET_Driver *dr,
   fprintf(f, "\n");
   fprintf(f, "Gradient norm: %12.10g\n", gnorm);
 
-  if (md->npar != md->nvar) {
+  if (n_random_coeff) {
       /* if the accuracy has been estimated, we write it */
       if (accuracy >= 0.0) {
 	  fprintf(f, "Accuracy of the likelihood function evaluation (mean value): %g\n", accuracy);
       }
       if (bias < 0.0) fprintf(f, "Bias of simulation: %g\n", bias);
+      /* AMLET <= 0.13.1 did not say it */
+      if (md->bias)
+	fprintf(f, "The log-likelihood above is corrected for the simulation bias (bias = 1); the simulated log-likelihood is %.10g\n", sll*md->np);
   }
 
   fprintf(f, "\n");
 
   len[1] = 6;
   len[2] = 15;
-  len[3] = 15;
+  len[3] = 19;
   len[4] = 15;
   len[5] = 5;
   len[0] = 0;
   for (i = 1; i <= 5; i++) len[0] += len[i];
 
-  fprintf(f, "\n");
-  for (i = 0; i < md->npar; i++)
-    fprintf(f, "%10.9g\n", theta[i]);
+  /* AMLET <= 0.13.1 also printed the first npar values of theta here,
+     without a title */
   fprintf(f, "\n");
 
   line(f, len[0]);
   table_header(f, format, len[1], "");
   table_header(f, format, len[2], "Estimation");
   table_header(f, format, len[3], "Standard deviation");
-  table_header(f, format, len[4], "t-statistic");
+  table_header(f, format, len[4], "|t-statistic|");
   table_header(f, format, len[5], "");
   fprintf(f, "\n");
   line(f, len[0]);
@@ -694,7 +699,7 @@ int amlet_output(AMLET_Model *m, AMLET_Driver *dr,
 		 int n_random_coeff,
 		 double ll, double ll0, double llc,
 		 double gnorm, long seed, int ndraws,
-		 double accuracy, double bias,
+		 double accuracy, double bias, double sll,
 		 int elapsed_time, int niter, int method)
 {
   FILE *f;
@@ -713,7 +718,7 @@ int amlet_output(AMLET_Model *m, AMLET_Driver *dr,
 		       alpha, n_random_coeff,
 		       ll, ll0, llc, gnorm,
 		       seed, ndraws,
-		       accuracy, bias, elapsed_time, niter,
+		       accuracy, bias, sll, elapsed_time, niter,
 		       method, 0);
 
   if (f != stdout) fclose(f);
