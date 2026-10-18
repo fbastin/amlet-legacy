@@ -29,6 +29,7 @@
   int n = 0;
 
   int type;  /* not very a babe this variable */
+  int *count;  /* where to store the number of values of alttypes[i]... */
 
   void push_stack(driver_var drv)
     {
@@ -66,7 +67,7 @@
 
 %type <integer>  iexp;  /* integer expression */
 %type <real>     dexp;  /* real expression */
-%type <ptr>  identifier;
+%type <integer>  identifier;
 
 %type <ptr>      var;
 
@@ -137,9 +138,9 @@ load:
 
 input: INPUT STRING
          {
-	   FILE *f2;
-
-	   f2 = fopen($2, "r");
+	   c_warning("line %d: input is not supported; %s is ignored",
+		     lineno, $2);
+	   free($2);
          }
        ;
 
@@ -151,18 +152,41 @@ output:
       ;
 
 affectation:
-             var '=' iexp {;}
-             | var '=' dexp {;}
-             | var '=' STRING {free($3);}
+             var '=' iexp
+               {
+		 if ($1)
+		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
+	       }
+             | var '=' dexp
+               {
+		 if ($1)
+		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
+	       }
+             | var '=' STRING
+               {
+		 if ($1)
+		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
+		 free($3);
+	       }
              | var '=' set
                {
 		 int i;
 
-		 if (type == INTEGER) {
+		 /* var is NULL for an unknown name */
+		 for (i = 0; $1 && i < n; i++)
+		   if (stack[i].type != INTEGER
+		       && (type == INTEGER || stack[i].type != REAL))
+		     c_error("line %d: invalid value in the list", lineno);
+
+		 if (!$1)
+		   ;
+		 else if (type == INTEGER) {
 		   int *array;
 		   array = _mallocs(n, int);
 		   for (i = 0; i < n; i++) array[i] = stack[i].d.i;
+		   free(*((int **)$1));
 		   (*((int **)$1)) = array;
+		   *count = n;
 		 }
 		 else if (type == REAL) {
 		   double *array;
@@ -173,31 +197,36 @@ affectation:
 		     else
 		       array[i] = stack[i].d.d;
 		   }
+		   free(*((double **)$1));
 		   (*((double **)$1)) = array;
+		   *count = n;
 		 }
-		 else
-		   $1 = NULL;
 		 n = 0;
 	       }
              | identifier '=' iexp
                {
-		 (*((driver_data *)$1)).i = $3;
+		 driver_data v;
+
+		 v.i = $3;
+		 driver_assign_value(dr, $1, INTEGER, v);
                }
-             | identifier '=' dexp {(*((driver_data *)$1)).d = $3;}
-             | identifier '=' STRING {(*((driver_data *)$1)).s = $3;}
+             | identifier '=' dexp
+               {
+		 driver_data v;
+
+		 v.d = $3;
+		 driver_assign_value(dr, $1, REAL, v);
+               }
+             | identifier '=' STRING
+               {
+		 driver_data v;
+
+		 v.s = $3;
+		 driver_assign_value(dr, $1, STRING, v);
+               }
              | identifier '=' set
                {
-		 int i;
-		 driver_array *a = (driver_array *)$1;
-
-		 if (a->array) free(a->array);
-
-		 a->n = n;
-		 a->array = (!n) ? NULL: _mallocs(n, driver_var);
-		 for (i = 0; i < n; i++) {
-		   a->array[i].type = stack[i].type;
-		   a->array[i].d = stack[i].d;
-		 }
+		 driver_assign_array(dr, $1, stack, n);
 
 		 /* We return to the beginning of the stack */
 		 n = 0;
@@ -206,26 +235,23 @@ affectation:
 
 identifier: IDENTIFIER
             {
-	      int pos = reserved_words[$1].token;
-
-	      if ( yylval.integer <
-		   sizeof(reserved_words)/sizeof(reserved_words[0])
-		   - END_ARRAY_WORDS - END_OTHERS )
-		/* Simple variable */ {
-		$$ = (dr->var + pos);
-	      }
-	      else if ( yylval.integer <
-			sizeof(reserved_words)/sizeof(reserved_words[0])
-			- END_OTHERS)
-		/* Array variable */
-		$$ = (dr->array + pos);
-	      else
-		driver_get_address($1);
+	      $$ = $1;
 	    }
-            | IDENTIFIER POS { $$ = NULL; }
+            | IDENTIFIER POS
+              {
+		/* AMLET <= 0.13.1 crashed */
+		c_error("line %d: %s cannot be indexed; give all its values, as in %s = {...}",
+			lineno, reserved_words[$1].name, reserved_words[$1].name);
+	      }
             ;
 
-var: VARIABLE {;}
+var: VARIABLE
+       {
+	 /* AMLET <= 0.13.1 ignored it silently */
+	 c_warning("line %d: unknown parameter %s is ignored", lineno, $1);
+	 free($1);
+	 $$ = NULL;
+       }
      | VARIABLE POS
        {
 	 int r, pos;
@@ -239,10 +265,11 @@ var: VARIABLE {;}
 	 }
 
 	 if (!driver_check_array_pos(dr, r, $2)) {
-	   c_error("invalid array position in line %d\n", lineno);
+	   c_error("invalid array position in line %d (alttypes[i] and altvalues[i] come after generate, with i from 0 to nalt-1)", lineno);
 	 }
 
-	 $$ = driver_array_address(dr, r, $2, &type);
+	 $$ = driver_array_address(dr, r, $2, &type, &count);
+	 free($1);
        }
      ;
 

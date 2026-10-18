@@ -58,10 +58,23 @@ int import_train_1996(char *obsname, double ***obs,
     k = 0;
     for (l = 0; l < n; l++) {
       if (l == iddep-1) {
-	/* Read the choice */
+	/* Read the choice: one 1, and 0 for the other alternatives. AMLET
+	   <= 0.13.1 kept the last nonzero value, and an undefined choice
+	   when there was none. */
+	int nchosen = 0;
+
 	for (j = 0; j < nalt; j++) {
 	  if (fscanf(f, "%d", &itmp) != 1) goto Short;
-	  if (itmp) choices[i] = j;
+	  if (itmp != 0 && itmp != 1) nchosen = -nalt;
+	  if (itmp) {
+	    choices[i] = j;
+	    nchosen++;
+	  }
+	}
+	if (nchosen != 1) {
+	  amlet_warning(stderr, 1, "%s: record %d: the choice row (row %d) must contain one 1, the other values being 0", obsname, i+1, iddep);
+	  fclose(f);
+	  return AMLET_ERROR_DATA_READING;
 	}
 	if (fscanf(f, "\n")) {}
       }
@@ -124,8 +137,9 @@ int export_train_1996(char *obsname, double ***obs,
 	fprintf(f, "%d\n", availability[i][nalt-1]);
       }
       else {
-	for (k = 0; k < nalt-1; k++) fprintf(f, "%g ", obs[i][k][line]);
-	fprintf(f, "%g\n", obs[i][nalt-1][line++]);
+	/* %.17g writes the values exactly; AMLET <= 0.13.1 wrote 6 digits */
+	for (k = 0; k < nalt-1; k++) fprintf(f, "%.17g ", obs[i][k][line]);
+	fprintf(f, "%.17g\n", obs[i][nalt-1][line++]);
       }
     }
   //      else if (j == iddep) {

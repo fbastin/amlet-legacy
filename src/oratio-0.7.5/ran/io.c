@@ -24,8 +24,10 @@ void ran_write_vector(FILE *f, double *v, int d)
   int i;
 
   if (!f) f = stdout;
-  for (i = 0; i < d-1; i++) fprintf(f, "%18.16g ", v[i]);
-  fprintf(f, "%18.16g\n", v[d-1]);
+  /* 17 significant digits, so that the draws are read back exactly; ORATIO
+     <= 0.7.5 wrote 16 */
+  for (i = 0; i < d-1; i++) fprintf(f, "%24.17g ", v[i]);
+  fprintf(f, "%24.17g\n", v[d-1]);
 }
 
 /**

@@ -174,8 +174,7 @@ int nlp_isotonics_wrapper(int n, double *y, double *w, double *x,
   int i;
 
   /* This copy is necessary in order to take account of invariant subsets. */
-  if (x != y) ;
-  memcpy(x, y, n*sizeof(double));
+  if (x != y) memcpy(x, y, n*sizeof(double));
 
   for (i = 0; i < nidx; i++) {
     n = idx[2*i+1]-idx[2*i];

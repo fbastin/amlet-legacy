@@ -236,7 +236,7 @@ void simulate_observations(Random *ran, int *choices, double ***obs,
 
   nt_log_write(mclog, "Proportions: ");
   for (i = 0; i < nalt; i++)
-    nt_log_write(mclog, "%g%c", ((double)prefs[i])/np,
+    nt_log_write(mclog, "%g%c", ((double)prefs[i])/nobs,
 		 (i == nalt-1) ? '\n' : ' ');
   nt_log_write(mclog, "\n");
 

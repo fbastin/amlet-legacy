@@ -12,7 +12,7 @@ australia	driver_mmnl_uniform	results_mmnl_uniform	-179.0727962	1e-4	2.6011854	0
 australia	driver_mmnl_spline	results_mmnl_spline	-172.5045331	1e-4	6.3325753	0.1	Cubic B-spline (nonparametric) coefficient, monotonicity constraints (mcbtrc)
 australia	driver_mmnl_ecuyer	results_mmnl_ecuyer	-178.5302781	1e-4	1.6788166	0.1	L'Ecuyer 1988 generator with shuffle (Numerical Recipes ran2)
 simulated	driver_errc	results_errc	-4876.582987	1e-4	0.02404597	1e-3	AMLET 0.13.1 rebuilt in 2026 (synthetic data, true coefficients = 1)
-simulated	driver_errc_import	results_errc_import	-4876.583284	1e-4	0.024045952	1e-3	Data written by driver_errc (Train99, 6 significant digits), read back
+simulated	driver_errc_import	results_errc_import	-4876.582987	1e-4	0.02404597	1e-3	Data written by driver_errc (Train99), read back: same results as driver_errc
 simulated	driver_errc_legacy	results_errc_legacy	-4789.682641	1e-4	0.042104117	1e-3	AMLET 0.13.1 (legacy_rng = true: synthetic data and draws of ORATIO 0.7.5)
 simulated	driver_panel	results_panel	-5791.971891	1e-4	0.025276731	1e-3	AMLET 0.13.1 rebuilt in 2026 (synthetic panel, true N(0.5, 1) coefficients)
 simulated	driver_panel_halton	results_panel_halton	-5781.358341	1e-4	0.038766324	1e-3	Scrambled, randomly shifted Halton draws (200), fixed sample size (mcbtr)

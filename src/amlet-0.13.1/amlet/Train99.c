@@ -114,6 +114,13 @@ int import_train_1999(const char *obsname, double ***obs,
 
   for (i = 0; i < nobs; i++) {
     if (fscanf(f, "%d\n", choices+i) != 1) goto Short;
+    /* AMLET <= 0.13.1 read past the arrays */
+    if (choices[i] < 1 || choices[i] > nalt) {
+      amlet_warning(stderr, 1, "%s_y: observation %d: the choice must be an alternative, from 1 to %d", name, i+1, nalt);
+      fclose(f);
+      free(name);
+      return AMLET_ERROR_DATA_READING;
+    }
     choices[i]--;
   }
   fclose(f);
@@ -169,8 +176,9 @@ int export_train_1999(const char *obsname, double ***obs,
 	fprintf(f, "%d\n", availability[i][nalt-1]);
       }
       else {
-	for (k = 0; k < nalt-1; k++) fprintf(f, "%g ", obs[i][k][line]);
-	fprintf(f, "%g\n", obs[i][nalt-1][line++]);
+	/* %.17g writes the values exactly; AMLET <= 0.13.1 wrote 6 digits */
+	for (k = 0; k < nalt-1; k++) fprintf(f, "%.17g ", obs[i][k][line]);
+	fprintf(f, "%.17g\n", obs[i][nalt-1][line++]);
       }
     }
   }

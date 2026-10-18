@@ -1,7 +1,7 @@
 diff -ruN amlet-0.13.1/amlet/Train96.c amlet-0.13.1/amlet/Train96.c
 --- amlet-0.13.1/amlet/Train96.c
-+++ amlet-0.13.1/amlet/Train96.c	2026-10-17 22:27:16.000000000 -0400
-@@ -45,32 +45,49 @@
++++ amlet-0.13.1/amlet/Train96.c	2026-10-18 07:50:06.000000000 -0400
+@@ -45,32 +45,62 @@
  
    n = (idcensor) ? nvar+2 : nvar + 1;
  
@@ -18,13 +18,28 @@ diff -ruN amlet-0.13.1/amlet/Train96.c amlet-0.13.1/amlet/Train96.c
      k = 0;
      for (l = 0; l < n; l++) {
        if (l == iddep-1) {
- 	/* Read the choice */
+-	/* Read the choice */
++	/* Read the choice: one 1, and 0 for the other alternatives. AMLET
++	   <= 0.13.1 kept the last nonzero value, and an undefined choice
++	   when there was none. */
++	int nchosen = 0;
++
  	for (j = 0; j < nalt; j++) {
 -	  fscanf(f, "%d", &itmp);
+-	  if (itmp) choices[i] = j;
 +	  if (fscanf(f, "%d", &itmp) != 1) goto Short;
- 	  if (itmp) choices[i] = j;
++	  if (itmp != 0 && itmp != 1) nchosen = -nalt;
++	  if (itmp) {
++	    choices[i] = j;
++	    nchosen++;
++	  }
  	}
 -	fscanf(f, "\n");
++	if (nchosen != 1) {
++	  amlet_warning(stderr, 1, "%s: record %d: the choice row (row %d) must contain one 1, the other values being 0", obsname, i+1, iddep);
++	  fclose(f);
++	  return AMLET_ERROR_DATA_READING;
++	}
 +	if (fscanf(f, "\n")) {}
        }
        else if (l == idcensor-1) {
@@ -56,9 +71,21 @@ diff -ruN amlet-0.13.1/amlet/Train96.c amlet-0.13.1/amlet/Train96.c
  }
  
  /**
+@@ -107,8 +137,9 @@
+ 	fprintf(f, "%d\n", availability[i][nalt-1]);
+       }
+       else {
+-	for (k = 0; k < nalt-1; k++) fprintf(f, "%g ", obs[i][k][line]);
+-	fprintf(f, "%g\n", obs[i][nalt-1][line++]);
++	/* %.17g writes the values exactly; AMLET <= 0.13.1 wrote 6 digits */
++	for (k = 0; k < nalt-1; k++) fprintf(f, "%.17g ", obs[i][k][line]);
++	fprintf(f, "%.17g\n", obs[i][nalt-1][line++]);
+       }
+     }
+   //      else if (j == iddep) {
 diff -ruN amlet-0.13.1/amlet/Train99.c amlet-0.13.1/amlet/Train99.c
 --- amlet-0.13.1/amlet/Train99.c
-+++ amlet-0.13.1/amlet/Train99.c	2026-10-17 22:27:16.000000000 -0400
++++ amlet-0.13.1/amlet/Train99.c	2026-10-18 07:50:06.000000000 -0400
 @@ -61,6 +61,7 @@
        return AMLET_ERROR_DATA_READING;
      }
@@ -89,12 +116,19 @@ diff -ruN amlet-0.13.1/amlet/Train99.c amlet-0.13.1/amlet/Train99.c
    /* Choice */
    strcat(name, "_y");
    if (!(f = c_fopen(name, "r"))) {
-@@ -110,12 +113,20 @@
+@@ -110,12 +113,27 @@
    name[strlen(obsname)] = '\0';
  
    for (i = 0; i < nobs; i++) {
 -    fscanf(f, "%d\n", choices+i);
 +    if (fscanf(f, "%d\n", choices+i) != 1) goto Short;
++    /* AMLET <= 0.13.1 read past the arrays */
++    if (choices[i] < 1 || choices[i] > nalt) {
++      amlet_warning(stderr, 1, "%s_y: observation %d: the choice must be an alternative, from 1 to %d", name, i+1, nalt);
++      fclose(f);
++      free(name);
++      return AMLET_ERROR_DATA_READING;
++    }
      choices[i]--;
    }
 +  fclose(f);
@@ -111,6 +145,18 @@ diff -ruN amlet-0.13.1/amlet/Train99.c amlet-0.13.1/amlet/Train99.c
  }
  
  /**
+@@ -158,8 +176,9 @@
+ 	fprintf(f, "%d\n", availability[i][nalt-1]);
+       }
+       else {
+-	for (k = 0; k < nalt-1; k++) fprintf(f, "%g ", obs[i][k][line]);
+-	fprintf(f, "%g\n", obs[i][nalt-1][line++]);
++	/* %.17g writes the values exactly; AMLET <= 0.13.1 wrote 6 digits */
++	for (k = 0; k < nalt-1; k++) fprintf(f, "%.17g ", obs[i][k][line]);
++	fprintf(f, "%.17g\n", obs[i][nalt-1][line++]);
+       }
+     }
+   }
 diff -ruN amlet-0.13.1/amlet/amlet.h amlet-0.13.1/amlet/amlet.h
 --- amlet-0.13.1/amlet/amlet.h
 +++ amlet-0.13.1/amlet/amlet.h	2026-10-17 22:27:16.000000000 -0400
@@ -131,7 +177,7 @@ diff -ruN amlet-0.13.1/amlet/amlet.h amlet-0.13.1/amlet/amlet.h
     * @param f is the file where the U(0,1) draws will be saved, if not NULL.
 diff -ruN amlet-0.13.1/amlet/amlet_btr.c amlet-0.13.1/amlet/amlet_btr.c
 --- amlet-0.13.1/amlet/amlet_btr.c	2015-02-17 04:47:55.000000000 -0500
-+++ amlet-0.13.1/amlet/amlet_btr.c	2026-10-17 22:27:16.000000000 -0400
++++ amlet-0.13.1/amlet/amlet_btr.c	2026-10-18 07:50:06.000000000 -0400
 @@ -78,7 +78,7 @@
   *        precision: > 0;
   *        ssamp: current sampling size
@@ -336,7 +382,7 @@ diff -ruN amlet-0.13.1/amlet/amlet_btr.c amlet-0.13.1/amlet/amlet_btr.c
        if (fg)
  	new_value[pstart] = fg(x_cand, n, md, epsilonplus+pstart,
  			       variance2+pstart, md->newgrad[pstart], restart);
-@@ -701,7 +707,7 @@
+@@ -701,14 +707,14 @@
  				    md->err_quantile, fct_decrease,
  				    md->size_sampling, min_size);
        
@@ -345,6 +391,14 @@ diff -ruN amlet-0.13.1/amlet/amlet_btr.c amlet-0.13.1/amlet/amlet_btr.c
  
      new_size = update_sampling_size_rtr(rmodel, rsize, tmp_ssize, suggested_size, min_size, md->max_size);
  
+     // tester la norme du gradient!!!
+ 
+     printf("%d %g %d %d\n", btr->k, rho, tmp_ssize, new_size);
+-    fprintf(log, "%d %d\n", btr->k, tmp_ssize);
++    if (log) fprintf(log, "%d %d\n", btr->k, tmp_ssize);
+ 
+     if (rho >= btr->eta1 && tmp_ssize != new_size) {
+       /* The candidate iterate will be accepted. */
 @@ -729,10 +735,10 @@
        else {
  	/* get the value back */
@@ -358,6 +412,15 @@ diff -ruN amlet-0.13.1/amlet/amlet_btr.c amlet-0.13.1/amlet/amlet_btr.c
  
  	/* Only the following line for the monotonic version. */
  	//	md->size_sampling = tmp_ssize;
+@@ -800,7 +806,7 @@
+   if (y) free(y);
+ 
+   printf("NEVAL: %d\n", md->neval);
+-  fclose(log);
++  if (log) fclose(log);
+ 
+   return btr->value;
+ }
 diff -ruN amlet-0.13.1/amlet/amlet_config.h amlet-0.13.1/amlet/amlet_config.h
 --- amlet-0.13.1/amlet/amlet_config.h	2015-02-17 04:47:54.000000000 -0500
 +++ amlet-0.13.1/amlet/amlet_config.h	2026-10-13 11:27:49.938585821 -0400
@@ -396,7 +459,7 @@ diff -ruN amlet-0.13.1/amlet/amlet_data.c amlet-0.13.1/amlet/amlet_data.c
  
 diff -ruN amlet-0.13.1/amlet/amlet_driver.h amlet-0.13.1/amlet/amlet_driver.h
 --- amlet-0.13.1/amlet/amlet_driver.h
-+++ amlet-0.13.1/amlet/amlet_driver.h	2026-10-17 22:27:16.000000000 -0400
++++ amlet-0.13.1/amlet/amlet_driver.h	2026-10-18 07:50:06.000000000 -0400
 @@ -57,6 +57,8 @@
  			computing statistical informations */
  
@@ -438,10 +501,46 @@ diff -ruN amlet-0.13.1/amlet/amlet_driver.h amlet-0.13.1/amlet/amlet_driver.h
      {"standard", RAN_STANDARDMINIMAL},
      {"parkmiller", RAN_STANDARDMINIMAL},
      {"mt19937", RAN_MT19937}
+@@ -251,6 +257,8 @@
+     /* for the generation */
+     int **alt_types;
+     double **alt_values;
++    int *alt_ntypes;    /* number of values given in alttypes[i] */
++    int *alt_nvalues;   /* number of values given in altvalues[i] */
+   } AMLET_Driver;
+ 
+   /**
+@@ -303,7 +311,25 @@
+ 
+   void driver_free_array(AMLET_Driver *dr, int id);
+ 
+-  void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type);
++  void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type,
++			     int **count);
++
++  /**
++   * Assign a value read in the driver file to a reserved word.
++   *
++   * @param word is the position of the word in reserved_words[].
++   * @param type is the type of the value read: INTEGER, REAL or STRING.
++   */
++  void driver_assign_value(AMLET_Driver *dr, int word, int type,
++			   driver_data value);
++
++  /**
++   * Assign a list of values read in the driver file to a reserved word.
++   *
++   * @param word is the position of the word in reserved_words[].
++   */
++  void driver_assign_array(AMLET_Driver *dr, int word,
++			   const driver_var *values, int n);
+ 
+   void driver_array_action(AMLET_Driver *dr, void *address, int n);
+ 
 diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
 --- amlet-0.13.1/amlet/driver.c	2015-03-29 13:57:37.000000000 -0400
-+++ amlet-0.13.1/amlet/driver.c	2026-10-17 22:27:16.000000000 -0400
-@@ -19,6 +19,7 @@
++++ amlet-0.13.1/amlet/driver.c	2026-10-18 07:50:06.000000000 -0400
+@@ -19,11 +19,16 @@
  
  #include "amlet_data.h"
  #include "nest.h"
@@ -449,7 +548,24 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
  
  #include "model.h"
  
-@@ -71,6 +72,7 @@
+ #include <oratio/ctools.h>
+ 
++#include <limits.h>
++#include <math.h>
++#include <string.h>
++
+ #define DRIVER_DEFAULT_NREP 1000
+ 
+ /**
+@@ -33,6 +38,7 @@
+ extern void amlet_parser_init(AMLET_Driver *d);
+ extern void amlet_parser_clean();
+ extern int yyparse ();
++extern int lineno;
+ 
+ void driver_init_defaults(AMLET_Driver *dr)
+ {
+@@ -71,6 +77,7 @@
    dr->var[ROBUST].i = 1;
  
    dr->var[RANGEN].i = RAN_MRG32K3A;
@@ -457,7 +573,16 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
    dr->var[SAMPLING].i = MOCA_MONTE_CARLO;
    dr->var[RANDOMIZATION].i = 0;
    dr->var[QMCREP].i = 1;
-@@ -104,7 +106,7 @@
+@@ -95,6 +102,8 @@
+ 
+   dr->alt_types = 0;
+   dr->alt_values = 0;
++  dr->alt_ntypes = 0;
++  dr->alt_nvalues = 0;
+ 
+   /* nests */
+   dr->var[NNESTS].i = 1;
+@@ -104,7 +113,7 @@
    for (i = NAME; i < END_RESERVED_WORDS; i++) dr->var[i].s = 0;
  }
  
@@ -466,7 +591,7 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
  {
    free(dr->array[id].array);
    dr->array[id].array = NULL;
-@@ -115,8 +117,6 @@
+@@ -115,8 +124,6 @@
    int i;
    int nalt;
  
@@ -475,7 +600,16 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
    nalt = dr->var[NALT].i;
  
    for (i = 0; i < END_ARRAY_WORDS; i++) driver_free_array(dr, i);
-@@ -156,6 +156,11 @@
+@@ -138,6 +145,8 @@
+     for (i = 0; i < nalt; i++) free(dr->alt_values[i]);
+     free(dr->alt_types);
+     free(dr->alt_values);
++    free(dr->alt_ntypes);
++    free(dr->alt_nvalues);
+   }
+ }
+ 
+@@ -156,6 +165,11 @@
  {
    int i;
  
@@ -487,7 +621,19 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
    if (!data->n_random_coeff) {
  #ifdef DEBUG
      printf("** Multinomial model **\n");
-@@ -191,6 +196,52 @@
+@@ -175,11 +189,6 @@
+       c_error("invalid data format");
+     }
+     
+-    /* Check parameters value */
+-    if (dr->var[NALT].i <= 1) {
+-      c_error("there must be at least two alternatives in the model");
+-    }
+-
+     /* Check number of draws per individual */
+     if (dr->var[NREP].i < 10) {
+       if (loose) {
+@@ -191,6 +200,52 @@
  	c_error("at least 10 draws per individual must be used");
        }
      }
@@ -540,9 +686,223 @@ diff -ruN amlet-0.13.1/amlet/driver.c amlet-0.13.1/amlet/driver.c
    }
  
    if (dr->generation) {
+@@ -201,9 +256,23 @@
+     }
+     else {
+       for (i = 0; i <  dr->var[NALT].i; i++) {
++	int k, nvalues = 0;
++
+ 	if (!dr->alt_types[i] || !dr->alt_values[i]) {
+ 	  c_error("missing definition for alternative %d\n", i);
+ 	}
++	/* AMLET <= 0.13.1 read past shorter lists. */
++	if (dr->alt_ntypes[i] < data->nvar)
++	  c_error("alttypes[%d] has %d values; the model has %d variables",
++		  i, dr->alt_ntypes[i], data->nvar);
++	for (k = 0; k < data->nvar; k++) {
++	  if (amlet_is_nonparametric(dr->alt_types[i][k]))
++	    c_error("alttypes[%d]: nonparametric distributions cannot be used to generate the variables", i);
++	  nvalues += moca_count_parameters(dr->alt_types[i][k], NULL);
++	}
++	if (dr->alt_nvalues[i] < nvalues)
++	  c_error("altvalues[%d] has %d values; alttypes[%d] needs %d",
++		  i, dr->alt_nvalues[i], i, nvalues);
+       }
+     }
+   }
+@@ -226,16 +295,33 @@
+  * Do some checks after the parsing
+  */
+ void driver_check(AMLET_Driver *dr) {
++  /* AMLET <= 0.13.1 crashed, or divided by zero */
++  if (dr->var[NALT].i < 2)
++    c_error("nalt (the number of alternatives) must be given, and at least 2");
++  if (dr->var[NOBS].i < 1)
++    c_error("nobs (the number of observations) must be at least 1");
++  if (dr->var[NVAR].i - (dr->var[CENSOR].i ? 1 : 0)
++      - (dr->var[IDDEP].i ? 1 : 0) < 1)
++    c_error("nvar = %d leaves no explanatory variable", dr->var[NVAR].i);
++
+   if (!dr->var[CENSOR].i) {
+     if (dr->var[IDCENSOR].i) {
+       c_warning("IDCENSOR set while CENSOR equal to 0; IDCENSOR reset to 0\n");
+       dr->var[IDCENSOR].i = 0;
+     }
+   }
++  /* AMLET <= 0.13.1 then left the availabilities undefined */
++  else if (dr->var[IDCENSOR].i < 1 || dr->var[IDCENSOR].i > dr->var[NVAR].i)
++    c_error("censor = 1: idcensor must give the row of the availabilities, from 1 to nvar = %d",
++	    dr->var[NVAR].i);
+   if (dr->var[NITER].i < 0) {
+     c_warning("number of iterations set to a negative value; reset to default value of %d\n", AMLET_DEFAULT_NITER);
+     dr->var[NITER].i = AMLET_DEFAULT_NITER;
+   }
++  /* AMLET <= 0.13.1 seeded the generator with 2^64 - |seed1|, not a valid
++     MRG32k3a state */
++  if (dr->var[SEED1].i < 0)
++    c_error("seed1 must be positive (or 0, for a seed taken from the clock)");
+   if (dr->var[EPS].d <= 0.0) {
+     c_warning("negative or null tolerance; reset to default value of %g\n",
+ 	      AMLET_DEFAULT_TOL);
+@@ -275,17 +361,31 @@
+ {
+   int i;
+ 
+-  if (dr->generation) {
++  if (nalt <= 0)
++    c_error("line %d: nalt must be given before generate", lineno);
++
++  if (dr->alt_types) {
+     c_warning("generation process redefined\n");
+     for (i = 0; i < nalt; i++) free(dr->alt_types[i]);
+     for (i = 0; i < nalt; i++) free(dr->alt_values[i]);
+     free(dr->alt_types);
+     free(dr->alt_values);
++    free(dr->alt_ntypes);
++    free(dr->alt_nvalues);
+   }
+ 
+   dr->obsname = obsname;
++  /* AMLET <= 0.13.1 left them undefined: a missing alternative was
++     detected only when malloc() returned zeroed memory. */
+   dr->alt_types = _mallocs(nalt, int *);
+   dr->alt_values = _mallocs(nalt, double *);
++  dr->alt_ntypes = _mallocs(nalt, int);
++  dr->alt_nvalues = _mallocs(nalt, int);
++  for (i = 0; i < nalt; i++) {
++    dr->alt_types[i] = NULL;
++    dr->alt_values[i] = NULL;
++    dr->alt_ntypes[i] = dr->alt_nvalues[i] = 0;
++  }
+ }
+ 
+ /**
+@@ -330,7 +430,8 @@
+   }
+ }
+ 
+-void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type)
++void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type,
++			   int **count)
+ {
+   /* Could be better designed ? */
+   *type = INTEGER;
+@@ -338,9 +439,11 @@
+   switch (id) {
+   case ALTTYPES:
+     *type = INTEGER;
++    *count = &(dr->alt_ntypes[pos]);
+     return &(dr->alt_types[pos]);
+   case ALTVALUES:
+     *type = REAL;
++    *count = &(dr->alt_nvalues[pos]);
+     return &(dr->alt_values[pos]);
+   default:
+     c_warning("invalid array");
+@@ -356,6 +459,100 @@
+ }
+ 
+ /**
++ * Type of the value of a scalar reserved word: INTEGER, REAL or STRING.
++ */
++static int driver_value_type(int id)
++{
++  switch (id) {
++  case EPS:
++  case LEVEL:
++  case LEVEL_ACCURACY:
++    return REAL;
++  case NAME:
++  case DRAWSNAME:
++    return STRING;
++  default:
++    return INTEGER;
++  }
++}
++
++/**
++ * Assign a value read in the driver file to a reserved word.
++ *
++ * AMLET <= 0.13.1 stored the value in the field of its own type, whatever
++ * the type of the parameter: niter = 100.0 gave 0 iterations, eps = 1 left
++ * eps almost unchanged, and nrep = {1000} or b = 0 wrote past the
++ * parameter.
++ *
++ * @param word is the position of the word in reserved_words[].
++ * @param type is the type of the value read: INTEGER, REAL or STRING.
++ */
++void driver_assign_value(AMLET_Driver *dr, int word, int type,
++			 driver_data value)
++{
++  int nwords = sizeof(reserved_words)/sizeof(reserved_words[0]);
++  int id = reserved_words[word].token;
++  char *name = reserved_words[word].name;
++
++  if (word >= nwords - END_OTHERS) {
++    /* nests = n is nnests = n in AMLET <= 0.10; it crashed AMLET 0.13.1 */
++    c_warning("line %d: nests is the name of nnests in AMLET <= 0.10; use nnests",
++	      lineno);
++    id = NNESTS;
++    name = "nnests";
++  }
++  else if (word >= nwords - END_ARRAY_WORDS - END_OTHERS)
++    c_error("line %d: %s expects a list of values, as in %s = {...}",
++	    lineno, name, name);
++
++  switch (driver_value_type(id)) {
++  case REAL:
++    if (type == STRING)
++      c_error("line %d: %s expects a number", lineno, name);
++    dr->var[id].d = (type == INTEGER) ? value.i : value.d;
++    break;
++  case STRING:
++    if (type != STRING)
++      c_error("line %d: %s expects a string, as in %s = \"...\"",
++	      lineno, name, name);
++    free(dr->var[id].s);
++    dr->var[id].s = value.s;
++    break;
++  default:
++    if (type == REAL && value.d == rint(value.d) && fabs(value.d) <= INT_MAX)
++      value.i = (int)value.d;
++    else if (type != INTEGER)
++      c_error("line %d: %s expects an integer", lineno, name);
++    /* the arrays of the generation process have nalt elements */
++    if (id == NALT && dr->alt_types && value.i != dr->var[NALT].i)
++      c_error("line %d: nalt must be given before generate", lineno);
++    dr->var[id].i = value.i;
++  }
++}
++
++/**
++ * Assign a list of values read in the driver file to a reserved word.
++ *
++ * @param word is the position of the word in reserved_words[].
++ */
++void driver_assign_array(AMLET_Driver *dr, int word,
++			 const driver_var *values, int n)
++{
++  int nwords = sizeof(reserved_words)/sizeof(reserved_words[0]);
++  driver_array *a = dr->array + reserved_words[word].token;
++
++  if (word < nwords - END_ARRAY_WORDS - END_OTHERS
++      || word >= nwords - END_OTHERS)
++    c_error("line %d: %s expects a single value, not a list",
++	    lineno, reserved_words[word].name);
++
++  free(a->array);
++  a->n = n;
++  a->array = (!n) ? NULL : _mallocs(n, driver_var);
++  if (n) memcpy(a->array, values, n*sizeof(driver_var));
++}
++
++/**
+  * Assign the read values to the model.
+  *
+  * @param dr is the built driver.
 diff -ruN amlet-0.13.1/amlet/driver_parser.c amlet-0.13.1/amlet/driver_parser.c
 --- amlet-0.13.1/amlet/driver_parser.c
-+++ amlet-0.13.1/amlet/driver_parser.c	2026-10-17 11:16:33.000000000 -0400
++++ amlet-0.13.1/amlet/driver_parser.c	2026-10-18 07:50:06.000000000 -0400
 @@ -75,6 +75,7 @@
    extern FILE *yyin;
    extern void yyrestart(FILE *input_file);
@@ -551,9 +911,411 @@ diff -ruN amlet-0.13.1/amlet/driver_parser.c amlet-0.13.1/amlet/driver_parser.c
  
    int lineno;
    AMLET_Driver *dr;
+@@ -84,6 +85,7 @@
+   int n = 0;
+ 
+   int type;  /* not very a babe this variable */
++  int *count;  /* where to store the number of values of alttypes[i]... */
+ 
+   void push_stack(driver_var drv)
+     {
+@@ -97,7 +99,7 @@
+ 
+   
+ 
+-#line 101 "driver_parser.c" /* yacc.c:339  */
++#line 102 "driver_parser.c" /* yacc.c:339  */
+ 
+ # ifndef YY_NULLPTR
+ #  if defined __cplusplus && 201103L <= __cplusplus
+@@ -190,7 +192,7 @@
+   char*   string;    /* string buffer */
+   void*   ptr;       /* just for reading facility */
+ 
+-#line 194 "driver_parser.c" /* yacc.c:355  */
++#line 195 "driver_parser.c" /* yacc.c:355  */
+ };
+ # define YYSTYPE_IS_TRIVIAL 1
+ # define YYSTYPE_IS_DECLARED 1
+@@ -205,7 +207,7 @@
+ 
+ /* Copy the second part of user declarations.  */
+ 
+-#line 209 "driver_parser.c" /* yacc.c:358  */
++#line 210 "driver_parser.c" /* yacc.c:358  */
+ 
+ #ifdef short
+ # undef short
+@@ -1321,105 +1323,125 @@
+   switch (yyn)
+     {
+         case 2:
+-#line 87 "driver_parser.y" /* yacc.c:1646  */
++#line 89 "driver_parser.y" /* yacc.c:1646  */
+     {driver_check(dr);}
+-#line 1327 "driver_parser.c" /* yacc.c:1646  */
++#line 1328 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 3:
+-#line 91 "driver_parser.y" /* yacc.c:1646  */
++#line 93 "driver_parser.y" /* yacc.c:1646  */
+     {;}
+-#line 1333 "driver_parser.c" /* yacc.c:1646  */
++#line 1334 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 9:
+-#line 104 "driver_parser.y" /* yacc.c:1646  */
++#line 106 "driver_parser.y" /* yacc.c:1646  */
+     {dr->generation = 1;}
+-#line 1339 "driver_parser.c" /* yacc.c:1646  */
++#line 1340 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 14:
+-#line 113 "driver_parser.y" /* yacc.c:1646  */
++#line 115 "driver_parser.y" /* yacc.c:1646  */
+     {
+ 	     driver_set_generation_process(dr, NULL, dr->var[NALT].i);
+ 	   }
+-#line 1347 "driver_parser.c" /* yacc.c:1646  */
++#line 1348 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 15:
+-#line 117 "driver_parser.y" /* yacc.c:1646  */
++#line 119 "driver_parser.y" /* yacc.c:1646  */
+     {
+ 	     driver_set_generation_process(dr, (yyvsp[0].string), dr->var[NALT].i);
+ 	   }
+-#line 1355 "driver_parser.c" /* yacc.c:1646  */
++#line 1356 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 16:
+-#line 121 "driver_parser.y" /* yacc.c:1646  */
++#line 123 "driver_parser.y" /* yacc.c:1646  */
+     {
+ 	     driver_set_generation_process(dr, (yyvsp[-1].string), dr->var[NALT].i);
+ 	     fprintf(stderr, "** WARNING ** this kind of panel generation is to be implemented\n");
+            }
+-#line 1364 "driver_parser.c" /* yacc.c:1646  */
++#line 1365 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 17:
+-#line 129 "driver_parser.y" /* yacc.c:1646  */
++#line 131 "driver_parser.y" /* yacc.c:1646  */
+     {
+ 	  if (dr->generation)
+ 	    c_warning("observations file specified after a generating process ghas been given.\n");
+ 	  dr->generation = 0;
+ 	  dr->obsname = (yyvsp[0].string);
+ 	}
+-#line 1375 "driver_parser.c" /* yacc.c:1646  */
++#line 1376 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 18:
+-#line 138 "driver_parser.y" /* yacc.c:1646  */
++#line 140 "driver_parser.y" /* yacc.c:1646  */
+     {
+-	   FILE *f2;
+-
+-	   f2 = fopen((yyvsp[0].string), "r");
++	   c_warning("line %d: input is not supported; %s is ignored",
++		     lineno, (yyvsp[0].string));
++	   free((yyvsp[0].string));
+          }
+-#line 1385 "driver_parser.c" /* yacc.c:1646  */
++#line 1386 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 19:
+-#line 147 "driver_parser.y" /* yacc.c:1646  */
++#line 149 "driver_parser.y" /* yacc.c:1646  */
+     {
+           dr->output = (yyvsp[0].string);
+ 	}
+-#line 1393 "driver_parser.c" /* yacc.c:1646  */
++#line 1394 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 20:
+-#line 153 "driver_parser.y" /* yacc.c:1646  */
+-    {;}
+-#line 1399 "driver_parser.c" /* yacc.c:1646  */
++#line 156 "driver_parser.y" /* yacc.c:1646  */
++    {
++		 if ((yyvsp[-2].ptr))
++		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
++	       }
++#line 1403 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 21:
+-#line 154 "driver_parser.y" /* yacc.c:1646  */
+-    {;}
+-#line 1405 "driver_parser.c" /* yacc.c:1646  */
++#line 161 "driver_parser.y" /* yacc.c:1646  */
++    {
++		 if ((yyvsp[-2].ptr))
++		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
++	       }
++#line 1412 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 22:
+-#line 155 "driver_parser.y" /* yacc.c:1646  */
+-    {free((yyvsp[0].string));}
+-#line 1411 "driver_parser.c" /* yacc.c:1646  */
++#line 166 "driver_parser.y" /* yacc.c:1646  */
++    {
++		 if ((yyvsp[-2].ptr))
++		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
++		 free((yyvsp[0].string));
++	       }
++#line 1422 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 23:
+-#line 157 "driver_parser.y" /* yacc.c:1646  */
++#line 172 "driver_parser.y" /* yacc.c:1646  */
+     {
+ 		 int i;
+ 
+-		 if (type == INTEGER) {
++		 /* var is NULL for an unknown name */
++		 for (i = 0; (yyvsp[-2].ptr) && i < n; i++)
++		   if (stack[i].type != INTEGER
++		       && (type == INTEGER || stack[i].type != REAL))
++		     c_error("line %d: invalid value in the list", lineno);
++
++		 if (!(yyvsp[-2].ptr))
++		   ;
++		 else if (type == INTEGER) {
+ 		   int *array;
+ 		   array = _mallocs(n, int);
+ 		   for (i = 0; i < n; i++) array[i] = stack[i].d.i;
++		   free(*((int **)(yyvsp[-2].ptr)));
+ 		   (*((int **)(yyvsp[-2].ptr))) = array;
++		   *count = n;
+ 		 }
+ 		 else if (type == REAL) {
+ 		   double *array;
+@@ -1430,92 +1452,90 @@
+ 		     else
+ 		       array[i] = stack[i].d.d;
+ 		   }
++		   free(*((double **)(yyvsp[-2].ptr)));
+ 		   (*((double **)(yyvsp[-2].ptr))) = array;
++		   *count = n;
+ 		 }
+-		 else
+-		   (yyvsp[-2].ptr) = NULL;
+ 		 n = 0;
+ 	       }
+-#line 1440 "driver_parser.c" /* yacc.c:1646  */
++#line 1461 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 24:
+-#line 182 "driver_parser.y" /* yacc.c:1646  */
++#line 207 "driver_parser.y" /* yacc.c:1646  */
+     {
+-		 (*((driver_data *)(yyvsp[-2].ptr))).i = (yyvsp[0].integer);
++		 driver_data v;
++
++		 v.i = (yyvsp[0].integer);
++		 driver_assign_value(dr, (yyvsp[-2].integer), INTEGER, v);
+                }
+-#line 1448 "driver_parser.c" /* yacc.c:1646  */
++#line 1472 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 25:
+-#line 185 "driver_parser.y" /* yacc.c:1646  */
+-    {(*((driver_data *)(yyvsp[-2].ptr))).d = (yyvsp[0].real);}
+-#line 1454 "driver_parser.c" /* yacc.c:1646  */
++#line 214 "driver_parser.y" /* yacc.c:1646  */
++    {
++		 driver_data v;
++
++		 v.d = (yyvsp[0].real);
++		 driver_assign_value(dr, (yyvsp[-2].integer), REAL, v);
++               }
++#line 1483 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 26:
+-#line 186 "driver_parser.y" /* yacc.c:1646  */
+-    {(*((driver_data *)(yyvsp[-2].ptr))).s = (yyvsp[0].string);}
+-#line 1460 "driver_parser.c" /* yacc.c:1646  */
++#line 221 "driver_parser.y" /* yacc.c:1646  */
++    {
++		 driver_data v;
++
++		 v.s = (yyvsp[0].string);
++		 driver_assign_value(dr, (yyvsp[-2].integer), STRING, v);
++               }
++#line 1494 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 27:
+-#line 188 "driver_parser.y" /* yacc.c:1646  */
++#line 228 "driver_parser.y" /* yacc.c:1646  */
+     {
+-		 int i;
+-		 driver_array *a = (driver_array *)(yyvsp[-2].ptr);
+-
+-		 if (a->array) free(a->array);
+-
+-		 a->n = n;
+-		 a->array = (!n) ? NULL: _mallocs(n, driver_var);
+-		 for (i = 0; i < n; i++) {
+-		   a->array[i].type = stack[i].type;
+-		   a->array[i].d = stack[i].d;
+-		 }
++		 driver_assign_array(dr, (yyvsp[-2].integer), stack, n);
+ 
+ 		 /* We return to the beginning of the stack */
+ 		 n = 0;
+                }
+-#line 1481 "driver_parser.c" /* yacc.c:1646  */
++#line 1505 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 28:
+-#line 207 "driver_parser.y" /* yacc.c:1646  */
++#line 237 "driver_parser.y" /* yacc.c:1646  */
+     {
+-	      int pos = reserved_words[(yyvsp[0].integer)].token;
+-
+-	      if ( yylval.integer <
+-		   sizeof(reserved_words)/sizeof(reserved_words[0])
+-		   - END_ARRAY_WORDS - END_OTHERS )
+-		/* Simple variable */ {
+-		(yyval.ptr) = (dr->var + pos);
+-	      }
+-	      else if ( yylval.integer <
+-			sizeof(reserved_words)/sizeof(reserved_words[0])
+-			- END_OTHERS)
+-		/* Array variable */
+-		(yyval.ptr) = (dr->array + pos);
+-	      else
+-		driver_get_address((yyvsp[0].integer));
++	      (yyval.integer) = (yyvsp[0].integer);
+ 	    }
+-#line 1503 "driver_parser.c" /* yacc.c:1646  */
++#line 1513 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 29:
+-#line 224 "driver_parser.y" /* yacc.c:1646  */
+-    { (yyval.ptr) = NULL; }
+-#line 1509 "driver_parser.c" /* yacc.c:1646  */
++#line 241 "driver_parser.y" /* yacc.c:1646  */
++    {
++		/* AMLET <= 0.13.1 crashed */
++		c_error("line %d: %s cannot be indexed; give all its values, as in %s = {...}",
++			lineno, reserved_words[(yyvsp[-1].integer)].name, reserved_words[(yyvsp[-1].integer)].name);
++	      }
++#line 1523 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 30:
+-#line 227 "driver_parser.y" /* yacc.c:1646  */
+-    {;}
+-#line 1515 "driver_parser.c" /* yacc.c:1646  */
++#line 249 "driver_parser.y" /* yacc.c:1646  */
++    {
++	 /* AMLET <= 0.13.1 ignored it silently */
++	 c_warning("line %d: unknown parameter %s is ignored", lineno, (yyvsp[0].string));
++	 free((yyvsp[0].string));
++	 (yyval.ptr) = NULL;
++       }
++#line 1534 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 31:
+-#line 229 "driver_parser.y" /* yacc.c:1646  */
++#line 256 "driver_parser.y" /* yacc.c:1646  */
+     {
+ 	 int r, pos;
+ 
+@@ -1528,55 +1548,56 @@
+ 	 }
+ 
+ 	 if (!driver_check_array_pos(dr, r, (yyvsp[0].integer))) {
+-	   c_error("invalid array position in line %d\n", lineno);
++	   c_error("invalid array position in line %d (alttypes[i] and altvalues[i] come after generate, with i from 0 to nalt-1)", lineno);
+ 	 }
+ 
+-	 (yyval.ptr) = driver_array_address(dr, r, (yyvsp[0].integer), &type);
++	 (yyval.ptr) = driver_array_address(dr, r, (yyvsp[0].integer), &type, &count);
++	 free((yyvsp[-1].string));
+        }
+-#line 1537 "driver_parser.c" /* yacc.c:1646  */
++#line 1557 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 42:
+-#line 264 "driver_parser.y" /* yacc.c:1646  */
++#line 292 "driver_parser.y" /* yacc.c:1646  */
+     {;}
+-#line 1543 "driver_parser.c" /* yacc.c:1646  */
++#line 1563 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 43:
+-#line 269 "driver_parser.y" /* yacc.c:1646  */
++#line 297 "driver_parser.y" /* yacc.c:1646  */
+     {
+           driver_var drv;
+ 	  drv.type = STRING;
+ 	  drv.d.s = (yyvsp[0].string);
+ 	  push_stack(drv);
+         }
+-#line 1554 "driver_parser.c" /* yacc.c:1646  */
++#line 1574 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 48:
+-#line 286 "driver_parser.y" /* yacc.c:1646  */
++#line 314 "driver_parser.y" /* yacc.c:1646  */
+     {
+ 	    driver_var drv;
+ 	    drv.d.i = (yyvsp[0].integer);
+ 	    drv.type = INTEGER;
+ 	    push_stack(drv);
+           }
+-#line 1565 "driver_parser.c" /* yacc.c:1646  */
++#line 1585 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+   case 49:
+-#line 293 "driver_parser.y" /* yacc.c:1646  */
++#line 321 "driver_parser.y" /* yacc.c:1646  */
+     {
+             driver_var drv;
+ 	    drv.d.d = (yyvsp[0].real);
+ 	    drv.type = REAL;
+ 	    push_stack(drv);
+           }
+-#line 1576 "driver_parser.c" /* yacc.c:1646  */
++#line 1596 "driver_parser.c" /* yacc.c:1646  */
+     break;
+ 
+ 
+-#line 1580 "driver_parser.c" /* yacc.c:1646  */
++#line 1600 "driver_parser.c" /* yacc.c:1646  */
+       default: break;
+     }
+   /* User semantic actions sometimes alter yychar, and that requires
 diff -ruN amlet-0.13.1/amlet/driver_parser.y amlet-0.13.1/amlet/driver_parser.y
 --- amlet-0.13.1/amlet/driver_parser.y
-+++ amlet-0.13.1/amlet/driver_parser.y	2026-10-17 11:16:33.000000000 -0400
++++ amlet-0.13.1/amlet/driver_parser.y	2026-10-18 07:50:06.000000000 -0400
 @@ -19,6 +19,7 @@
    extern FILE *yyin;
    extern void yyrestart(FILE *input_file);
@@ -562,6 +1324,189 @@ diff -ruN amlet-0.13.1/amlet/driver_parser.y amlet-0.13.1/amlet/driver_parser.y
  
    int lineno;
    AMLET_Driver *dr;
+@@ -28,6 +29,7 @@
+   int n = 0;
+ 
+   int type;  /* not very a babe this variable */
++  int *count;  /* where to store the number of values of alttypes[i]... */
+ 
+   void push_stack(driver_var drv)
+     {
+@@ -65,7 +67,7 @@
+ 
+ %type <integer>  iexp;  /* integer expression */
+ %type <real>     dexp;  /* real expression */
+-%type <ptr>  identifier;
++%type <integer>  identifier;
+ 
+ %type <ptr>      var;
+ 
+@@ -136,9 +138,9 @@
+ 
+ input: INPUT STRING
+          {
+-	   FILE *f2;
+-
+-	   f2 = fopen($2, "r");
++	   c_warning("line %d: input is not supported; %s is ignored",
++		     lineno, $2);
++	   free($2);
+          }
+        ;
+ 
+@@ -150,18 +152,41 @@
+       ;
+ 
+ affectation:
+-             var '=' iexp {;}
+-             | var '=' dexp {;}
+-             | var '=' STRING {free($3);}
++             var '=' iexp
++               {
++		 if ($1)
++		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
++	       }
++             | var '=' dexp
++               {
++		 if ($1)
++		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
++	       }
++             | var '=' STRING
++               {
++		 if ($1)
++		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
++		 free($3);
++	       }
+              | var '=' set
+                {
+ 		 int i;
+ 
+-		 if (type == INTEGER) {
++		 /* var is NULL for an unknown name */
++		 for (i = 0; $1 && i < n; i++)
++		   if (stack[i].type != INTEGER
++		       && (type == INTEGER || stack[i].type != REAL))
++		     c_error("line %d: invalid value in the list", lineno);
++
++		 if (!$1)
++		   ;
++		 else if (type == INTEGER) {
+ 		   int *array;
+ 		   array = _mallocs(n, int);
+ 		   for (i = 0; i < n; i++) array[i] = stack[i].d.i;
++		   free(*((int **)$1));
+ 		   (*((int **)$1)) = array;
++		   *count = n;
+ 		 }
+ 		 else if (type == REAL) {
+ 		   double *array;
+@@ -172,31 +197,36 @@
+ 		     else
+ 		       array[i] = stack[i].d.d;
+ 		   }
++		   free(*((double **)$1));
+ 		   (*((double **)$1)) = array;
++		   *count = n;
+ 		 }
+-		 else
+-		   $1 = NULL;
+ 		 n = 0;
+ 	       }
+              | identifier '=' iexp
+                {
+-		 (*((driver_data *)$1)).i = $3;
++		 driver_data v;
++
++		 v.i = $3;
++		 driver_assign_value(dr, $1, INTEGER, v);
+                }
+-             | identifier '=' dexp {(*((driver_data *)$1)).d = $3;}
+-             | identifier '=' STRING {(*((driver_data *)$1)).s = $3;}
+-             | identifier '=' set
++             | identifier '=' dexp
+                {
+-		 int i;
+-		 driver_array *a = (driver_array *)$1;
++		 driver_data v;
+ 
+-		 if (a->array) free(a->array);
++		 v.d = $3;
++		 driver_assign_value(dr, $1, REAL, v);
++               }
++             | identifier '=' STRING
++               {
++		 driver_data v;
+ 
+-		 a->n = n;
+-		 a->array = (!n) ? NULL: _mallocs(n, driver_var);
+-		 for (i = 0; i < n; i++) {
+-		   a->array[i].type = stack[i].type;
+-		   a->array[i].d = stack[i].d;
+-		 }
++		 v.s = $3;
++		 driver_assign_value(dr, $1, STRING, v);
++               }
++             | identifier '=' set
++               {
++		 driver_assign_array(dr, $1, stack, n);
+ 
+ 		 /* We return to the beginning of the stack */
+ 		 n = 0;
+@@ -205,26 +235,23 @@
+ 
+ identifier: IDENTIFIER
+             {
+-	      int pos = reserved_words[$1].token;
+-
+-	      if ( yylval.integer <
+-		   sizeof(reserved_words)/sizeof(reserved_words[0])
+-		   - END_ARRAY_WORDS - END_OTHERS )
+-		/* Simple variable */ {
+-		$$ = (dr->var + pos);
+-	      }
+-	      else if ( yylval.integer <
+-			sizeof(reserved_words)/sizeof(reserved_words[0])
+-			- END_OTHERS)
+-		/* Array variable */
+-		$$ = (dr->array + pos);
+-	      else
+-		driver_get_address($1);
++	      $$ = $1;
+ 	    }
+-            | IDENTIFIER POS { $$ = NULL; }
++            | IDENTIFIER POS
++              {
++		/* AMLET <= 0.13.1 crashed */
++		c_error("line %d: %s cannot be indexed; give all its values, as in %s = {...}",
++			lineno, reserved_words[$1].name, reserved_words[$1].name);
++	      }
+             ;
+ 
+-var: VARIABLE {;}
++var: VARIABLE
++       {
++	 /* AMLET <= 0.13.1 ignored it silently */
++	 c_warning("line %d: unknown parameter %s is ignored", lineno, $1);
++	 free($1);
++	 $$ = NULL;
++       }
+      | VARIABLE POS
+        {
+ 	 int r, pos;
+@@ -238,10 +265,11 @@
+ 	 }
+ 
+ 	 if (!driver_check_array_pos(dr, r, $2)) {
+-	   c_error("invalid array position in line %d\n", lineno);
++	   c_error("invalid array position in line %d (alttypes[i] and altvalues[i] come after generate, with i from 0 to nalt-1)", lineno);
+ 	 }
+ 
+-	 $$ = driver_array_address(dr, r, $2, &type);
++	 $$ = driver_array_address(dr, r, $2, &type, &count);
++	 free($1);
+        }
+      ;
+ 
 diff -ruN amlet-0.13.1/amlet/external_strategy.c amlet-0.13.1/amlet/external_strategy.c
 --- amlet-0.13.1/amlet/external_strategy.c	2015-02-17 04:47:54.000000000 -0500
 +++ amlet-0.13.1/amlet/external_strategy.c	2026-10-13 11:27:49.907585340 -0400
@@ -1209,7 +2154,7 @@ diff -ruN amlet-0.13.1/amlet/nonparametric.c amlet-0.13.1/amlet/nonparametric.c
  }
 diff -ruN amlet-0.13.1/amlet/observations.c amlet-0.13.1/amlet/observations.c
 --- amlet-0.13.1/amlet/observations.c	2015-03-27 07:47:30.000000000 -0400
-+++ amlet-0.13.1/amlet/observations.c	2026-10-17 22:27:16.000000000 -0400
++++ amlet-0.13.1/amlet/observations.c	2026-10-18 07:50:06.000000000 -0400
 @@ -95,7 +95,7 @@
    return n;
  }
@@ -1219,6 +2164,15 @@ diff -ruN amlet-0.13.1/amlet/observations.c amlet-0.13.1/amlet/observations.c
  		      void *data)
  {
    double val;
+@@ -236,7 +236,7 @@
+ 
+   nt_log_write(mclog, "Proportions: ");
+   for (i = 0; i < nalt; i++)
+-    nt_log_write(mclog, "%g%c", ((double)prefs[i])/np,
++    nt_log_write(mclog, "%g%c", ((double)prefs[i])/nobs,
+ 		 (i == nalt-1) ? '\n' : ' ');
+   nt_log_write(mclog, "\n");
+ 
 @@ -276,8 +276,8 @@
  
    /* Initialize the synthetic population parameters. */
@@ -1436,7 +2390,7 @@ diff -ruN amlet-0.13.1/amlet/variable.c amlet-0.13.1/amlet/variable.c
  }
 diff -ruN amlet-0.13.1/src/exec.c amlet-0.13.1/src/exec.c
 --- amlet-0.13.1/src/exec.c	2015-03-27 11:15:39.000000000 -0400
-+++ amlet-0.13.1/src/exec.c	2026-10-17 22:27:16.000000000 -0400
++++ amlet-0.13.1/src/exec.c	2026-10-18 07:50:06.000000000 -0400
 @@ -67,8 +67,8 @@
    *nfixed = 0;
  
@@ -1462,7 +2416,20 @@ diff -ruN amlet-0.13.1/src/exec.c amlet-0.13.1/src/exec.c
      if (t != CONSTANT && t != FIXED) (*n_random_coeff)++;
      /* if nonparametric... we have to register the right object */
      if (amlet_is_nonparametric(t)) {
-@@ -328,16 +335,19 @@
+@@ -258,8 +265,10 @@
+   int *btype = NULL;
+   int npar = 0;        /* number of parameters for the calibration process */
+ 
+-  double bias, accuracy = -1.0; /* bias and accuracy of the likelihood for
+-				   mixed-logit models */
++  /* bias and accuracy of the likelihood for mixed-logit models; when the
++     accuracy was not estimated, AMLET <= 0.13.1 could print an undefined
++     bias */
++  double bias = 0.0, accuracy = -1.0;
+   double elapsed_time;   /* time consumed by the optimization process */
+ 
+   long sec, ms;
+@@ -328,16 +337,19 @@
    data.bias = dr.var[BIAS].i;
  
    /* Parameters array initialization */
@@ -1488,7 +2455,7 @@ diff -ruN amlet-0.13.1/src/exec.c amlet-0.13.1/src/exec.c
    ran = ran_random_new(dr.var[RANGEN].i, &seed, 1);
  
    if (m->verbose) {
-@@ -345,6 +355,8 @@
+@@ -345,6 +357,8 @@
      nt_log_write(mclog, "Random generator used: %s\n",
  		 ran_random_generator_name(ran));
      nt_log_write(mclog, "Seed for random generator: %d\n", seed);
@@ -1497,7 +2464,7 @@ diff -ruN amlet-0.13.1/src/exec.c amlet-0.13.1/src/exec.c
    }
  
    dcl_memory_allocate(data.nobs, data.nalt, data.nvar, dr.var[CENSOR].i,
-@@ -362,9 +374,11 @@
+@@ -362,9 +376,11 @@
    for (i = 1; i <= data.np; i++) rep[i] = j;
  
    /* Observations */
@@ -1512,7 +2479,7 @@ diff -ruN amlet-0.13.1/src/exec.c amlet-0.13.1/src/exec.c
    else {
      /* Read a Gauss file */
      if (m->verbose) printf("Read data.\n");
-@@ -413,7 +427,7 @@
+@@ -413,7 +429,7 @@
    /* TODO: IS err_quantile really necessary? */
    data.err_quantile = st_gaussian_icdf(1-dr.var[LEVEL_ACCURACY].d/2.0);
  
@@ -1521,7 +2488,7 @@ diff -ruN amlet-0.13.1/src/exec.c amlet-0.13.1/src/exec.c
    amlet_model_init(m, npar);
  
    int nsize = (n_random_coeff) ? data.np : data.nobs;
-@@ -857,7 +871,8 @@
+@@ -857,7 +873,8 @@
    amlet_nest_free(data.n);
  
    tmp = data.np_list;

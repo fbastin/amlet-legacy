@@ -85,6 +85,7 @@
   int n = 0;
 
   int type;  /* not very a babe this variable */
+  int *count;  /* where to store the number of values of alttypes[i]... */
 
   void push_stack(driver_var drv)
     {
@@ -98,7 +99,7 @@
 
   
 
-#line 101 "driver_parser.c" /* yacc.c:339  */
+#line 102 "driver_parser.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -191,7 +192,7 @@ union YYSTYPE
   char*   string;    /* string buffer */
   void*   ptr;       /* just for reading facility */
 
-#line 194 "driver_parser.c" /* yacc.c:355  */
+#line 195 "driver_parser.c" /* yacc.c:355  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
@@ -206,7 +207,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 209 "driver_parser.c" /* yacc.c:358  */
+#line 210 "driver_parser.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -1322,105 +1323,125 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 87 "driver_parser.y" /* yacc.c:1646  */
+#line 89 "driver_parser.y" /* yacc.c:1646  */
     {driver_check(dr);}
-#line 1327 "driver_parser.c" /* yacc.c:1646  */
+#line 1328 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 3:
-#line 91 "driver_parser.y" /* yacc.c:1646  */
+#line 93 "driver_parser.y" /* yacc.c:1646  */
     {;}
-#line 1333 "driver_parser.c" /* yacc.c:1646  */
+#line 1334 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 9:
-#line 104 "driver_parser.y" /* yacc.c:1646  */
+#line 106 "driver_parser.y" /* yacc.c:1646  */
     {dr->generation = 1;}
-#line 1339 "driver_parser.c" /* yacc.c:1646  */
+#line 1340 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 113 "driver_parser.y" /* yacc.c:1646  */
+#line 115 "driver_parser.y" /* yacc.c:1646  */
     {
 	     driver_set_generation_process(dr, NULL, dr->var[NALT].i);
 	   }
-#line 1347 "driver_parser.c" /* yacc.c:1646  */
+#line 1348 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 117 "driver_parser.y" /* yacc.c:1646  */
+#line 119 "driver_parser.y" /* yacc.c:1646  */
     {
 	     driver_set_generation_process(dr, (yyvsp[0].string), dr->var[NALT].i);
 	   }
-#line 1355 "driver_parser.c" /* yacc.c:1646  */
+#line 1356 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 121 "driver_parser.y" /* yacc.c:1646  */
+#line 123 "driver_parser.y" /* yacc.c:1646  */
     {
 	     driver_set_generation_process(dr, (yyvsp[-1].string), dr->var[NALT].i);
 	     fprintf(stderr, "** WARNING ** this kind of panel generation is to be implemented\n");
            }
-#line 1364 "driver_parser.c" /* yacc.c:1646  */
+#line 1365 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 129 "driver_parser.y" /* yacc.c:1646  */
+#line 131 "driver_parser.y" /* yacc.c:1646  */
     {
 	  if (dr->generation)
 	    c_warning("observations file specified after a generating process ghas been given.\n");
 	  dr->generation = 0;
 	  dr->obsname = (yyvsp[0].string);
 	}
-#line 1375 "driver_parser.c" /* yacc.c:1646  */
+#line 1376 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 138 "driver_parser.y" /* yacc.c:1646  */
+#line 140 "driver_parser.y" /* yacc.c:1646  */
     {
-	   FILE *f2;
-
-	   f2 = fopen((yyvsp[0].string), "r");
+	   c_warning("line %d: input is not supported; %s is ignored",
+		     lineno, (yyvsp[0].string));
+	   free((yyvsp[0].string));
          }
-#line 1385 "driver_parser.c" /* yacc.c:1646  */
+#line 1386 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 147 "driver_parser.y" /* yacc.c:1646  */
+#line 149 "driver_parser.y" /* yacc.c:1646  */
     {
           dr->output = (yyvsp[0].string);
 	}
-#line 1393 "driver_parser.c" /* yacc.c:1646  */
+#line 1394 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 153 "driver_parser.y" /* yacc.c:1646  */
-    {;}
-#line 1399 "driver_parser.c" /* yacc.c:1646  */
+#line 156 "driver_parser.y" /* yacc.c:1646  */
+    {
+		 if ((yyvsp[-2].ptr))
+		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
+	       }
+#line 1403 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 154 "driver_parser.y" /* yacc.c:1646  */
-    {;}
-#line 1405 "driver_parser.c" /* yacc.c:1646  */
+#line 161 "driver_parser.y" /* yacc.c:1646  */
+    {
+		 if ((yyvsp[-2].ptr))
+		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
+	       }
+#line 1412 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 155 "driver_parser.y" /* yacc.c:1646  */
-    {free((yyvsp[0].string));}
-#line 1411 "driver_parser.c" /* yacc.c:1646  */
+#line 166 "driver_parser.y" /* yacc.c:1646  */
+    {
+		 if ((yyvsp[-2].ptr))
+		   c_error("line %d: alttypes[...] and altvalues[...] expect a list of values", lineno);
+		 free((yyvsp[0].string));
+	       }
+#line 1422 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 157 "driver_parser.y" /* yacc.c:1646  */
+#line 172 "driver_parser.y" /* yacc.c:1646  */
     {
 		 int i;
 
-		 if (type == INTEGER) {
+		 /* var is NULL for an unknown name */
+		 for (i = 0; (yyvsp[-2].ptr) && i < n; i++)
+		   if (stack[i].type != INTEGER
+		       && (type == INTEGER || stack[i].type != REAL))
+		     c_error("line %d: invalid value in the list", lineno);
+
+		 if (!(yyvsp[-2].ptr))
+		   ;
+		 else if (type == INTEGER) {
 		   int *array;
 		   array = _mallocs(n, int);
 		   for (i = 0; i < n; i++) array[i] = stack[i].d.i;
+		   free(*((int **)(yyvsp[-2].ptr)));
 		   (*((int **)(yyvsp[-2].ptr))) = array;
+		   *count = n;
 		 }
 		 else if (type == REAL) {
 		   double *array;
@@ -1431,92 +1452,90 @@ yyreduce:
 		     else
 		       array[i] = stack[i].d.d;
 		   }
+		   free(*((double **)(yyvsp[-2].ptr)));
 		   (*((double **)(yyvsp[-2].ptr))) = array;
+		   *count = n;
 		 }
-		 else
-		   (yyvsp[-2].ptr) = NULL;
 		 n = 0;
 	       }
-#line 1440 "driver_parser.c" /* yacc.c:1646  */
+#line 1461 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 182 "driver_parser.y" /* yacc.c:1646  */
+#line 207 "driver_parser.y" /* yacc.c:1646  */
     {
-		 (*((driver_data *)(yyvsp[-2].ptr))).i = (yyvsp[0].integer);
+		 driver_data v;
+
+		 v.i = (yyvsp[0].integer);
+		 driver_assign_value(dr, (yyvsp[-2].integer), INTEGER, v);
                }
-#line 1448 "driver_parser.c" /* yacc.c:1646  */
+#line 1472 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 185 "driver_parser.y" /* yacc.c:1646  */
-    {(*((driver_data *)(yyvsp[-2].ptr))).d = (yyvsp[0].real);}
-#line 1454 "driver_parser.c" /* yacc.c:1646  */
+#line 214 "driver_parser.y" /* yacc.c:1646  */
+    {
+		 driver_data v;
+
+		 v.d = (yyvsp[0].real);
+		 driver_assign_value(dr, (yyvsp[-2].integer), REAL, v);
+               }
+#line 1483 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 186 "driver_parser.y" /* yacc.c:1646  */
-    {(*((driver_data *)(yyvsp[-2].ptr))).s = (yyvsp[0].string);}
-#line 1460 "driver_parser.c" /* yacc.c:1646  */
+#line 221 "driver_parser.y" /* yacc.c:1646  */
+    {
+		 driver_data v;
+
+		 v.s = (yyvsp[0].string);
+		 driver_assign_value(dr, (yyvsp[-2].integer), STRING, v);
+               }
+#line 1494 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 188 "driver_parser.y" /* yacc.c:1646  */
+#line 228 "driver_parser.y" /* yacc.c:1646  */
     {
-		 int i;
-		 driver_array *a = (driver_array *)(yyvsp[-2].ptr);
-
-		 if (a->array) free(a->array);
-
-		 a->n = n;
-		 a->array = (!n) ? NULL: _mallocs(n, driver_var);
-		 for (i = 0; i < n; i++) {
-		   a->array[i].type = stack[i].type;
-		   a->array[i].d = stack[i].d;
-		 }
+		 driver_assign_array(dr, (yyvsp[-2].integer), stack, n);
 
 		 /* We return to the beginning of the stack */
 		 n = 0;
                }
-#line 1481 "driver_parser.c" /* yacc.c:1646  */
+#line 1505 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 207 "driver_parser.y" /* yacc.c:1646  */
+#line 237 "driver_parser.y" /* yacc.c:1646  */
     {
-	      int pos = reserved_words[(yyvsp[0].integer)].token;
-
-	      if ( yylval.integer <
-		   sizeof(reserved_words)/sizeof(reserved_words[0])
-		   - END_ARRAY_WORDS - END_OTHERS )
-		/* Simple variable */ {
-		(yyval.ptr) = (dr->var + pos);
-	      }
-	      else if ( yylval.integer <
-			sizeof(reserved_words)/sizeof(reserved_words[0])
-			- END_OTHERS)
-		/* Array variable */
-		(yyval.ptr) = (dr->array + pos);
-	      else
-		driver_get_address((yyvsp[0].integer));
+	      (yyval.integer) = (yyvsp[0].integer);
 	    }
-#line 1503 "driver_parser.c" /* yacc.c:1646  */
+#line 1513 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 224 "driver_parser.y" /* yacc.c:1646  */
-    { (yyval.ptr) = NULL; }
-#line 1509 "driver_parser.c" /* yacc.c:1646  */
+#line 241 "driver_parser.y" /* yacc.c:1646  */
+    {
+		/* AMLET <= 0.13.1 crashed */
+		c_error("line %d: %s cannot be indexed; give all its values, as in %s = {...}",
+			lineno, reserved_words[(yyvsp[-1].integer)].name, reserved_words[(yyvsp[-1].integer)].name);
+	      }
+#line 1523 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 30:
-#line 227 "driver_parser.y" /* yacc.c:1646  */
-    {;}
-#line 1515 "driver_parser.c" /* yacc.c:1646  */
+#line 249 "driver_parser.y" /* yacc.c:1646  */
+    {
+	 /* AMLET <= 0.13.1 ignored it silently */
+	 c_warning("line %d: unknown parameter %s is ignored", lineno, (yyvsp[0].string));
+	 free((yyvsp[0].string));
+	 (yyval.ptr) = NULL;
+       }
+#line 1534 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 31:
-#line 229 "driver_parser.y" /* yacc.c:1646  */
+#line 256 "driver_parser.y" /* yacc.c:1646  */
     {
 	 int r, pos;
 
@@ -1529,55 +1548,56 @@ yyreduce:
 	 }
 
 	 if (!driver_check_array_pos(dr, r, (yyvsp[0].integer))) {
-	   c_error("invalid array position in line %d\n", lineno);
+	   c_error("invalid array position in line %d (alttypes[i] and altvalues[i] come after generate, with i from 0 to nalt-1)", lineno);
 	 }
 
-	 (yyval.ptr) = driver_array_address(dr, r, (yyvsp[0].integer), &type);
+	 (yyval.ptr) = driver_array_address(dr, r, (yyvsp[0].integer), &type, &count);
+	 free((yyvsp[-1].string));
        }
-#line 1537 "driver_parser.c" /* yacc.c:1646  */
+#line 1557 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 42:
-#line 264 "driver_parser.y" /* yacc.c:1646  */
+#line 292 "driver_parser.y" /* yacc.c:1646  */
     {;}
-#line 1543 "driver_parser.c" /* yacc.c:1646  */
+#line 1563 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 43:
-#line 269 "driver_parser.y" /* yacc.c:1646  */
+#line 297 "driver_parser.y" /* yacc.c:1646  */
     {
           driver_var drv;
 	  drv.type = STRING;
 	  drv.d.s = (yyvsp[0].string);
 	  push_stack(drv);
         }
-#line 1554 "driver_parser.c" /* yacc.c:1646  */
+#line 1574 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 48:
-#line 286 "driver_parser.y" /* yacc.c:1646  */
+#line 314 "driver_parser.y" /* yacc.c:1646  */
     {
 	    driver_var drv;
 	    drv.d.i = (yyvsp[0].integer);
 	    drv.type = INTEGER;
 	    push_stack(drv);
           }
-#line 1565 "driver_parser.c" /* yacc.c:1646  */
+#line 1585 "driver_parser.c" /* yacc.c:1646  */
     break;
 
   case 49:
-#line 293 "driver_parser.y" /* yacc.c:1646  */
+#line 321 "driver_parser.y" /* yacc.c:1646  */
     {
             driver_var drv;
 	    drv.d.d = (yyvsp[0].real);
 	    drv.type = REAL;
 	    push_stack(drv);
           }
-#line 1576 "driver_parser.c" /* yacc.c:1646  */
+#line 1596 "driver_parser.c" /* yacc.c:1646  */
     break;
 
 
-#line 1580 "driver_parser.c" /* yacc.c:1646  */
+#line 1600 "driver_parser.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

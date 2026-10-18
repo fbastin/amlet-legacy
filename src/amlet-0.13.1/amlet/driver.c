@@ -25,6 +25,10 @@
 
 #include <oratio/ctools.h>
 
+#include <limits.h>
+#include <math.h>
+#include <string.h>
+
 #define DRIVER_DEFAULT_NREP 1000
 
 /**
@@ -34,6 +38,7 @@
 extern void amlet_parser_init(AMLET_Driver *d);
 extern void amlet_parser_clean();
 extern int yyparse ();
+extern int lineno;
 
 void driver_init_defaults(AMLET_Driver *dr)
 {
@@ -97,6 +102,8 @@ void driver_init_defaults(AMLET_Driver *dr)
 
   dr->alt_types = 0;
   dr->alt_values = 0;
+  dr->alt_ntypes = 0;
+  dr->alt_nvalues = 0;
 
   /* nests */
   dr->var[NNESTS].i = 1;
@@ -138,6 +145,8 @@ void driver_clean(AMLET_Driver *dr)
     for (i = 0; i < nalt; i++) free(dr->alt_values[i]);
     free(dr->alt_types);
     free(dr->alt_values);
+    free(dr->alt_ntypes);
+    free(dr->alt_nvalues);
   }
 }
 
@@ -180,11 +189,6 @@ void driver_check_parameters(AMLET_Driver *dr, amlet_config *ac, dcl_data *data)
       c_error("invalid data format");
     }
     
-    /* Check parameters value */
-    if (dr->var[NALT].i <= 1) {
-      c_error("there must be at least two alternatives in the model");
-    }
-
     /* Check number of draws per individual */
     if (dr->var[NREP].i < 10) {
       if (loose) {
@@ -252,9 +256,23 @@ void driver_check_parameters(AMLET_Driver *dr, amlet_config *ac, dcl_data *data)
     }
     else {
       for (i = 0; i <  dr->var[NALT].i; i++) {
+	int k, nvalues = 0;
+
 	if (!dr->alt_types[i] || !dr->alt_values[i]) {
 	  c_error("missing definition for alternative %d\n", i);
 	}
+	/* AMLET <= 0.13.1 read past shorter lists. */
+	if (dr->alt_ntypes[i] < data->nvar)
+	  c_error("alttypes[%d] has %d values; the model has %d variables",
+		  i, dr->alt_ntypes[i], data->nvar);
+	for (k = 0; k < data->nvar; k++) {
+	  if (amlet_is_nonparametric(dr->alt_types[i][k]))
+	    c_error("alttypes[%d]: nonparametric distributions cannot be used to generate the variables", i);
+	  nvalues += moca_count_parameters(dr->alt_types[i][k], NULL);
+	}
+	if (dr->alt_nvalues[i] < nvalues)
+	  c_error("altvalues[%d] has %d values; alttypes[%d] needs %d",
+		  i, dr->alt_nvalues[i], i, nvalues);
       }
     }
   }
@@ -277,16 +295,33 @@ int driver_check_array_pos(AMLET_Driver *dr, int id, int pos)
  * Do some checks after the parsing
  */
 void driver_check(AMLET_Driver *dr) {
+  /* AMLET <= 0.13.1 crashed, or divided by zero */
+  if (dr->var[NALT].i < 2)
+    c_error("nalt (the number of alternatives) must be given, and at least 2");
+  if (dr->var[NOBS].i < 1)
+    c_error("nobs (the number of observations) must be at least 1");
+  if (dr->var[NVAR].i - (dr->var[CENSOR].i ? 1 : 0)
+      - (dr->var[IDDEP].i ? 1 : 0) < 1)
+    c_error("nvar = %d leaves no explanatory variable", dr->var[NVAR].i);
+
   if (!dr->var[CENSOR].i) {
     if (dr->var[IDCENSOR].i) {
       c_warning("IDCENSOR set while CENSOR equal to 0; IDCENSOR reset to 0\n");
       dr->var[IDCENSOR].i = 0;
     }
   }
+  /* AMLET <= 0.13.1 then left the availabilities undefined */
+  else if (dr->var[IDCENSOR].i < 1 || dr->var[IDCENSOR].i > dr->var[NVAR].i)
+    c_error("censor = 1: idcensor must give the row of the availabilities, from 1 to nvar = %d",
+	    dr->var[NVAR].i);
   if (dr->var[NITER].i < 0) {
     c_warning("number of iterations set to a negative value; reset to default value of %d\n", AMLET_DEFAULT_NITER);
     dr->var[NITER].i = AMLET_DEFAULT_NITER;
   }
+  /* AMLET <= 0.13.1 seeded the generator with 2^64 - |seed1|, not a valid
+     MRG32k3a state */
+  if (dr->var[SEED1].i < 0)
+    c_error("seed1 must be positive (or 0, for a seed taken from the clock)");
   if (dr->var[EPS].d <= 0.0) {
     c_warning("negative or null tolerance; reset to default value of %g\n",
 	      AMLET_DEFAULT_TOL);
@@ -326,17 +361,31 @@ void driver_set_generation_process(AMLET_Driver *dr, char *obsname, int nalt)
 {
   int i;
 
-  if (dr->generation) {
+  if (nalt <= 0)
+    c_error("line %d: nalt must be given before generate", lineno);
+
+  if (dr->alt_types) {
     c_warning("generation process redefined\n");
     for (i = 0; i < nalt; i++) free(dr->alt_types[i]);
     for (i = 0; i < nalt; i++) free(dr->alt_values[i]);
     free(dr->alt_types);
     free(dr->alt_values);
+    free(dr->alt_ntypes);
+    free(dr->alt_nvalues);
   }
 
   dr->obsname = obsname;
+  /* AMLET <= 0.13.1 left them undefined: a missing alternative was
+     detected only when malloc() returned zeroed memory. */
   dr->alt_types = _mallocs(nalt, int *);
   dr->alt_values = _mallocs(nalt, double *);
+  dr->alt_ntypes = _mallocs(nalt, int);
+  dr->alt_nvalues = _mallocs(nalt, int);
+  for (i = 0; i < nalt; i++) {
+    dr->alt_types[i] = NULL;
+    dr->alt_values[i] = NULL;
+    dr->alt_ntypes[i] = dr->alt_nvalues[i] = 0;
+  }
 }
 
 /**
@@ -381,7 +430,8 @@ void driver_affect_integer(int *x, driver_array *array)
   }
 }
 
-void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type)
+void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type,
+			   int **count)
 {
   /* Could be better designed ? */
   *type = INTEGER;
@@ -389,9 +439,11 @@ void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type)
   switch (id) {
   case ALTTYPES:
     *type = INTEGER;
+    *count = &(dr->alt_ntypes[pos]);
     return &(dr->alt_types[pos]);
   case ALTVALUES:
     *type = REAL;
+    *count = &(dr->alt_nvalues[pos]);
     return &(dr->alt_values[pos]);
   default:
     c_warning("invalid array");
@@ -404,6 +456,100 @@ void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type)
 void *driver_get_address(int id)
 {
   return NULL;
+}
+
+/**
+ * Type of the value of a scalar reserved word: INTEGER, REAL or STRING.
+ */
+static int driver_value_type(int id)
+{
+  switch (id) {
+  case EPS:
+  case LEVEL:
+  case LEVEL_ACCURACY:
+    return REAL;
+  case NAME:
+  case DRAWSNAME:
+    return STRING;
+  default:
+    return INTEGER;
+  }
+}
+
+/**
+ * Assign a value read in the driver file to a reserved word.
+ *
+ * AMLET <= 0.13.1 stored the value in the field of its own type, whatever
+ * the type of the parameter: niter = 100.0 gave 0 iterations, eps = 1 left
+ * eps almost unchanged, and nrep = {1000} or b = 0 wrote past the
+ * parameter.
+ *
+ * @param word is the position of the word in reserved_words[].
+ * @param type is the type of the value read: INTEGER, REAL or STRING.
+ */
+void driver_assign_value(AMLET_Driver *dr, int word, int type,
+			 driver_data value)
+{
+  int nwords = sizeof(reserved_words)/sizeof(reserved_words[0]);
+  int id = reserved_words[word].token;
+  char *name = reserved_words[word].name;
+
+  if (word >= nwords - END_OTHERS) {
+    /* nests = n is nnests = n in AMLET <= 0.10; it crashed AMLET 0.13.1 */
+    c_warning("line %d: nests is the name of nnests in AMLET <= 0.10; use nnests",
+	      lineno);
+    id = NNESTS;
+    name = "nnests";
+  }
+  else if (word >= nwords - END_ARRAY_WORDS - END_OTHERS)
+    c_error("line %d: %s expects a list of values, as in %s = {...}",
+	    lineno, name, name);
+
+  switch (driver_value_type(id)) {
+  case REAL:
+    if (type == STRING)
+      c_error("line %d: %s expects a number", lineno, name);
+    dr->var[id].d = (type == INTEGER) ? value.i : value.d;
+    break;
+  case STRING:
+    if (type != STRING)
+      c_error("line %d: %s expects a string, as in %s = \"...\"",
+	      lineno, name, name);
+    free(dr->var[id].s);
+    dr->var[id].s = value.s;
+    break;
+  default:
+    if (type == REAL && value.d == rint(value.d) && fabs(value.d) <= INT_MAX)
+      value.i = (int)value.d;
+    else if (type != INTEGER)
+      c_error("line %d: %s expects an integer", lineno, name);
+    /* the arrays of the generation process have nalt elements */
+    if (id == NALT && dr->alt_types && value.i != dr->var[NALT].i)
+      c_error("line %d: nalt must be given before generate", lineno);
+    dr->var[id].i = value.i;
+  }
+}
+
+/**
+ * Assign a list of values read in the driver file to a reserved word.
+ *
+ * @param word is the position of the word in reserved_words[].
+ */
+void driver_assign_array(AMLET_Driver *dr, int word,
+			 const driver_var *values, int n)
+{
+  int nwords = sizeof(reserved_words)/sizeof(reserved_words[0]);
+  driver_array *a = dr->array + reserved_words[word].token;
+
+  if (word < nwords - END_ARRAY_WORDS - END_OTHERS
+      || word >= nwords - END_OTHERS)
+    c_error("line %d: %s expects a single value, not a list",
+	    lineno, reserved_words[word].name);
+
+  free(a->array);
+  a->n = n;
+  a->array = (!n) ? NULL : _mallocs(n, driver_var);
+  if (n) memcpy(a->array, values, n*sizeof(driver_var));
 }
 
 /**

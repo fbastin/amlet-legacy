@@ -257,6 +257,8 @@ typedef struct {
     /* for the generation */
     int **alt_types;
     double **alt_values;
+    int *alt_ntypes;    /* number of values given in alttypes[i] */
+    int *alt_nvalues;   /* number of values given in altvalues[i] */
   } AMLET_Driver;
 
   /**
@@ -309,7 +311,25 @@ typedef struct {
 
   void driver_free_array(AMLET_Driver *dr, int id);
 
-  void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type);
+  void *driver_array_address(AMLET_Driver *dr, int id, int pos, int *type,
+			     int **count);
+
+  /**
+   * Assign a value read in the driver file to a reserved word.
+   *
+   * @param word is the position of the word in reserved_words[].
+   * @param type is the type of the value read: INTEGER, REAL or STRING.
+   */
+  void driver_assign_value(AMLET_Driver *dr, int word, int type,
+			   driver_data value);
+
+  /**
+   * Assign a list of values read in the driver file to a reserved word.
+   *
+   * @param word is the position of the word in reserved_words[].
+   */
+  void driver_assign_array(AMLET_Driver *dr, int word,
+			   const driver_var *values, int n);
 
   void driver_array_action(AMLET_Driver *dr, void *address, int n);
 

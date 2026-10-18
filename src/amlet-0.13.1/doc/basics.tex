@@ -83,7 +83,12 @@ variable = value;
 \end{verbatim}
 The value can be an integer, a real, a string or a set, depending on the
 variable that has to be affected. In some cases, a predefined constant
-identifier can be used instead of a numerical quantity. String values
+identifier can be used instead of a numerical quantity.
+An integer variable also accepts a real with an integer value, as
+\verb|1e3|, and a real variable accepts an integer; a value of another
+type, or a set given to a variable that expects a single value (and
+conversely), is an error. A name that is not a variable of \amlet{} is
+ignored, with a warning. String values
 are any sequence of characters, enclosed within double
 quotes; a correct string would be for example
 \begin{verbatim}

@@ -134,8 +134,7 @@ int nlp_as_monotonicity_step(NLP_Constraint *c, int n, double *x, int incx,
     k = sets[i*incsets];
     if (j >= c->cidx[l] && k < c->cidx[l+1]) {
       if ((x[k*incx]+step[k*incs]) - (x[j*incx]+step[j*incs]) <= DBL_EPSILON) {
-	if ((fabs(p[k*incp]) <= DBL_EPSILON && fabs(p[j*incp]
-						    <= DBL_EPSILON))
+	if ((fabs(p[k*incp]) <= DBL_EPSILON && fabs(p[j*incp]) <= DBL_EPSILON)
 	    || (p[j*incp] >= p[k*incp]))
 	  /* The variables will become linked. */
 	  sets[i*incsets] = -sets[i*incsets];
@@ -208,9 +207,9 @@ int nlp_as_monotonicity(NLP_Constraint *c, int n, double *x, int incx,
       free = 1;
       if (fabs(x[(i-1)*incx] - x[i*incx]) <= DBL_EPSILON) {
 	if (fabs(p[(i-1)*incp]) <= DBL_EPSILON &&
-	    fabs(p[i*incp] <= DBL_EPSILON))
+	    fabs(p[i*incp]) <= DBL_EPSILON)
 	  free = 0;
-	else if (p[(i-1)*incp] >= p[i]) free = 0;
+	else if (p[(i-1)*incp] >= p[i*incp]) free = 0;
       }
       if (free) sets[(nsets++)*incsets] = i;
     }

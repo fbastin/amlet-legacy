@@ -265,8 +265,10 @@ int amlet_exec(int argc, char *argv[])
   int *btype = NULL;
   int npar = 0;        /* number of parameters for the calibration process */
 
-  double bias, accuracy = -1.0; /* bias and accuracy of the likelihood for
-				   mixed-logit models */
+  /* bias and accuracy of the likelihood for mixed-logit models; when the
+     accuracy was not estimated, AMLET <= 0.13.1 could print an undefined
+     bias */
+  double bias = 0.0, accuracy = -1.0;
   double elapsed_time;   /* time consumed by the optimization process */
 
   long sec, ms;

@@ -714,7 +714,7 @@ double model_amlet_rtr_da(double (*f)(double *, int, void *, double *,
     // tester la norme du gradient!!!
 
     printf("%d %g %d %d\n", btr->k, rho, tmp_ssize, new_size);
-    fprintf(log, "%d %d\n", btr->k, tmp_ssize);
+    if (log) fprintf(log, "%d %d\n", btr->k, tmp_ssize);
 
     if (rho >= btr->eta1 && tmp_ssize != new_size) {
       /* The candidate iterate will be accepted. */
@@ -806,7 +806,7 @@ double model_amlet_rtr_da(double (*f)(double *, int, void *, double *,
   if (y) free(y);
 
   printf("NEVAL: %d\n", md->neval);
-  fclose(log);
+  if (log) fclose(log);
 
   return btr->value;
 }
